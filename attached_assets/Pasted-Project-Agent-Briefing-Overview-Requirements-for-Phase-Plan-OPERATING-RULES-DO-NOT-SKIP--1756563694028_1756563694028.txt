@@ -1,0 +1,99 @@
+Project 🥔 — Agent Briefing (Overview + Requirements for Phase Plan)
+
+OPERATING RULES (DO NOT SKIP)
+- Phase-gated: First deliver a PHASED PLAN only; stop until I approve Phase 0. No code before approval.
+- Everything ships behind a feature flag. Primary flag: ff.potato.no_drink_v1 (default OFF).
+- Evidence-first: Every phase must have exit criteria + exact commands/SQL/log checks + an evidence template.
+- Prefer the bundled “GPT Kit” if provided; otherwise proceed with the details below.
+
+PROJECT OVERVIEW
+Build a very simple tracking web app where users mark calendar days as “No Drink”. Start minimal but keep the data model flexible for future “Did Drink” (false) and streaks/badges.
+
+TOP-LEVEL NON-GOALS (v1)
+- No streak totals, badges, or points.
+- No settings page or extra sections (dashboard only).
+- No Google OAuth (use email+password auth instead).
+- No marking future dates other than “today”.
+- No bulk marking / drag to select.
+- No accessibility work (ARIA/keyboard) for v1.
+- No public profiles, data export/delete.
+
+PRODUCT & UX
+- Dashboard shows a calendar. Users can scroll months within 2025 only. Don’t show any month before 2025-01-01.
+- Future days: disabled, except “today” which is allowed.
+- Past range: users can mark any day back to 2025-01-01 (fixed cutoff).
+- Interaction: clicking a day opens a drawer.
+  - Drawer shows month/day and a single CTA: [No Drink].
+  - On click, the day is saved/marked as true (“No Drink”).
+  - Visual: marked days show a subtle filled dot + color.
+  - Show a small “last updated” timestamp in the drawer.
+  - Toast on save success/failure.
+- Idempotency: clicking [No Drink] again on an already-true day is a no-op (no duplicates).
+- Undo/Clear: NOT available in the UI for v1.
+
+DATA MODEL & SEMANTICS
+- Day semantics: store as date (YYYY-MM-DD), independent of time.
+- Timezone of “day”: use the user’s timezone (user-level setting); derive user_local_date from that.
+- Truth table: value=true means “No Drink”; absence = unknown (do not store false in v1).
+- Event log + state table:
+  1) click_events (append-only) for every user action.
+  2) day_marks (deduped current state, unique by user_id+date).
+- Uniqueness: enforce UNIQUE (user_id, date) on day_marks.
+- Backdating window: enforce server-side that date ∈ [2025-01-01, today in user tz].
+- Future: when value=false (“Did Drink”) arrives later, last-write-wins.
+
+RECOMMENDED SCHEMA (Postgres, UUID v4)
+- users
+  - id UUID PK
+  - email TEXT UNIQUE NOT NULL
+  - password_hash TEXT NOT NULL
+  - timezone TEXT NOT NULL  -- e.g., "America/New_York"
+  - created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+- day_marks
+  - user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+  - date DATE NOT NULL
+  - value BOOLEAN NOT NULL CHECK (value = TRUE)  -- v1 only stores TRUE
+  - updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  - PRIMARY KEY (user_id, date)  -- or UNIQUE + surrogate PK
+  - CHECK (date >= DATE '2025-01-01')
+- click_events
+  - click_id UUID PK DEFAULT gen_random_uuid()
+  - user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+  - date DATE NOT NULL
+  - value BOOLEAN NOT NULL CHECK (value = TRUE)  -- v1 only stores TRUE
+  - user_local_date DATE NOT NULL
+  - user_timezone TEXT NOT NULL
+  - created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  - CHECK (date >= DATE '2025-01-01')
+
+RULES & CONCURRENCY
+- Idempotent marking: second mark on the same (user_id, date) is a no-op; state remains true; do NOT create duplicate day_marks.
+- Event emission: emit one click_events row only when the state transitions from unknown → true.
+- Concurrency: last-write-wins on day_marks (unique constraint enforces one row).
+- Rate limiting: basic client-side debounce; rely on server uniqueness to avoid dupes.
+- Travel/timezone: “today” is computed from the current device/user timezone; recompute immediately on tz change.
+- Day boundary: 00:00–23:59 in user timezone governs what counts as a given date.
+
+AUTH
+- Email + password only (no password rules for v1).
+- Minimal sessions; protect all data by user scope. No public endpoints.
+
+API STYLE
+- REST over HTTP. Keep it minimal and explicit.
+- Suggested endpoints (v1):
+  - POST /api/auth/signup {email, password}
+  - POST /api/auth/login {email, password}
+  - GET  /api/me
+  - GET  /api/calendar?month=2025-06   -> returns days in month + whether marked (true/absent)
+  - POST /api/days/:yyyy-mm-dd/no-drink -> idempotently mark true; emits event if first time
+- Responses should include server truth and user timezone used for evaluation.
+
+FRONTEND
+- Stack: React + Vite; custom calendar grid + date-fns.
+- Components: CalendarGrid, DayCell, DayDrawer.
+- Feature flag gating in UI: ff.potato.no_drink_v1 (default OFF).
+- Disable navigation to months outside 2025; disable future days except today.
+- Drawer shows [No Drink] only (no Clear), last-updated text, toasts.
+
+TECH / DEPLOY
+- Backend: Node/Express (or similar) w
