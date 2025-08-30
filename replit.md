@@ -2,6 +2,20 @@
 
 This is a simple habit tracking web application focused on allowing users to mark calendar days as "No Drink". The application features a minimal dashboard with a calendar interface where users can click on days to mark them as alcohol-free. The project is designed with phase-gated development behind feature flags, starting with core functionality and maintaining flexibility for future enhancements like streak tracking and badges.
 
+**Current Status:** Phase 0 (Foundation & Database Setup) - COMPLETE
+**Next Phase:** Phase 1 (Authentication System) - Awaiting approval
+
+# Recent Changes
+
+## 2025-08-30 - Phase 0 Foundation Complete
+- ✅ PostgreSQL database setup with users, day_marks, click_events tables
+- ✅ Express.js server with feature flag middleware (ff.potato.no_drink_v1 default OFF)
+- ✅ Storage layer with proper interfaces and PostgreSQL integration
+- ✅ Health check endpoint operational at /health
+- ✅ Agent memory documentation system established in /docs/agent_memory/
+- ✅ All architectural decisions documented in ADRs
+- ✅ Project structure with shared schema, server logic, and client directories
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -46,12 +60,13 @@ Preferred communication style: Simple, everyday language.
 ## Database
 - **PostgreSQL**: Primary data storage with UUID v4 support for primary keys
 
-## Potential Framework Dependencies
-- **Web framework**: Will require a modern web framework for frontend calendar rendering and drawer interactions
-- **Database ORM/Query builder**: For PostgreSQL interaction and schema management
-- **Authentication library**: For password hashing and session management
-- **Timezone library**: For accurate timezone handling and date calculations
-- **Toast notification system**: For user feedback on successful/failed operations
+## Implemented Dependencies
+- **Express.js**: Backend web framework with CORS and session middleware
+- **Drizzle ORM**: PostgreSQL interaction with schema management and type safety
+- **bcryptjs**: Password hashing for authentication (prepared for Phase 1)
+- **React + Vite**: Frontend framework setup (prepared for Phase 3)
+- **date-fns**: Timezone handling and date calculations
+- **Zod**: Runtime validation with drizzle-zod integration
 
 ## Feature Flag System
 - **Feature toggle infrastructure**: Required to support the `ff.potato.no_drink_v1` flag and future feature gates
