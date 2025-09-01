@@ -46,9 +46,9 @@ app.use(session({
 // Serve static files from client directory
 app.use('/client', express.static(path.join(__dirname, 'client')));
 
-// Root redirect to test interface
-app.get('/', (req, res) => {
-  res.redirect('/client/simple-test.html');
+// Root route
+app.get("/", (req, res) => {
+  res.send("✅ Potato backend is running");
 });
 
 // Health check
