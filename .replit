@@ -5,6 +5,7 @@ channel = "stable-25_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
+run = "node index.js"
 
 [[ports]]
 localPort = 3000
