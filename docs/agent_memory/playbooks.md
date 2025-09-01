@@ -35,3 +35,15 @@ Verify database schema integrity:
 4. Confirm UUID generation: gen_random_uuid() function available
 Evidence: All constraints active, foreign keys enforced, UUIDs generating
 ```
+
+### Playbook: Express Server Port Binding
+
+**Purpose:** Ensure consistent port binding across all services to avoid Replit Preview failures and production deployment issues.
+
+**Pattern:**
+```js
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
