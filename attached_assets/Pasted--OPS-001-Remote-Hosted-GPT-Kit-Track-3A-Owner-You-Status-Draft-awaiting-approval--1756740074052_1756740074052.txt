@@ -1,0 +1,251 @@
+# OPS-001 — Remote-Hosted “GPT Kit” (Track 3A)
+
+**Owner:** You
+**Status:** Draft (awaiting approval)
+**Why separate plan?** This is an **operational capability**, not a user-facing feature. Keeping its own implementation plan, flags, and exit criteria prevents timeline coupling with product work, provides auditable rollout, and supports safe rollback.
+
+---
+
+## Scope
+
+**Goal:** Provide a small, curated knowledge bundle (the **GPT Kit**) that we can publish at a single URL and let our **Custom GPT** fetch on demand under a feature flag.
+
+**Non-goals:** Any end-user UI changes, business logic changes, or releasing app features. This plan only covers: packing, publishing, action wiring, enabling, and monitoring.
+
+---
+
+## Feature Flags
+
+* **`ff.gpt_kit.remote_fetch_v1`** (master; default **OFF**): if **ON**, our Custom GPT Action is allowed to fetch from the remote Kit. Keep **OFF** until Phase 5.
+* (Optional) **`ff.repo.github_connected_v1`**: already satisfied; informational only.
+
+> Keep flags in the same config registry as our other flags. No runtime change for app users.
+
+---
+
+## Phases (approval-gated)
+
+Do **not** start a later phase until the prior phase is explicitly approved. Each phase has concrete exit criteria and evidence.
+
+### ✅ Phase 1-GH — Connect to GitHub (Completed)
+
+**Outcome:** Repo on GitHub with CI workflow. (You confirmed this is done.)
+
+---
+
+### Phase 2 — Pack the GPT Kit (Local Only)
+
+**Deliverables**
+
+```
+/dist/gpt_kit/
+  manifest.json                # { enabled:false, kit_version, generated_at, files[] }
+  README__HOW_TO_USE.md
+  decisions.adrs.min.md        # last 10 entries
+  features_overview.min.md     # current snapshot only
+  bugs_journal.min.md          # last 10 entries (optional)
+  glossary.min.md              # full
+  playbooks.min.md             # curated prompts only
+  daily_digest.md              # latest digest
+```
+
+**Exit Criteria**
+
+1. `npm run gpt:pack` produces the folder above.
+2. `npm run gpt:check` prints sizes and source paths.
+3. `manifest.json` exists and includes `enabled:false` + correct `files[]`.
+
+**Evidence to collect**
+
+* Terminal output of `gpt:pack` and `gpt:check`.
+* `tree -a dist/gpt_kit`.
+* First 50 lines of `dist/gpt_kit/manifest.json`.
+
+**Replit Agent — Mission Brief (copy/paste)**
+
+```
+Project: Project Potato — OPS-001 Phase 2 (Pack GPT Kit)
+Objective: Build a curated “GPT Kit” into /dist/gpt_kit/ from docs under docs/agent_memory/.
+Constraints: Do not publish or toggle any flags.
+Tasks:
+  1) Add scripts to package.json:
+     - "gpt:pack": "node scripts/gpt_pack.mjs"
+     - "gpt:check": "node scripts/gpt_pack.mjs --check"
+  2) Create scripts/gpt_pack.mjs (Node>=18, no deps) that:
+     - Reads source files from docs/agent_memory/
+     - ADRs & Bugs: keep last 10 entries (by '## ' headings)
+     - Features: keep current snapshot only
+     - Writes outputs listed above
+     - Generates manifest.json with enabled:false
+  3) Run: npm run gpt:pack && npm run gpt:check
+  4) Return evidence:
+     - Console output from both commands
+     - tree -a dist/gpt_kit
+     - head -n 50 dist/gpt_kit/manifest.json
+Exit criteria: All deliverables present; manifest enabled:false; size summary printed.
+```
+
+---
+
+### Phase 3 — Publish the GPT Kit (Choose one)
+
+**Option A — GitHub Pages (static)**
+
+* Script `npm run gpt:publish:pages` builds the Kit and pushes to `gh-pages` branch under `/gpt_kit/` path.
+* Output URL: `https://<owner>.github.io/<repo>/gpt_kit/` (RAW\_BASE).
+
+**Option B — GitHub Gist (raw)**
+
+* Script `npm run gpt:publish:gist` creates/updates a private Gist and prints RAW URLs.
+
+**Verification (either option)**
+
+* `curl -I ${RAW_BASE}/manifest.json` returns **200**.
+* `curl ${RAW_BASE}/manifest.json | jq '.enabled == false and (.files | length > 0)'` returns **true**.
+* Compute SHA256 of `manifest.json` and store in `dist/gpt_kit/manifest.lock` for future integrity checks.
+
+**Evidence to collect**
+
+* Publishing command output, final RAW\_BASE, successful `curl`/`jq` checks, and SHA256 value.
+
+**Replit Agent — Mission Brief (copy/paste)**
+
+```
+Project: Project Potato — OPS-001 Phase 3 (Publish GPT Kit)
+Objective: Publish /dist/gpt_kit/ to a stable RAW_BASE (choose Pages or Gist) and verify.
+Constraints: Do not toggle ff.gpt_kit.remote_fetch_v1; keep manifest.enabled=false.
+Tasks:
+  - Implement and run either:
+    a) npm run gpt:publish:pages -> prints RAW_BASE
+    b) npm run gpt:publish:gist  -> prints RAW_BASE
+  - Verify with curl and jq as described.
+  - Write RAW_BASE to .env or config for Phase 4.
+Evidence:
+  - Terminal logs including RAW_BASE
+  - curl -I ${RAW_BASE}/manifest.json (200)
+  - jq check true
+  - SHA256 saved to dist/gpt_kit/manifest.lock
+Exit criteria: Publicly retrievable manifest.json with enabled:false and verified integrity.
+```
+
+---
+
+### Phase 4 — Custom GPT Action Wiring
+
+**Deliverables**
+
+* An **OpenAPI spec** for the Custom GPT Action with two endpoints:
+
+  * `GET /manifest.json` (proxy to `${RAW_BASE}/manifest.json`)
+  * `GET /:filename` (proxy to `${RAW_BASE}/{filename}`)
+* Action added to the Custom GPT; reads `daily_digest.md`, `features_overview.min.md`, etc.
+* Guardrails: Action must **check** `manifest.enabled === true` before consuming files.
+
+**Exit Criteria**
+
+* Manual test via the GPT:
+
+  * “Fetch manifest” → returns JSON with `enabled:false` (still false at this phase).
+  * “Fetch glossary.min.md” → succeeds but GPT refuses to use contents while `enabled:false` (guardrail works).
+
+**Evidence**
+
+* Screenshot or JSON logs from Action calls.
+* OpenAPI file in repo under `/actions/gpt_kit.yaml`.
+
+**Replit Agent — Mission Brief (copy/paste)**
+
+```
+Project: Project Potato — OPS-001 Phase 4 (GPT Action Wiring)
+Objective: Add a Custom GPT Action pointing at RAW_BASE with endpoints /manifest.json and /:filename.
+Constraints: Respect policy gate: if manifest.enabled!==true, the agent should not rely on the content.
+Tasks:
+  - Add actions/gpt_kit.yaml (OpenAPI 3.0)
+  - Configure the Custom GPT Action using that spec
+  - Test: call /manifest.json and /glossary.min.md
+Evidence:
+  - OpenAPI file committed
+  - Action test output (JSON), showing enabled:false and guarded behavior
+Exit criteria: Action works end-to-end and correctly enforces the enabled flag.
+```
+
+---
+
+### Phase 5 — Enable & Monitor
+
+**Tasks**
+
+* Flip **`manifest.enabled` → true** and commit/publish.
+* Turn **`ff.gpt_kit.remote_fetch_v1` → ON** for internal users only.
+* Add lightweight telemetry (stdout logs or Replit logs) each time the Action fetches a file; include URL, bytes, duration, and success/failure.
+
+**Exit Criteria**
+
+* First successful end-to-end retrieval with `enabled:true` while the flag is ON.
+* 24h error rate for fetches < 1% with at least 10 calls.
+
+**Rollback**
+
+* Set **`ff.gpt_kit.remote_fetch_v1` → OFF** or flip `manifest.enabled:false` and republish.
+* Action continues to load but refuses to use remote content when disabled.
+
+**Evidence**
+
+* Log snippet showing multiple successful fetches and zero/low errors.
+
+---
+
+## ADR Suggestion (add to decisions.adrs.md)
+
+> **ADR-OPS-001: Adopt Remote-Hosted GPT Kit as a Controlled Dependency**
+> **Context.** We need a small, curated knowledge bundle for our Custom GPT that updates independently of app deploys.
+> **Decision.** Publish a GPT Kit to a single URL and wire a GPT Action to fetch it, gated by `ff.gpt_kit.remote_fetch_v1` and `manifest.enabled`.
+> **Consequences.** + Faster iteration and smaller model context; + deterministic content; − Requires minimal hosting/CI; mitigated by guardrails and rollback.
+
+---
+
+## Features Overview (Ops line items to add)
+
+* **Ops/Tooling**
+
+  * GPT Kit — Pack (Phase 2): *Planned*
+  * GPT Kit — Publish (Phase 3): *Blocked*
+  * GPT Kit — Action Wiring (Phase 4): *Blocked*
+  * GPT Kit — Enable & Monitor (Phase 5): *Blocked*
+
+---
+
+## Glossary Additions
+
+* **GPT Kit** — Curated set of markdown files for the Custom GPT (digest, features, glossary, ADRs, playbooks, etc.).
+* **Custom GPT Action** — A tool the GPT can call to fetch the Kit over HTTP.
+* **RAW\_BASE** — The base URL where the Kit is hosted (e.g., GitHub Pages or Gist raw URLs).
+
+---
+
+## Playbooks (new)
+
+**Playbook: Pack & Verify (Local)**
+
+```
+npm run gpt:pack
+npm run gpt:check
+tree -a dist/gpt_kit
+head -n 50 dist/gpt_kit/manifest.json
+```
+
+**Playbook: Publish & Verify (Remote)**
+
+```
+# Run selected publish script (pages or gist) -> capture RAW_BASE
+curl -I "$RAW_BASE/manifest.json"
+curl "$RAW_BASE/manifest.json" | jq '.enabled == false and (.files | length > 0)'
+shasum -a 256 dist/gpt_kit/manifest.json > dist/gpt_kit/manifest.lock
+```
+
+---
+
+## Approvals
+
+* Approve this ops plan: **APPROVE OPS-001**
+* Start Phase 2 (Pack): **APPROVE PHASE 2**
