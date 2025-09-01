@@ -11,7 +11,7 @@ const feature_flags_js_1 = require("./feature-flags.js");
 // Load environment variables
 (0, dotenv_1.config)();
 const app = (0, express_1.default)();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = process.env.PORT || 3000;
 // Middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -84,7 +84,6 @@ app.post('/api/days/:date/no-drink', (req, res) => {
     res.json({ message: 'Day marking endpoint - Phase 2' });
 });
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-    console.log(`Feature flag ff.potato.no_drink_v1: ${feature_flags_js_1.featureFlagService.isEnabled('ff.potato.no_drink_v1')}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
 });

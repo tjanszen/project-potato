@@ -160,11 +160,8 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start server
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`🥔 Project Potato running on port ${PORT}`);
-  console.log(`📱 Test interface: http://localhost:${PORT}/client/simple-test.html`);
-  console.log(`🚩 Feature flag ff.potato.no_drink_v1: ${featureFlagService.isEnabled('ff.potato.no_drink_v1')}`);
 });
 
 server.on('error', (err) => {
