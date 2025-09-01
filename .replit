@@ -5,3 +5,7 @@ channel = "stable-25_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

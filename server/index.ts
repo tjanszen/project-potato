@@ -24,6 +24,11 @@ app.use(session({
   }
 }));
 
+// Root endpoint (always available)
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Health check endpoint (always available)
 app.get('/health', (req, res) => {
   res.json({ 
