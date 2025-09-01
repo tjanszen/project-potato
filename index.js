@@ -4,9 +4,25 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const { featureFlagService } = require('./server/feature-flags.js');
-const { storage } = require('./server/storage.js');
-const { insertUserSchema } = require('./shared/schema.js');
+
+// Add error handling for imports
+let featureFlagService, storage, insertUserSchema;
+try {
+  console.log('Loading feature flags...');
+  ({ featureFlagService } = require('./server/feature-flags.js'));
+  console.log('✅ Feature flags loaded');
+  
+  console.log('Loading storage...');
+  ({ storage } = require('./server/storage.js'));
+  console.log('✅ Storage loaded');
+  
+  console.log('Loading schema...');
+  ({ insertUserSchema } = require('./shared/schema.js'));
+  console.log('✅ Schema loaded');
+} catch (error) {
+  console.error('❌ Import error:', error);
+  process.exit(1);
+}
 
 // Load environment
 require('dotenv').config();
@@ -132,9 +148,24 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
+// Error handling
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🥔 Project Potato running on port ${PORT}`);
   console.log(`📱 Test interface: http://localhost:${PORT}/client/simple-test.html`);
   console.log(`🚩 Feature flag ff.potato.no_drink_v1: ${featureFlagService.isEnabled('ff.potato.no_drink_v1')}`);
+});
+
+server.on('error', (err) => {
+  console.error('❌ Server error:', err);
 });
