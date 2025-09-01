@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import { config } from 'dotenv';
+import bcrypt from 'bcryptjs';
 import { featureFlagService } from './feature-flags.js';
 import { storage } from './storage.js';
+import { insertUserSchema } from '../shared/schema.js';
 
 // Load environment variables
 config();
@@ -55,6 +57,17 @@ app.get('/api/feature-flags', (req, res) => {
   res.json(flags);
 });
 
+// Admin endpoint to toggle feature flags (for testing Phase 1A)
+app.post('/api/admin/toggle-flag/:flagName', (req, res) => {
+  const { flagName } = req.params;
+  const newState = featureFlagService.toggleFlag(flagName);
+  res.json({ 
+    flag: flagName, 
+    enabled: newState,
+    message: `Feature flag ${flagName} is now ${newState ? 'enabled' : 'disabled'}`
+  });
+});
+
 // Feature flag gating middleware
 const requireFeatureFlag = (flagName: string) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -75,9 +88,48 @@ app.use('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/days', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'));
 
-// Placeholder routes (will be implemented in later phases)
-app.post('/api/auth/signup', (req, res) => {
-  res.json({ message: 'Signup endpoint - Phase 1' });
+// Auth routes
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    // Validate request body
+    const validationResult = insertUserSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        error: 'Invalid input', 
+        details: validationResult.error.errors 
+      });
+    }
+
+    const { email, password, timezone } = validationResult.data;
+
+    // Check if user already exists
+    const existingUser = await storage.getUserByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+
+    // Hash password
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Create user
+    const newUser = await storage.createUser({
+      email,
+      timezone,
+      passwordHash
+    });
+
+    // Return user without password hash
+    const { passwordHash: _, ...userResponse } = newUser;
+    res.status(201).json({ 
+      message: 'User created successfully',
+      user: userResponse 
+    });
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.post('/api/auth/login', (req, res) => {
