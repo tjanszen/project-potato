@@ -246,6 +246,58 @@ app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentic
   }
 });
 
+// Calendar endpoint (Phase 2A - gated behind feature flag and authentication)
+app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
+  try {
+    const { month } = req.query;
+    
+    // Validate month parameter format (YYYY-MM)
+    if (!month || typeof month !== 'string') {
+      return res.status(400).json({ 
+        error: 'Month parameter is required',
+        format: 'YYYY-MM (e.g., 2025-06)'
+      });
+    }
+    
+    // Validate month format with regex
+    const monthRegex = /^\d{4}-\d{2}$/;
+    if (!monthRegex.test(month)) {
+      return res.status(400).json({ 
+        error: 'Invalid month format',
+        format: 'YYYY-MM (e.g., 2025-06)',
+        received: month
+      });
+    }
+    
+    // Additional validation: ensure it's a valid month (01-12)
+    const [year, monthNum] = month.split('-');
+    const monthNumber = parseInt(monthNum, 10);
+    if (monthNumber < 1 || monthNumber > 12) {
+      return res.status(400).json({ 
+        error: 'Invalid month number',
+        message: 'Month must be between 01 and 12',
+        received: month
+      });
+    }
+    
+    // Fetch day marks for the user and month
+    const dayMarks = await storage.getDayMarksForMonth(req.session.userId, month);
+    
+    // Format response data
+    const markedDates = dayMarks.map(mark => mark.date);
+    
+    res.json({
+      month: month,
+      markedDates: markedDates,
+      count: markedDates.length
+    });
+    
+  } catch (error) {
+    console.error('Calendar fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Error handling
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught exception:', err);
