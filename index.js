@@ -31,7 +31,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: true, // Allow requests from the frontend
+  credentials: true, // Enable sending cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
 app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
@@ -40,7 +44,7 @@ app.use(session({
   cookie: { 
     httpOnly: true, // Prevent XSS attacks
     secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    sameSite: 'strict', // CSRF protection
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Less restrictive for development
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -147,11 +151,30 @@ app.post('/api/auth/signup', async (req, res) => {
       passwordHash
     });
 
-    // Return user without password hash
-    const { passwordHash: _, ...userResponse } = newUser;
-    res.status(201).json({ 
-      message: 'User created successfully',
-      user: userResponse 
+    // Automatically log user in after signup by setting session
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      // Store user ID in session
+      req.session.userId = newUser.id;
+      
+      // Save session
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        
+        // Return user without password hash
+        const { passwordHash: _, ...userResponse } = newUser;
+        res.status(201).json({ 
+          message: 'User created successfully',
+          user: userResponse 
+        });
+      });
     });
 
   } catch (error) {
