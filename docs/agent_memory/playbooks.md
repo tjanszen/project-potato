@@ -47,3 +47,39 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
 ```
+
+### Playbook: Server Cleanup & Git Hygiene
+
+**Purpose:**  
+Prevent duplicate server entry points and build artifacts from causing port conflicts, instability, or unnecessary repo bloat.
+
+---
+
+**Rules:**  
+- Only **one entry point** (`index.js`) should call `app.listen()`.  
+- All other server files (`server.js`, `server/index.ts`) must **export the app** and never bind ports.  
+- Compiled or build output must **not** be committed to Git.
+
+---
+
+**Cleanup Targets:**  
+Add these to `.gitignore` and remove if committed accidentally:  
+/server/index.js
+/dist/
+/server/server/
+
+
+---
+
+**Verification Checklist:**  
+- [ ] `index.js` is the only file with `app.listen()`  
+- [ ] Repo contains no duplicate server artifacts (`dist/`, compiled TS output)  
+- [ ] `.gitignore` includes the cleanup targets  
+- [ ] Server starts cleanly: `Server running on port <PORT>`  
+
+---
+
+**Why:**  
+- Eliminates `EADDRINUSE` port conflicts  
+- Reduces repo clutter from compiled code  
+- Keeps architecture clear: one entry point, exportable modules for testing
