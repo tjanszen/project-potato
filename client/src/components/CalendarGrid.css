@@ -89,10 +89,23 @@
 
 .date-cell.valid-date:hover {
   background: #f8f9fa;
+  transform: scale(1.02);
+}
+
+.date-cell.selected {
+  background: #007bff !important;
+  color: white;
+  transform: scale(1.02);
+}
+
+.date-cell.selected .date-number {
+  color: white;
+  font-weight: 600;
 }
 
 .date-cell.empty-date {
   background: #fafafa;
+  cursor: default;
 }
 
 .date-number {

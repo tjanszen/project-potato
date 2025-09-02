@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import './CalendarGrid.css'
+import DayCell from './DayCell'
 
 interface CalendarGridProps {
   className?: string
+  onDateSelect?: (date: string) => void
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelect }) => {
   // Current date state - initialize to current month/year but restricted to 2025
   const now = new Date()
   const currentYear = 2025 // Force to 2025 for this app
@@ -13,6 +15,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
   
   const [displayMonth, setDisplayMonth] = useState(currentMonth)
   const [displayYear] = useState(currentYear) // Fixed to 2025
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   // Month names for header display
   const monthNames = [
@@ -54,12 +57,22 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
   const goToPreviousMonth = () => {
     if (displayMonth > 0) { // Can't go before January
       setDisplayMonth(displayMonth - 1)
+      setSelectedDate(null) // Clear selection when changing months
     }
   }
 
   const goToNextMonth = () => {
     if (displayMonth < 11) { // Can't go past December
       setDisplayMonth(displayMonth + 1)
+      setSelectedDate(null) // Clear selection when changing months
+    }
+  }
+
+  // Handle date selection
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date)
+    if (onDateSelect) {
+      onDateSelect(date)
     }
   }
 
@@ -107,17 +120,21 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
 
       {/* Calendar Grid - 6 rows x 7 columns */}
       <div className="calendar-dates">
-        {calendarDates.map((date, index) => (
-          <div
-            key={index}
-            className={`date-cell ${date ? 'valid-date' : 'empty-date'}`}
-            data-testid={date ? `cell-date-${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : 'cell-empty'}
-          >
-            {date && (
-              <span className="date-number">{date}</span>
-            )}
-          </div>
-        ))}
+        {calendarDates.map((date, index) => {
+          const dateString = date ? `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : null
+          const isSelected = dateString === selectedDate
+          
+          return (
+            <DayCell
+              key={index}
+              date={date}
+              month={displayMonth}
+              year={displayYear}
+              isSelected={isSelected}
+              onSelect={handleDateSelect}
+            />
+          )
+        })}
       </div>
 
     </div>
