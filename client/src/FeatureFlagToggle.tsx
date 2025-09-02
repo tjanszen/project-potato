@@ -6,7 +6,7 @@ const FeatureFlagToggle = () => {
 
   const checkFlagStatus = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/feature-flags/ff.potato.no_drink_v1')
+      const response = await fetch('/api/feature-flags/ff.potato.no_drink_v1')
       if (response.ok) {
         const flag = await response.json()
         setFlagStatus(flag.enabled)
@@ -19,7 +19,7 @@ const FeatureFlagToggle = () => {
   const toggleFlag = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/admin/toggle-flag/ff.potato.no_drink_v1', {
+      const response = await fetch('/api/admin/toggle-flag/ff.potato.no_drink_v1', {
         method: 'POST'
       })
       if (response.ok) {
