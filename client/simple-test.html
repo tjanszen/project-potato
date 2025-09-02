@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🥔 Project Potato - Phase 1B Testing</title>
+    <title>🥔 Project Potato - Phase 1C Testing</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -105,8 +105,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🥔 Project Potato - Phase 1B Testing</h1>
-        <p>Testing the signup API with a simple frontend interface</p>
+        <h1>🥔 Project Potato - Phase 1C Testing</h1>
+        <p>Testing the signup & login APIs with authentication sessions</p>
 
         <!-- Feature Flag Status -->
         <div id="flagStatus" class="flag-status">
@@ -153,13 +153,35 @@
 
         <div id="message"></div>
 
+        <!-- Login Form -->
+        <h2>Test User Login</h2>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" required>
+                <div class="error-message" id="loginEmailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" required>
+                <div class="error-message" id="loginPasswordError"></div>
+            </div>
+
+            <button type="submit" id="loginBtn">Log In</button>
+        </form>
+
+        <div id="loginMessage"></div>
+
         <div class="notes">
-            <strong>Testing Notes:</strong>
+            <strong>Phase 1C Testing Notes:</strong>
             <ul>
-                <li>Make sure feature flag is enabled above</li>
-                <li>Check browser dev tools (F12) for API request logs</li>
-                <li>Form validates input client-side before submission</li>
-                <li>Check database after successful signup</li>
+                <li>✅ Signup a new user first (above form)</li>
+                <li>✅ Then login with same credentials (login form)</li>
+                <li>✅ Check browser dev tools (F12) Network tab for session cookies</li>
+                <li>✅ Look for <code>Set-Cookie</code> headers with <code>HttpOnly</code> and <code>SameSite=Strict</code></li>
+                <li>✅ Test invalid credentials to see 401 error</li>
+                <li>✅ Feature flag must be enabled for all endpoints</li>
             </ul>
         </div>
     </div>
@@ -319,6 +341,59 @@
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign Up';
+            }
+        }
+
+        // Handle login form submission
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const messageDiv = document.getElementById('loginMessage');
+            messageDiv.innerHTML = '';
+
+            // Basic validation
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                messageDiv.innerHTML = '<div class="message error">❌ Please enter both email and password</div>';
+                return;
+            }
+
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            const loginData = { email, password };
+
+            try {
+                console.log('Submitting to POST /api/auth/login:', { email, password: '***' });
+                
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // Important: Include cookies
+                    body: JSON.stringify(loginData),
+                });
+
+                const result = await response.json();
+                console.log('Login API Response:', result);
+                console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+
+                if (response.ok) {
+                    messageDiv.innerHTML = `<div class="message success">✅ Login successful!<br>Welcome: ${result.user.email}<br>🔍 Check Network tab in DevTools for session cookie</div>`;
+                    document.getElementById('loginForm').reset();
+                } else {
+                    messageDiv.innerHTML = `<div class="message error">❌ ${result.error || 'Login failed'} (${response.status})</div>`;
+                }
+            } catch (error) {
+                console.error('Login network error:', error);
+                messageDiv.innerHTML = '<div class="message error">❌ Network error - make sure the backend server is running</div>';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Log In';
             }
         }
 
