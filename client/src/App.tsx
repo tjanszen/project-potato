@@ -1,27 +1,32 @@
-import { useState } from 'react'
-import SignupForm from './SignupForm'
-import FeatureFlagToggle from './FeatureFlagToggle'
+import { Router } from 'wouter'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { AppRoutes } from './AppRoutes'
+
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
 
 function App() {
   return (
-    <div style={{ 
-      padding: '20px', 
-      maxWidth: '500px', 
-      margin: '0 auto',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h1>🥔 Project Potato - Dev Testing UI</h1>
-      <p style={{ color: '#666', marginBottom: '30px' }}>
-        Phase 1B: Testing the signup API (Phase 1A)
-      </p>
-      
-      <FeatureFlagToggle />
-      
-      <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>Test User Signup</h2>
-        <SignupForm />
-      </div>
-    </div>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <div style={{ 
+            minHeight: '100vh',
+            fontFamily: 'Arial, sans-serif'
+          }}>
+            <AppRoutes />
+          </div>
+        </Router>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
