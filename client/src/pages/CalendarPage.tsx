@@ -1,13 +1,21 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
 import CalendarGrid from '../components/CalendarGrid'
+import DayDrawer from '../components/DayDrawer'
 
 export function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
+    setIsDrawerOpen(true) // Auto-open drawer when date is selected
     console.log('Date selected:', date) // Debug logging for testing
+  }
+
+  const handleDrawerClose = () => {
+    setIsDrawerOpen(false)
+    // Keep selectedDate so user can see what they selected, but close drawer
   }
 
   return (
@@ -55,6 +63,13 @@ export function CalendarPage() {
       
       {/* Calendar Grid Component */}
       <CalendarGrid onDateSelect={handleDateSelect} />
+      
+      {/* Day Drawer Component */}
+      <DayDrawer 
+        selectedDate={selectedDate}
+        isOpen={isDrawerOpen}
+        onClose={handleDrawerClose}
+      />
     </div>
   )
 }
