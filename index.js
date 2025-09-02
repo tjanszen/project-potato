@@ -373,8 +373,33 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     const dayMark = {
       userId: req.session.userId,
       date: date,
-      value: true // Phase 2C only handles "no drink" = true
+      value: true // Phase 2E only handles "no drink" = true
     };
+    
+    // Calculate user's local date (Phase 2E - Event Logging)
+    const userLocalDate = new Date(date + 'T12:00:00Z').toLocaleDateString('en-CA', {
+      timeZone: user.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    
+    // Log click event before day marking (Phase 2E - comprehensive audit trail)
+    const clickEvent = {
+      userId: req.session.userId,
+      date: date,
+      value: true,
+      userLocalDate: userLocalDate,
+      userTimezone: user.timezone
+    };
+    
+    try {
+      // Always log the event attempt (even if marking fails)
+      await storage.logClickEvent(clickEvent);
+    } catch (eventError) {
+      // Event logging should not block day marking
+      console.warn('Event logging failed:', eventError);
+    }
     
     const createdMark = await storage.markDay(dayMark);
     
@@ -393,6 +418,24 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     
   } catch (error) {
     console.error('Day marking error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Event retrieval endpoint (Phase 2E - debugging/analytics)
+app.get('/api/events', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100); // Max 100 events
+    const events = await storage.getClickEventsForUser(req.session.userId, limit);
+    
+    res.json({
+      events: events,
+      count: events.length,
+      message: `Retrieved ${events.length} recent events`
+    });
+    
+  } catch (error) {
+    console.error('Event retrieval error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

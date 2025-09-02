@@ -63,6 +63,14 @@ class PostgresStorage {
         const [clickEvent] = await exports.db.insert(schema_js_1.clickEvents).values(event).returning();
         return clickEvent;
     }
+    async getClickEventsForUser(userId, limit = 50) {
+        const events = await exports.db.select()
+            .from(schema_js_1.clickEvents)
+            .where((0, drizzle_orm_1.eq)(schema_js_1.clickEvents.userId, userId))
+            .orderBy((0, drizzle_orm_1.desc)(schema_js_1.clickEvents.createdAt))
+            .limit(limit);
+        return events;
+    }
 }
 exports.PostgresStorage = PostgresStorage;
 // Export singleton instance
