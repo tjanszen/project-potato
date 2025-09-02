@@ -206,6 +206,35 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Authentication middleware
+const requireAuthentication = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+};
+
+// User profile endpoint (gated behind feature flag and authentication)
+app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
+  try {
+    const user = await storage.getUserById(req.session.userId);
+    if (!user) {
+      // Session has user ID but user doesn't exist (edge case)
+      req.session.destroy();
+      return res.status(401).json({ error: 'Invalid session' });
+    }
+    
+    // Return user profile data without password hash
+    const { passwordHash: _, ...userProfile } = user;
+    res.json({
+      user: userProfile
+    });
+  } catch (error) {
+    console.error('Profile retrieval error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Error handling
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught exception:', err);
