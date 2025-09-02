@@ -2,10 +2,22 @@
 
 This is a simple habit tracking web application focused on allowing users to mark calendar days as "No Drink". The application features a minimal dashboard with a calendar interface where users can click on days to mark them as alcohol-free. The project is designed with phase-gated development behind feature flags, starting with core functionality and maintaining flexibility for future enhancements like streak tracking and badges.
 
-**Current Status:** Phase 2 (Calendar API Backend) - COMPLETE  
-**Next Phase:** Phase 3 (Frontend Calendar Interface) - Ready to begin
+**Current Status:** Phase 3D (DayDrawer & "No Drink" Button) - COMPLETE  
+**Next Phase:** Phase 4 (Visual Day Marking State) - Ready to begin
 
 # Recent Changes
+
+## 2025-09-02 - Phase 3D (DayDrawer & "No Drink" Button) Complete
+- ✅ **Authentication Session Fix**: Resolved CORS and session handling issues blocking day marking
+- ✅ **CORS Configuration**: Added `credentials: true` and proper origin handling for cookie-based authentication
+- ✅ **Session Management**: Fixed signup endpoint to automatically log users in after account creation
+- ✅ **Cookie Compatibility**: Updated sameSite policy from 'strict' to 'lax' for development environment
+- ✅ **Complete Auth Flow**: Signup → Auto-login → Day marking working end-to-end
+- ✅ **DayDrawer Integration**: Sliding drawer opens on date selection with proper API integration
+- ✅ **Day Marking API**: POST /api/days/:date/no-drink endpoint fully functional with authentication
+- ✅ **User Feedback**: Success/error messages display correctly in drawer interface
+- ✅ **Phase 3A-3D**: Complete frontend calendar interface with React components, navigation, and day marking
+- ✅ **User Testing**: Confirmed calendar navigation, date selection, drawer interaction, and day marking all working
 
 ## 2025-09-02 - Phase 2 (Calendar API Backend) Complete
 - ✅ Phase 1D (User Profile & Integration) completed with `/api/me` endpoint
