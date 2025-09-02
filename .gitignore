@@ -1,0 +1,25 @@
+# Build artifacts and compiled files
+/server/index.js
+/dist/
+/server/server/
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
