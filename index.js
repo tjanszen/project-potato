@@ -38,8 +38,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false,
-    maxAge: 24 * 60 * 60 * 1000
+    httpOnly: true, // Prevent XSS attacks
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    sameSite: 'strict', // CSRF protection
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
@@ -112,7 +114,7 @@ app.post('/api/auth/signup', async (req, res) => {
     if (!validationResult.success) {
       return res.status(400).json({ 
         error: 'Invalid input', 
-        details: validationResult.error.errors 
+        details: validationResult.error.issues 
       });
     }
 
@@ -131,6 +133,7 @@ app.post('/api/auth/signup', async (req, res) => {
     // Create user
     const newUser = await storage.createUser({
       email,
+      password,
       timezone,
       passwordHash
     });
@@ -144,6 +147,61 @@ app.post('/api/auth/signup', async (req, res) => {
 
   } catch (error) {
     console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password are required' 
+      });
+    }
+    
+    // Find user by email
+    const user = await storage.getUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Regenerate session ID to prevent session fixation
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      // Store user ID in session
+      req.session.userId = user.id;
+      
+      // Save session
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+        
+        // Return user data without password hash
+        const { passwordHash: _, ...userResponse } = user;
+        res.json({ 
+          message: 'Login successful',
+          user: userResponse 
+        });
+      });
+    });
+    
+  } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
