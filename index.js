@@ -45,13 +45,11 @@ app.use(session({
   }
 }));
 
-// Serve static files from client directory
+// Serve static files from client directory (development)
 app.use('/client', express.static(path.join(__dirname, 'client')));
 
-// Root route
-app.get("/", (req, res) => {
-  res.send("✅ Potato backend is running");
-});
+// Serve built React app static files (production)
+app.use(express.static(path.join(__dirname, 'dist', 'client')));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -438,6 +436,23 @@ app.get('/api/events', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthe
     console.error('Event retrieval error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Catch-all handler: serve React app for client-side routing
+// This must come AFTER all API routes
+app.use((req, res, next) => {
+  // Skip if this is an API route or health check
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return next();
+  }
+  
+  // For all other routes, serve React app index.html
+  res.sendFile(path.join(__dirname, 'dist', 'client', 'index.html'), (err) => {
+    if (err) {
+      console.error('Error serving React app:', err);
+      res.status(500).send('Error loading application');
+    }
+  });
 });
 
 // Error handling
