@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Marking Test - Phase 2B</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; text-align: center; }
+        .section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            background: #f9f9f9; 
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .success { color: #2e7d32; background: #e8f5e9; }
+        input[type="date"] { 
+            padding: 8px; 
+            font-size: 16px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        #result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 5px; 
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Day Marking Test - Phase 2B</h1>
+        
+        <div class="section">
+            <h2>Step 1: Login First</h2>
+            <p><strong>You must be logged in to test day marking!</strong></p>
+            <p>Go to: <a href="/client/simple-test.html" target="_blank">Login Page</a></p>
+            <p>Use your test account: <code>test-calendar@example.com</code></p>
+        </div>
+
+        <div class="section">
+            <h2>Step 2: Test Day Marking</h2>
+            <p>Pick a date to mark as "No Drink":</p>
+            <input type="date" id="dateInput" value="2025-06-15">
+            <br><br>
+            <button onclick="markDay()">✅ Mark This Day as "No Drink"</button>
+            <button onclick="testInvalidDate()">❌ Test Invalid Date (should fail)</button>
+            <button onclick="testFutureDate()">🔮 Test Future Date (should fail)</button>
+        </div>
+
+        <div class="section">
+            <h2>Step 3: Check Calendar</h2>
+            <button onclick="checkCalendar()">📅 View Calendar for June 2025</button>
+            <p><em>After marking a day, it should appear in the calendar!</em></p>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, isError = false) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = isError ? 'error' : 'success';
+        }
+
+        async function markDay() {
+            const date = document.getElementById('dateInput').value;
+            if (!date) {
+                showResult('Please select a date first!', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/days/${date}/no-drink`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`SUCCESS! ✅\nMarked ${date} as "No Drink"\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult(`ERROR: ${response.status}\n${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                showResult(`Network Error: ${error.message}`, true);
+            }
+        }
+
+        async function testInvalidDate() {
+            try {
+                const response = await fetch('/api/days/invalid-date/no-drink', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 400) {
+                    showResult(`GOOD! ✅ Invalid date was rejected as expected\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult(`UNEXPECTED: Should have failed with 400 error\nResponse: ${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                showResult(`Network Error: ${error.message}`, true);
+            }
+        }
+
+        async function testFutureDate() {
+            const futureDate = '2030-01-01';
+            try {
+                const response = await fetch(`/api/days/${futureDate}/no-drink`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 400) {
+                    showResult(`GOOD! ✅ Future date was rejected as expected\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult(`UNEXPECTED: Should have failed with 400 error\nResponse: ${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                showResult(`Network Error: ${error.message}`, true);
+            }
+        }
+
+        async function checkCalendar() {
+            try {
+                const response = await fetch('/api/calendar?month=2025-06');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`CALENDAR DATA: 📅\n${JSON.stringify(data, null, 2)}\n\nMarked dates: ${data.markedDates.join(', ') || 'None'}`);
+                } else {
+                    showResult(`Calendar Error: ${response.status}\n${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                showResult(`Network Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
