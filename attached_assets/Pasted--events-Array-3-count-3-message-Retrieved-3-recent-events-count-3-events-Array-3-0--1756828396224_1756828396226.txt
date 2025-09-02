@@ -1,0 +1,5834 @@
+{events: Array(3), count: 3, message: 'Retrieved 3 recent events'}
+count
+: 
+3
+events
+: 
+Array(3)
+0
+: 
+clickId
+: 
+"aa80b18a-0137-4909-8a12-58754778c6e8"
+createdAt
+: 
+"2025-09-02T15:51:43.455Z"
+date
+: 
+"2025-08-11"
+userId
+: 
+"6fea534e-b00c-46d7-849d-fde5cd6e5ed7"
+userLocalDate
+: 
+"2025-08-11"
+userTimezone
+: 
+"America/New_York"
+value
+: 
+true
+[[Prototype]]
+: 
+Object
+1
+: 
+clickId
+: 
+"700499c7-0d34-4bca-be15-3668192a92af"
+createdAt
+: 
+"2025-09-02T15:51:32.163Z"
+date
+: 
+"2025-08-10"
+userId
+: 
+"6fea534e-b00c-46d7-849d-fde5cd6e5ed7"
+userLocalDate
+: 
+"2025-08-10"
+userTimezone
+: 
+"America/New_York"
+value
+: 
+true
+[[Prototype]]
+: 
+Object
+constructor
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+simple-test.html:2
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+length
+: 
+2
+name
+: 
+"assign"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+create
+: 
+ƒ create()
+length
+: 
+2
+name
+: 
+"create"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperties
+: 
+ƒ defineProperties()
+length
+: 
+2
+name
+: 
+"defineProperties"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+defineProperty
+: 
+(...e)=> {…}
+length
+: 
+0
+name
+: 
+""
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[5]
+0
+: 
+Closure
+e
+: 
+ƒ replaceAll()
+length
+: 
+2
+name
+: 
+"replaceAll"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+No properties
+t
+: 
+ƒ ()
+length
+: 
+3
+name
+: 
+"bound defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[TargetFunction]]
+: 
+ƒ defineProperty()
+length
+: 
+3
+name
+: 
+"defineProperty"
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundThis]]
+: 
+ƒ Object()
+assign
+: 
+ƒ assign()
+create
+: 
+ƒ create()
+defineProperties
+: 
+ƒ defineProperties()
+defineProperty
+: 
+(...e)=> {…}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+length
+: 
+0
+[[Prototype]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block
+accessKey
+: 
+""
+align
+: 
+""
+ariaActiveDescendantElement
+: 
+null
+ariaAtomic
+: 
+null
+ariaAutoComplete
+: 
+null
+ariaBrailleLabel
+: 
+null
+ariaBrailleRoleDescription
+: 
+null
+ariaBusy
+: 
+null
+ariaChecked
+: 
+null
+ariaColCount
+: 
+null
+ariaColIndex
+: 
+null
+ariaColIndexText
+: 
+null
+ariaColSpan
+: 
+null
+ariaControlsElements
+: 
+null
+ariaCurrent
+: 
+null
+ariaDescribedByElements
+: 
+null
+ariaDescription
+: 
+null
+ariaDetailsElements
+: 
+null
+ariaDisabled
+: 
+null
+ariaErrorMessageElements
+: 
+null
+ariaExpanded
+: 
+null
+ariaFlowToElements
+: 
+null
+ariaHasPopup
+: 
+null
+ariaHidden
+: 
+null
+ariaInvalid
+: 
+null
+ariaKeyShortcuts
+: 
+null
+ariaLabel
+: 
+null
+ariaLabelledByElements
+: 
+null
+ariaLevel
+: 
+null
+ariaLive
+: 
+null
+ariaModal
+: 
+null
+ariaMultiLine
+: 
+null
+ariaMultiSelectable
+: 
+null
+ariaOrientation
+: 
+null
+ariaPlaceholder
+: 
+null
+ariaPosInSet
+: 
+null
+ariaPressed
+: 
+null
+ariaReadOnly
+: 
+null
+ariaRelevant
+: 
+null
+ariaRequired
+: 
+null
+ariaRoleDescription
+: 
+null
+ariaRowCount
+: 
+null
+ariaRowIndex
+: 
+null
+ariaRowIndexText
+: 
+null
+ariaRowSpan
+: 
+null
+ariaSelected
+: 
+null
+ariaSetSize
+: 
+null
+ariaSort
+: 
+null
+ariaValueMax
+: 
+null
+ariaValueMin
+: 
+null
+ariaValueNow
+: 
+null
+ariaValueText
+: 
+null
+assignedSlot
+: 
+null
+attributeStyleMap
+: 
+StylePropertyMap
+size
+: 
+0
+[[Prototype]]
+: 
+StylePropertyMap
+attributes
+: 
+NamedNodeMap
+0
+: 
+onreset
+baseURI
+: 
+"https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev/client/simple-test.html"
+childNodes
+: 
+NodeList []
+firstChild
+: 
+null
+isConnected
+: 
+false
+lastChild
+: 
+null
+localName
+: 
+"onreset"
+name
+: 
+"onreset"
+namespaceURI
+: 
+null
+nextSibling
+: 
+null
+nodeName
+: 
+"onreset"
+nodeType
+: 
+2
+nodeValue
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+ownerDocument
+: 
+document
+ownerElement
+: 
+div
+parentElement
+: 
+null
+parentNode
+: 
+null
+prefix
+: 
+null
+previousSibling
+: 
+null
+specified
+: 
+true
+textContent
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+value
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+[[Prototype]]
+: 
+Attr
+onreset
+: 
+onreset
+baseURI
+: 
+"https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev/client/simple-test.html"
+childNodes
+: 
+NodeList []
+firstChild
+: 
+null
+isConnected
+: 
+false
+lastChild
+: 
+null
+localName
+: 
+"onreset"
+name
+: 
+"onreset"
+namespaceURI
+: 
+null
+nextSibling
+: 
+null
+nodeName
+: 
+"onreset"
+nodeType
+: 
+2
+nodeValue
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+ownerDocument
+: 
+document
+ownerElement
+: 
+div
+parentElement
+: 
+null
+parentNode
+: 
+null
+prefix
+: 
+null
+previousSibling
+: 
+null
+specified
+: 
+true
+textContent
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+value
+: 
+"const URL = window.URL; (()=>{window.__hrp_globals={fetch:window.fetch,postMessage:window.postMessage,localStorage:window.localStorage,XMLHttpRequest:window.XMLHttpRequest,setTimeout:window.setTimeout,setInterval:window.setInterval,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,addEventListener:window.addEventListener,removeEventListener:window.removeEventListener};const t=Object.defineProperty.bind(Object);Object.defineProperty=(...e)=>{if(e[0]!==globalThis||!(e[1]in window.__hrp_globals))return t(...e)};const e=String.prototype.replaceAll;Object.defineProperty(String.prototype,\"replaceAll\",{get:()=>e,set:()=>{}})}).call(null, ...[])"
+[[Prototype]]
+: 
+Attr
+length
+: 
+1
+[[Prototype]]
+: 
+NamedNodeMap
+autocapitalize
+: 
+""
+autofocus
+: 
+false
+baseURI
+: 
+"https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev/client/simple-test.html"
+childElementCount
+: 
+0
+childNodes
+: 
+NodeList(0)
+length
+: 
+0
+[[Prototype]]
+: 
+NodeList
+children
+: 
+HTMLCollection(0)
+length
+: 
+0
+[[Prototype]]
+: 
+HTMLCollection
+classList
+: 
+DOMTokenList(0)
+length
+: 
+0
+value
+: 
+""
+[[Prototype]]
+: 
+DOMTokenList
+className
+: 
+""
+clientHeight
+: 
+0
+clientLeft
+: 
+0
+clientTop
+: 
+0
+clientWidth
+: 
+0
+contentEditable
+: 
+"inherit"
+currentCSSZoom
+: 
+1
+dataset
+: 
+DOMStringMap
+[[Prototype]]
+: 
+DOMStringMap
+dir
+: 
+""
+draggable
+: 
+false
+editContext
+: 
+null
+elementTiming
+: 
+""
+enterKeyHint
+: 
+""
+firstChild
+: 
+null
+firstElementChild
+: 
+null
+hidden
+: 
+false
+id
+: 
+""
+inert
+: 
+false
+innerHTML
+: 
+""
+innerText
+: 
+""
+inputMode
+: 
+""
+isConnected
+: 
+false
+isContentEditable
+: 
+false
+lang
+: 
+""
+lastChild
+: 
+null
+lastElementChild
+: 
+null
+localName
+: 
+"div"
+namespaceURI
+: 
+"http://www.w3.org/1999/xhtml"
+nextElementSibling
+: 
+null
+nextSibling
+: 
+null
+nodeName
+: 
+"DIV"
+nodeType
+: 
+1
+nodeValue
+: 
+null
+nonce
+: 
+""
+offsetHeight
+: 
+0
+offsetLeft
+: 
+0
+offsetParent
+: 
+null
+offsetTop
+: 
+0
+offsetWidth
+: 
+0
+onabort
+: 
+null
+onanimationend
+: 
+null
+onanimationiteration
+: 
+null
+onanimationstart
+: 
+null
+onauxclick
+: 
+null
+onbeforecopy
+: 
+null
+onbeforecut
+: 
+null
+onbeforeinput
+: 
+null
+onbeforematch
+: 
+null
+onbeforepaste
+: 
+null
+onbeforetoggle
+: 
+null
+onbeforexrselect
+: 
+null
+onblur
+: 
+null
+oncancel
+: 
+null
+oncanplay
+: 
+null
+oncanplaythrough
+: 
+null
+onchange
+: 
+null
+onclick
+: 
+null
+onclose
+: 
+null
+oncommand
+: 
+null
+oncontentvisibilityautostatechange
+: 
+null
+oncontextlost
+: 
+null
+oncontextmenu
+: 
+null
+oncontextrestored
+: 
+null
+oncopy
+: 
+null
+oncuechange
+: 
+null
+oncut
+: 
+null
+ondblclick
+: 
+null
+ondrag
+: 
+null
+ondragend
+: 
+null
+ondragenter
+: 
+null
+ondragleave
+: 
+null
+ondragover
+: 
+null
+ondragstart
+: 
+null
+ondrop
+: 
+null
+ondurationchange
+: 
+null
+onemptied
+: 
+null
+onended
+: 
+null
+onerror
+: 
+null
+onfocus
+: 
+null
+onformdata
+: 
+null
+onfullscreenchange
+: 
+null
+onfullscreenerror
+: 
+null
+ongotpointercapture
+: 
+null
+oninput
+: 
+null
+oninvalid
+: 
+null
+onkeydown
+: 
+null
+onkeypress
+: 
+null
+onkeyup
+: 
+null
+onload
+: 
+null
+onloadeddata
+: 
+null
+onloadedmetadata
+: 
+null
+onloadstart
+: 
+null
+onlostpointercapture
+: 
+null
+onmousedown
+: 
+null
+onmouseenter
+: 
+null
+onmouseleave
+: 
+null
+onmousemove
+: 
+null
+onmouseout
+: 
+null
+onmouseover
+: 
+null
+onmouseup
+: 
+null
+onmousewheel
+: 
+null
+onpaste
+: 
+null
+onpause
+: 
+null
+onplay
+: 
+null
+onplaying
+: 
+null
+onpointercancel
+: 
+null
+onpointerdown
+: 
+null
+onpointerenter
+: 
+null
+onpointerleave
+: 
+null
+onpointermove
+: 
+null
+onpointerout
+: 
+null
+onpointerover
+: 
+null
+onpointerrawupdate
+: 
+null
+onpointerup
+: 
+null
+onprogress
+: 
+null
+onratechange
+: 
+null
+onreset
+: 
+ƒ onreset(event)
+length
+: 
+1
+name
+: 
+"onreset"
+prototype
+: 
+constructor
+: 
+ƒ onreset(event)
+[[Prototype]]
+: 
+Object
+arguments
+: 
+null
+caller
+: 
+null
+[[FunctionLocation]]
+: 
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[4]
+onresize
+: 
+null
+onscroll
+: 
+null
+onscrollend
+: 
+null
+onscrollsnapchange
+: 
+null
+onscrollsnapchanging
+: 
+null
+onsearch
+: 
+null
+onsecuritypolicyviolation
+: 
+null
+onseeked
+: 
+null
+onseeking
+: 
+null
+onselect
+: 
+null
+onselectionchange
+: 
+null
+onselectstart
+: 
+null
+onslotchange
+: 
+null
+onstalled
+: 
+null
+onsubmit
+: 
+null
+onsuspend
+: 
+null
+ontimeupdate
+: 
+null
+ontoggle
+: 
+null
+ontransitioncancel
+: 
+null
+ontransitionend
+: 
+null
+ontransitionrun
+: 
+null
+(...)
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+[[BoundArgs]]
+: 
+Array(0)
+[[Prototype]]
+: 
+Object
+1
+: 
+With Block {align: '', title: '', lang: '', translate: true, dir: '', …}
+2
+: 
+With Block {location: Location, implementation: DOMImplementation, URL: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', documentURI: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1e…hl4fhf1tn.kirk.replit.dev/client/simple-test.html', compatMode: 'CSS1Compat', …}
+3
+: 
+Script {API_BASE: 'https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev', flagEnabled: true}
+4
+: 
+Global {window: Window, self: Window, document: document, name: '', location: Location, …}
+entries
+: 
+ƒ entries()
+freeze
+: 
+ƒ freeze()
+fromEntries
+: 
+ƒ fromEntries()
+getOwnPropertyDescriptor
+: 
+ƒ getOwnPropertyDescriptor()
+getOwnPropertyDescriptors
+: 
+ƒ getOwnPropertyDescriptors()
+getOwnPropertyNames
+: 
+ƒ getOwnPropertyNames()
+getOwnPropertySymbols
+: 
+ƒ getOwnPropertySymbols()
+getPrototypeOf
+: 
+ƒ getPrototypeOf()
+groupBy
+: 
+ƒ groupBy()
+hasOwn
+: 
+ƒ hasOwn()
+is
+: 
+ƒ is()
+isExtensible
+: 
+ƒ isExtensible()
+isFrozen
+: 
+ƒ isFrozen()
+isSealed
+: 
+ƒ isSealed()
+keys
+: 
+ƒ keys()
+length
+: 
+1
+name
+: 
+"Object"
+preventExtensions
+: 
+ƒ preventExtensions()
+prototype
+: 
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+seal
+: 
+ƒ seal()
+setPrototypeOf
+: 
+ƒ setPrototypeOf()
+values
+: 
+ƒ values()
+arguments
+: 
+(...)
+caller
+: 
+(...)
+[[Prototype]]
+: 
+ƒ ()
+[[Scopes]]
+: 
+Scopes[0]
+hasOwnProperty
+: 
+ƒ hasOwnProperty()
+isPrototypeOf
+: 
+ƒ isPrototypeOf()
+propertyIsEnumerable
+: 
+ƒ propertyIsEnumerable()
+toLocaleString
+: 
+ƒ toLocaleString()
+toString
+: 
+ƒ toString()
+valueOf
+: 
+ƒ valueOf()
+__defineGetter__
+: 
+ƒ __defineGetter__()
+__defineSetter__
+: 
+ƒ __defineSetter__()
+__lookupGetter__
+: 
+ƒ __lookupGetter__()
+__lookupSetter__
+: 
+ƒ __lookupSetter__()
+__proto__
+: 
+(...)
+get __proto__
+: 
+ƒ __proto__()
+set __proto__
+: 
+ƒ __proto__()
+2
+: 
+{clickId: 'aa153dd7-843f-4b76-8e79-f0c200ceaee8', userId: '6fea534e-b00c-46d7-849d-fde5cd6e5ed7', date: '2025-08-10', value: true, userLocalDate: '2025-08-10', …}
+length
+: 
+3
+[[Prototype]]
+: 
+Array(0)
+message
+: 
+"Retrieved 3 recent events"
+[[Prototype]]
+: 
+Object
