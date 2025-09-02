@@ -91,6 +91,17 @@ const requireFeatureFlag = (flagName: string) => {
   };
 };
 
+// Authentication middleware
+const requireAuthentication = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ 
+      error: 'Authentication required',
+      message: 'Please log in to access this resource'
+    });
+  }
+  next();
+};
+
 // All app functionality gated behind main feature flag
 app.use('/api/auth', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'));
@@ -197,12 +208,73 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/me', (req, res) => {
-  res.json({ message: 'User profile endpoint - Phase 1' });
+// User profile endpoint (Phase 1D)
+app.get('/api/me', requireAuthentication, async (req, res) => {
+  try {
+    const user = await storage.getUserById(req.session.userId!);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Return user data without password hash
+    const { passwordHash: _, ...userProfile } = user;
+    res.json({ user: userProfile });
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.get('/api/calendar', (req, res) => {
-  res.json({ message: 'Calendar endpoint - Phase 2' });
+// Calendar endpoint (Phase 2A)
+app.get('/api/calendar', requireAuthentication, async (req, res) => {
+  try {
+    const { month } = req.query;
+    
+    // Validate month parameter format (YYYY-MM)
+    if (!month || typeof month !== 'string') {
+      return res.status(400).json({ 
+        error: 'Month parameter is required',
+        format: 'YYYY-MM (e.g., 2025-06)'
+      });
+    }
+    
+    // Validate month format with regex
+    const monthRegex = /^\d{4}-\d{2}$/;
+    if (!monthRegex.test(month)) {
+      return res.status(400).json({ 
+        error: 'Invalid month format',
+        format: 'YYYY-MM (e.g., 2025-06)',
+        received: month
+      });
+    }
+    
+    // Additional validation: ensure it's a valid month (01-12)
+    const [year, monthNum] = month.split('-');
+    const monthNumber = parseInt(monthNum, 10);
+    if (monthNumber < 1 || monthNumber > 12) {
+      return res.status(400).json({ 
+        error: 'Invalid month number',
+        message: 'Month must be between 01 and 12',
+        received: month
+      });
+    }
+    
+    // Fetch day marks for the user and month
+    const dayMarks = await storage.getDayMarksForMonth(req.session.userId!, month);
+    
+    // Format response data
+    const markedDates = dayMarks.map(mark => mark.date);
+    
+    res.json({
+      month: month,
+      markedDates: markedDates,
+      count: markedDates.length
+    });
+    
+  } catch (error) {
+    console.error('Calendar fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.post('/api/days/:date/no-drink', (req, res) => {
