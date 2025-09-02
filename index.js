@@ -298,6 +298,83 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
   }
 });
 
+// Day marking endpoint (Phase 2B - gated behind feature flag and authentication)
+app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
+  try {
+    const { date } = req.params;
+    
+    // Validate date parameter format (YYYY-MM-DD)
+    if (!date || typeof date !== 'string') {
+      return res.status(400).json({ 
+        error: 'Date parameter is required',
+        format: 'YYYY-MM-DD (e.g., 2025-06-15)'
+      });
+    }
+    
+    // Validate date format with regex
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({ 
+        error: 'Invalid date format',
+        format: 'YYYY-MM-DD (e.g., 2025-06-15)',
+        received: date
+      });
+    }
+    
+    // Additional validation: ensure it's a valid date
+    const parsedDate = new Date(date + 'T00:00:00Z');
+    if (isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
+      return res.status(400).json({ 
+        error: 'Invalid date',
+        message: 'Please provide a valid calendar date',
+        received: date
+      });
+    }
+    
+    // Validate date is not before 2025-01-01 (business rule)
+    if (date < '2025-01-01') {
+      return res.status(400).json({ 
+        error: 'Date too early',
+        message: 'Cannot mark dates before 2025-01-01',
+        received: date
+      });
+    }
+    
+    // Validate date is not in the future
+    const today = new Date().toISOString().slice(0, 10);
+    if (date > today) {
+      return res.status(400).json({ 
+        error: 'Future date not allowed',
+        message: 'Cannot mark dates in the future',
+        received: date,
+        today: today
+      });
+    }
+    
+    // Create day mark entry
+    const dayMark = {
+      userId: req.session.userId,
+      date: date,
+      value: true // Phase 2B only handles "no drink" = true
+    };
+    
+    const createdMark = await storage.markDay(dayMark);
+    
+    res.status(201).json({
+      message: 'Day marked successfully',
+      data: {
+        date: createdMark.date,
+        value: createdMark.value,
+        updatedAt: createdMark.updatedAt
+      }
+    });
+    
+  } catch (error) {
+    console.error('Day marking error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Error handling
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught exception:', err);
