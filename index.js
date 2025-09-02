@@ -298,10 +298,17 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
   }
 });
 
-// Day marking endpoint (Phase 2B - gated behind feature flag and authentication)
+// Day marking endpoint (Phase 2C - timezone-aware validation)
 app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
   try {
     const { date } = req.params;
+    
+    // Get user data including timezone
+    const user = await storage.getUserById(req.session.userId);
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Invalid session' });
+    }
     
     // Validate date parameter format (YYYY-MM-DD)
     if (!date || typeof date !== 'string') {
@@ -331,23 +338,34 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
       });
     }
     
-    // Validate date is not before 2025-01-01 (business rule)
+    // Calculate "today" in user's timezone (Phase 2C)
+    const now = new Date();
+    const todayInUserTimezone = new Date(now.toLocaleString("en-CA", {
+      timeZone: user.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }));
+    const userToday = todayInUserTimezone.toISOString().slice(0, 10);
+    
+    // Validate date is not before 2025-01-01 in user's timezone
     if (date < '2025-01-01') {
       return res.status(400).json({ 
         error: 'Date too early',
         message: 'Cannot mark dates before 2025-01-01',
-        received: date
+        received: date,
+        userTimezone: user.timezone
       });
     }
     
-    // Validate date is not in the future
-    const today = new Date().toISOString().slice(0, 10);
-    if (date > today) {
+    // Validate date is not in the future (based on user's timezone)
+    if (date > userToday) {
       return res.status(400).json({ 
         error: 'Future date not allowed',
         message: 'Cannot mark dates in the future',
         received: date,
-        today: today
+        todayInYourTimezone: userToday,
+        yourTimezone: user.timezone
       });
     }
     
@@ -355,7 +373,7 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     const dayMark = {
       userId: req.session.userId,
       date: date,
-      value: true // Phase 2B only handles "no drink" = true
+      value: true // Phase 2C only handles "no drink" = true
     };
     
     const createdMark = await storage.markDay(dayMark);
@@ -366,6 +384,10 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
         date: createdMark.date,
         value: createdMark.value,
         updatedAt: createdMark.updatedAt
+      },
+      timezone: {
+        yourTimezone: user.timezone,
+        todayInYourTimezone: userToday
       }
     });
     
