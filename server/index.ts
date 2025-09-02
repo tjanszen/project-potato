@@ -77,6 +77,17 @@ app.post('/api/admin/toggle-flag/:flagName', (req, res) => {
   });
 });
 
+// GET version of toggle for easier browser testing
+app.get('/api/admin/toggle-flag/:flagName', (req, res) => {
+  const { flagName } = req.params;
+  const newState = featureFlagService.toggleFlag(flagName);
+  res.json({ 
+    flag: flagName, 
+    enabled: newState,
+    message: `Feature flag ${flagName} is now ${newState ? 'enabled' : 'disabled'}`
+  });
+});
+
 // Feature flag gating middleware
 const requireFeatureFlag = (flagName: string) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
