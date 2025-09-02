@@ -1,0 +1,152 @@
+.calendar-grid {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.nav-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover:not(.disabled) {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.nav-btn.disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.month-year {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 10px;
+}
+
+.day-label {
+  text-align: center;
+  font-weight: 600;
+  padding: 10px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.calendar-dates {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.date-cell {
+  background: white;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.date-cell.valid-date {
+  cursor: pointer;
+}
+
+.date-cell.valid-date:hover {
+  background: #f8f9fa;
+}
+
+.date-cell.empty-date {
+  background: #fafafa;
+}
+
+.date-number {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .calendar-grid {
+    padding: 15px;
+  }
+
+  .month-year {
+    font-size: 20px;
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .date-cell {
+    min-height: 50px;
+  }
+
+  .date-number {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid {
+    padding: 10px;
+  }
+
+  .month-year {
+    font-size: 18px;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .date-cell {
+    min-height: 45px;
+  }
+
+  .day-label {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+}

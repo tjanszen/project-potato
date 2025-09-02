@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './CalendarGrid.css'
 
 interface CalendarGridProps {
   className?: string
@@ -69,15 +70,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
   const calendarDates = getCalendarDates(displayMonth, displayYear)
 
   return (
-    <div className={`max-w-4xl mx-auto p-5 bg-white rounded-xl shadow-lg ${className}`}>
+    <div className={`calendar-grid ${className}`}>
       {/* Month Header with Navigation */}
-      <div className="flex justify-between items-center mb-5 px-3">
+      <div className="calendar-header">
         <button 
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-200 ${
-            isPrevDisabled 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60' 
-              : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 cursor-pointer'
-          }`}
+          className={`nav-btn ${isPrevDisabled ? 'disabled' : ''}`}
           onClick={goToPreviousMonth}
           disabled={isPrevDisabled}
           data-testid="button-prev-month"
@@ -85,16 +82,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
           ‹
         </button>
         
-        <h2 className="text-2xl font-semibold text-gray-800 m-0" data-testid="text-current-month">
+        <h2 className="month-year" data-testid="text-current-month">
           {monthNames[displayMonth]} {displayYear}
         </h2>
         
         <button 
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-200 ${
-            isNextDisabled 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60' 
-              : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 cursor-pointer'
-          }`}
+          className={`nav-btn ${isNextDisabled ? 'disabled' : ''}`}
           onClick={goToNextMonth}
           disabled={isNextDisabled}
           data-testid="button-next-month"
@@ -104,32 +97,29 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '' }) => {
       </div>
 
       {/* Day Labels Row */}
-      <div className="grid grid-cols-7 gap-px mb-3">
+      <div className="day-labels">
         {dayLabels.map(day => (
-          <div key={day} className="text-center font-semibold py-3 text-gray-600 text-sm">
+          <div key={day} className="day-label">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid - 6 rows x 7 columns */}
-      <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
+      <div className="calendar-dates">
         {calendarDates.map((date, index) => (
           <div
             key={index}
-            className={`bg-white min-h-[60px] flex items-center justify-center relative transition-colors duration-200 ${
-              date 
-                ? 'cursor-pointer hover:bg-gray-50' 
-                : 'bg-gray-50'
-            }`}
+            className={`date-cell ${date ? 'valid-date' : 'empty-date'}`}
             data-testid={date ? `cell-date-${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : 'cell-empty'}
           >
             {date && (
-              <span className="text-base font-medium text-gray-800">{date}</span>
+              <span className="date-number">{date}</span>
             )}
           </div>
         ))}
       </div>
+
     </div>
   )
 }
