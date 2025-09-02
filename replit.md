@@ -2,12 +2,12 @@
 
 This is a simple habit tracking web application focused on allowing users to mark calendar days as "No Drink". The application features a minimal dashboard with a calendar interface where users can click on days to mark them as alcohol-free. The project is designed with phase-gated development behind feature flags, starting with core functionality and maintaining flexibility for future enhancements like streak tracking and badges.
 
-**Current Status:** Phase 1 (Authentication System) - COMPLETE
-**Next Phase:** Phase 2A (Calendar Retrieval API) - Ready to begin
+**Current Status:** Phase 2 (Calendar API Backend) - COMPLETE  
+**Next Phase:** Phase 3 (Frontend Calendar Interface) - Ready to begin
 
 # Recent Changes
 
-## 2025-09-02 - Phase 1D Authentication Complete + Phase 2 Planning
+## 2025-09-02 - Phase 2 (Calendar API Backend) Complete
 - ✅ Phase 1D (User Profile & Integration) completed with `/api/me` endpoint
 - ✅ Authentication middleware (`requireAuthentication`) protecting profile routes
 - ✅ Complete auth flow tested: signup → login → profile access working
@@ -17,6 +17,10 @@ This is a simple habit tracking web application focused on allowing users to mar
 - ✅ Phase 2 restructured into focused sub-phases (2A: Calendar API, 2B: Day Marking, 2C: Timezone Validation, 2D: Idempotency, 2E: Event Logging)
 - ✅ Fast follow documentation: 6 authentication enhancements identified for future development
 - ✅ Server Cleanup & Git Hygiene playbook added to prevent future port conflicts
+- ✅ **Phase 2C (Timezone-Aware Validation)**: Implemented user timezone retrieval and timezone-aware "today" calculations
+- ✅ **Phase 2D (Idempotency & Constraints)**: Verified database constraints and ON CONFLICT logic prevent duplicate day marks
+- ✅ **Phase 2E (Event Logging)**: Complete audit trail system with `/api/events` endpoint for all marking attempts
+- ✅ **Calendar API Backend**: Full day marking system with timezone awareness, idempotency, and comprehensive event logging
 
 ## 2025-09-01 - Phase 1B Authentication System Complete
 - ✅ User signup functionality with email/password/timezone validation
