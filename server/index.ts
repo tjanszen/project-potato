@@ -209,8 +209,5 @@ app.post('/api/days/:date/no-drink', (req, res) => {
   res.json({ message: 'Day marking endpoint - Phase 2' });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-  console.log(`Feature flag ff.potato.no_drink_v1: ${featureFlagService.isEnabled('ff.potato.no_drink_v1')}`);
-});
+// Export the app for use as a module
+export default app;

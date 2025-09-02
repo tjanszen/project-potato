@@ -31,7 +31,5 @@ app.get('/api/feature-flags', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export the app for use as a module
+module.exports = app;
