@@ -7,9 +7,15 @@ const FeatureFlagToggle = () => {
   const checkFlagStatus = async () => {
     try {
       const response = await fetch('/api/feature-flags/ff.potato.no_drink_v1')
+      console.log('Check flag response status:', response.status)
+      
       if (response.ok) {
         const flag = await response.json()
+        console.log('Flag check result:', flag)
         setFlagStatus(flag.enabled)
+      } else {
+        const errorText = await response.text()
+        console.error('Flag check failed with status:', response.status, 'Error:', errorText)
       }
     } catch (error) {
       console.error('Failed to check feature flag:', error)
@@ -22,9 +28,16 @@ const FeatureFlagToggle = () => {
       const response = await fetch('/api/admin/toggle-flag/ff.potato.no_drink_v1', {
         method: 'POST'
       })
+      
+      console.log('Toggle response status:', response.status)
+      
       if (response.ok) {
         const result = await response.json()
+        console.log('Toggle result:', result)
         setFlagStatus(result.enabled)
+      } else {
+        const errorText = await response.text()
+        console.error('Toggle failed with status:', response.status, 'Error:', errorText)
       }
     } catch (error) {
       console.error('Failed to toggle feature flag:', error)
