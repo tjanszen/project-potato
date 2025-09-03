@@ -26,6 +26,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [markedDates, setMarkedDates] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isUserLoading, setIsUserLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userTimezone, setUserTimezone] = useState<string>('America/New_York') // Default, will be updated
 
@@ -41,6 +42,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   // Get user profile and timezone
   useEffect(() => {
     const fetchUserProfile = async () => {
+      setIsUserLoading(true)
       try {
         const response = await apiClient.getProfile()
         if (!response.error && (response as any).user?.timezone) {
@@ -48,6 +50,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         }
       } catch (error) {
         // Use default timezone if profile fetch fails
+      } finally {
+        setIsUserLoading(false)
       }
     }
     fetchUserProfile()
@@ -193,9 +197,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         ))}
       </div>
 
-      {/* Loading indicator */}
+      {/* Loading indicators */}
+      {isUserLoading && (
+        <div className="loading-indicator" data-testid="loading-user-profile">
+          <span style={{ marginRight: '8px' }}>⏳</span>
+          Loading user profile...
+        </div>
+      )}
+      
       {isLoading && (
         <div className="loading-indicator" data-testid="loading-calendar">
+          <span style={{ marginRight: '8px' }}>📅</span>
           Loading calendar data...
         </div>
       )}

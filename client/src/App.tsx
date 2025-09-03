@@ -2,6 +2,7 @@ import { Router } from 'wouter'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
 import { AppRoutes } from './AppRoutes'
 
 // Create a client for React Query
@@ -18,16 +19,18 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div style={{ 
-              minHeight: '100vh',
-              fontFamily: 'Arial, sans-serif'
-            }}>
-              <AppRoutes />
-            </div>
-          </Router>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Router>
+              <div style={{ 
+                minHeight: '100vh',
+                fontFamily: 'Arial, sans-serif'
+              }}>
+                <AppRoutes />
+              </div>
+            </Router>
+          </AuthProvider>
+        </ToastProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   )

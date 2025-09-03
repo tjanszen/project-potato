@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../lib/api'
+import { useToast } from '../contexts/ToastContext'
 import './DayDrawer.css'
 
 interface DayDrawerProps {
@@ -11,9 +12,23 @@ interface DayDrawerProps {
   onOptimisticUnmark?: (date: string) => void // For rollback on failure
 }
 
+interface DayMarkResponse {
+  message: string
+  data: {
+    date: string
+    value: boolean
+    updatedAt: string
+  }
+  timezone?: {
+    yourTimezone: string
+    todayInYourTimezone: string
+  }
+}
+
 const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked, onOptimisticMark, onOptimisticUnmark }) => {
   const [isMarking, setIsMarking] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const { showSuccess, showError } = useToast()
 
   // Format date for display (e.g., "Monday, September 2, 2025")
   const formatSelectedDate = (dateString: string) => {
@@ -26,10 +41,10 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     })
   }
 
-  // Clear message when drawer closes
+  // Clear data when drawer closes
   useEffect(() => {
     if (!isOpen) {
-      setMessage(null)
+      setLastUpdated(null)
     }
   }, [isOpen])
 
@@ -38,7 +53,6 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     if (!selectedDate) return
 
     setIsMarking(true)
-    setMessage(null)
 
     // Optimistic update - immediately show visual feedback
     onOptimisticMark?.(selectedDate)
@@ -49,27 +63,34 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
       if (response.error) {
         // Rollback optimistic update on failure
         onOptimisticUnmark?.(selectedDate)
-        setMessage({ 
-          type: 'error', 
-          text: response.error === 'Feature flag disabled' 
-            ? 'Feature is currently disabled. Please enable the feature flag first.' 
-            : `Failed to mark day: ${response.error}`
-        })
+        
+        const errorMessage = response.error === 'Feature flag disabled' 
+          ? 'Feature is currently disabled. Please enable the feature flag first.' 
+          : `Failed to mark day: ${response.error}`
+        
+        showError('Day Marking Failed', errorMessage)
       } else {
-        setMessage({ 
-          type: 'success', 
-          text: `Successfully marked ${formatSelectedDate(selectedDate)} as No Drink!`
-        })
+        // Success case - parse response for timestamp
+        const successResponse = response as DayMarkResponse
+        if (successResponse.data?.updatedAt) {
+          setLastUpdated(successResponse.data.updatedAt)
+        }
+        
+        showSuccess(
+          'Day Marked Successfully!',
+          `${formatSelectedDate(selectedDate)} marked as No Drink`
+        )
+        
         // Trigger calendar refresh - this will clear optimistic updates
         onDayMarked?.()
       }
     } catch (error) {
       // Rollback optimistic update on network error
       onOptimisticUnmark?.(selectedDate)
-      setMessage({ 
-        type: 'error', 
-        text: 'Network error. Please check your connection and try again.'
-      })
+      showError(
+        'Network Error',
+        'Unable to connect to server. Please check your connection and try again.'
+      )
     } finally {
       setIsMarking(false)
     }
@@ -126,10 +147,20 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           </div>
         </div>
 
-        {/* Message Display */}
-        {message && (
-          <div className={`message ${message.type}`}>
-            {message.text}
+        {/* Last Updated Timestamp */}
+        {lastUpdated && (
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: '#6c757d',
+            textAlign: 'center',
+            marginBottom: '16px'
+          }}>
+            <span style={{ marginRight: '8px' }}>⏰</span>
+            Last updated: {new Date(lastUpdated).toLocaleString()}
           </div>
         )}
 

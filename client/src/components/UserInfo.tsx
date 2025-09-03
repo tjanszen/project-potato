@@ -1,7 +1,9 @@
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 export function UserInfo() {
   const { user, logout, isAuthenticated } = useAuth()
+  const { showSuccess, showError } = useToast()
 
   if (!isAuthenticated || !user) {
     return null
@@ -34,7 +36,14 @@ export function UserInfo() {
       </div>
       
       <button
-        onClick={logout}
+        onClick={async () => {
+          try {
+            await logout()
+            showSuccess('Signed Out', 'You have been successfully signed out.')
+          } catch (error) {
+            showError('Logout Failed', 'Unable to sign out. Please try again.')
+          }
+        }}
         data-testid="button-logout"
         style={{
           padding: '6px 12px',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -18,13 +19,13 @@ interface ValidationErrors {
 
 export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
   const { login } = useAuth()
+  const { showSuccess, showError } = useToast()
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   // Client-side validation
   const validateForm = (): boolean => {
@@ -48,10 +49,9 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setMessage(null)
 
     if (!validateForm()) {
-      setMessage({ type: 'error', text: 'Please fix the errors above before submitting' })
+      showError('Validation Error', 'Please fix the errors above before submitting')
       return
     }
 
@@ -60,15 +60,12 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const result = await login(formData.email, formData.password)
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Login successful!' })
+      showSuccess('Login Successful!', 'Welcome back!')
       setFormData({ email: '', password: '' })
       setErrors({})
       onSuccess?.()
     } else {
-      setMessage({ 
-        type: 'error', 
-        text: result.error || 'Login failed' 
-      })
+      showError('Login Failed', result.error || 'Unable to log in. Please check your credentials.')
     }
 
     setIsSubmitting(false)
@@ -158,22 +155,6 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           {isSubmitting ? 'Signing In...' : 'Sign In'}
         </button>
 
-        {message && (
-          <div
-            data-testid={`message-${message.type}`}
-            style={{
-              padding: '12px',
-              backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-              border: `1px solid ${message.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
-              borderRadius: '6px',
-              color: message.type === 'success' ? '#155724' : '#721c24',
-              fontSize: '14px',
-              marginTop: '10px'
-            }}
-          >
-            {message.text}
-          </div>
-        )}
 
         {onSwitchToSignup && (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
