@@ -30,24 +30,11 @@
 **Resolution Date:** 2025-09-01
 
 ### [2025-09-03] Authentication & Server Entry Point Issues
-**Symptoms:** 
-- Logout endpoint not responding
-- Server crash (exit code 7)
-- "Feature not available" blocking auth
-**Investigation:** 
-- Edited server/index.ts instead of runtime index.js
-- Duplicate feature flag middleware applied globally + per-route
-- Duplicate logout routes defined (/api/auth/logout and /api/logout)
-- Feature flag ff.potato.no_drink_v1 defaulted OFF
-**Root Causes:** 
-- Wrong server file edited (index.ts not executed)
-- Middleware and route duplication
-- Feature flag gating misunderstood
-**Resolution:** 
-- Removed duplicate routes and middleware
-- Placed logout after login route in index.js
-- Enabled feature flag with admin toggle
-- Clarified runtime is index.js, not server/index.ts
+**Symptom:** Logout endpoint returning "Cannot POST /api/auth/logout" and server crashes with exit code 7  
+**Root Cause:** Edited server/index.ts instead of runtime index.js, duplicate routes/middleware, feature flag ff.potato.no_drink_v1 defaulted OFF  
+**Fix:** Removed duplicate routes, consolidated logout endpoint in index.js after login route, enabled feature flag via admin toggle  
+**Evidence:** curl tests now return {"message": "Logout successful"}, server starts cleanly, auth flow works end-to-end  
+**Follow-ups:** Updated ADR and playbook to prevent editing wrong server files in future
 
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
