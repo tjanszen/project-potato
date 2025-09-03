@@ -29,12 +29,42 @@
 **Follow-ups:** Phase 0 deployment readiness now validated - ready for Phase 1 development when approved  
 **Resolution Date:** 2025-09-01
 
-### [2025-09-03] Authentication & Server Entry Point Issues
-**Symptom:** Logout endpoint returning "Cannot POST /api/auth/logout" and server crashes with exit code 7  
-**Root Cause:** Edited server/index.ts instead of runtime index.js, duplicate routes/middleware, feature flag ff.potato.no_drink_v1 defaulted OFF  
-**Fix:** Removed duplicate routes, consolidated logout endpoint in index.js after login route, enabled feature flag via admin toggle  
-**Evidence:** curl tests now return {"message": "Logout successful"}, server starts cleanly, auth flow works end-to-end  
-**Follow-ups:** Updated ADR and playbook to prevent editing wrong server files in future
+### [2025-09-03] Authentication & Server Entry Point Issues - RESOLVED ✅
+**Symptom:** Phase 4A authentication implementation failing with multiple issues: logout endpoint returning "Cannot POST /api/auth/logout" 404 errors, server crashes with exit code 7 on startup, and frontend signup returning "Feature not available" message blocking all authentication functionality  
+**Root Cause:** Multiple architectural confusion issues: (1) Added logout routes to `server/index.ts` TypeScript file instead of runtime `index.js` file, (2) Duplicate feature flag middleware applied both globally on `/api/auth` and individually on logout route causing conflicts, (3) Multiple duplicate logout routes defined (`/api/auth/logout` and test `/api/logout`), (4) Feature flag `ff.potato.no_drink_v1` defaulted to OFF state blocking all auth endpoints
+
+**Fix Details:**
+1. **Identified correct runtime entry point:**
+   - Confirmed `package.json` main field points to `index.js`, not `server/index.ts`
+   - All route additions must go in `index.js` for actual execution
+2. **Added logout endpoint to correct file:**
+   ```javascript
+   // Logout endpoint (Phase 4A) - placed right after login
+   app.post('/api/auth/logout', async (req, res) => {
+     // Check authentication manually
+     if (!req.session.userId) {
+       return res.status(401).json({ error: 'Authentication required' });
+     }
+     // Session destroy logic with cookie cleanup
+   });
+   ```
+3. **Removed duplicate middleware and routes:**
+   - Removed individual `requireFeatureFlag('ff.potato.no_drink_v1')` from logout route (already covered by global `/api/auth` middleware)
+   - Deleted duplicate test `/api/logout` route
+   - Cleaned up conflicting route definitions
+4. **Enabled feature flag for testing:**
+   ```bash
+   curl -X POST http://localhost:3000/api/admin/toggle-flag/ff.potato.no_drink_v1
+   ```
+
+**Files Modified:**
+- `index.js` (added logout endpoint after login route, removed duplicates)
+- `docs/agent_memory/decisions.adrs.md` (added ADR for canonical server entry point)
+- `docs/agent_memory/playbooks.md` (added server entry point confusion playbook)
+
+**Evidence:** Server starts cleanly without crashes, curl logout test returns `{"message": "Logout successful"}`, frontend authentication flow works end-to-end with signup/login/logout, feature flag toggle enables all auth endpoints successfully  
+**Follow-ups:** Created ADR "Canonical Server Entry Point" and playbook "Server Entry Point Confusion" to prevent future developers from editing non-runtime files, established `index.js` as single source of truth for backend routes  
+**Resolution Date:** 2025-09-03
 
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
