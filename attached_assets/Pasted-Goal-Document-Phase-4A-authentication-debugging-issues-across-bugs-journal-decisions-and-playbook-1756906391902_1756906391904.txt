@@ -1,0 +1,65 @@
+Goal: Document Phase 4A authentication/debugging issues across bugs journal, decisions, and playbooks
+
+Do:
+- Open docs/agent_memory/bugs_journal.md
+- Append a new entry:
+
+### [2025-09-03] Authentication & Server Entry Point Issues
+**Symptoms:** 
+- Logout endpoint not responding
+- Server crash (exit code 7)
+- "Feature not available" blocking auth
+**Investigation:** 
+- Edited server/index.ts instead of runtime index.js
+- Duplicate feature flag middleware applied globally + per-route
+- Duplicate logout routes defined (/api/auth/logout and /api/logout)
+- Feature flag ff.potato.no_drink_v1 defaulted OFF
+**Root Causes:** 
+- Wrong server file edited (index.ts not executed)
+- Middleware and route duplication
+- Feature flag gating misunderstood
+**Resolution:** 
+- Removed duplicate routes and middleware
+- Placed logout after login route in index.js
+- Enabled feature flag with admin toggle
+- Clarified runtime is index.js, not server/index.ts
+
+---
+- Open docs/agent_memory/decisions.adrs.md
+- Append a new ADR:
+
+### ADR: Canonical Server Entry Point
+**Context:** Confusion between TypeScript file (server/index.ts) and runtime file (index.js) led to features being added in the wrong place.  
+**Decision:** Consolidate on index.js as the canonical runtime server entry point.  
+**Status:** Accepted.  
+**Consequences:**  
+- Future features must be added to index.js  
+- server/index.ts should be treated as legacy/development only until tooling is unified  
+- Reduces confusion and prevents code being added in non-executed files  
+
+---
+- Open docs/agent_memory/playbooks.md
+- Append a new entry:
+
+### Playbook: Server Entry Point Confusion
+**Purpose:** Prevent wasted effort from editing non-runtime files.  
+
+**Rules:**  
+- Only edit index.js for backend routes and middleware.  
+- Ignore server/index.ts unless we migrate to full TypeScript runtime.  
+- Always confirm package.json "main" points to the correct entry file.  
+
+**Verification Checklist:**  
+- [ ] Added route is reachable via curl or browser after restarting server  
+- [ ] No duplicate routes exist (/api/auth/* vs /api/*)  
+- [ ] Feature flag ff.potato.no_drink_v1 enabled for testing if routes are gated  
+
+**Why:**  
+- Prevents “Cannot POST /api/auth/logout” errors when editing wrong file  
+- Avoids duplicate middleware conflicts and server crashes  
+- Ensures clarity on which file actually executes in Replit  
+
+Proof:
+- bugs_journal.md ends with entry dated 2025-09-03
+- decisions.adrs.md ends with new ADR titled "Canonical Server Entry Point"
+- playbooks.md ends with new entry "Server Entry Point Confusion"

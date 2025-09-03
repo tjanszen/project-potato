@@ -83,3 +83,21 @@ Add these to `.gitignore` and remove if committed accidentally:
 - Eliminates `EADDRINUSE` port conflicts  
 - Reduces repo clutter from compiled code  
 - Keeps architecture clear: one entry point, exportable modules for testing
+
+### Playbook: Server Entry Point Confusion
+**Purpose:** Prevent wasted effort from editing non-runtime files.  
+
+**Rules:**  
+- Only edit index.js for backend routes and middleware.  
+- Ignore server/index.ts unless we migrate to full TypeScript runtime.  
+- Always confirm package.json "main" points to the correct entry file.  
+
+**Verification Checklist:**  
+- [ ] Added route is reachable via curl or browser after restarting server  
+- [ ] No duplicate routes exist (/api/auth/* vs /api/*)  
+- [ ] Feature flag ff.potato.no_drink_v1 enabled for testing if routes are gated  
+
+**Why:**  
+- Prevents "Cannot POST /api/auth/logout" errors when editing wrong file  
+- Avoids duplicate middleware conflicts and server crashes  
+- Ensures clarity on which file actually executes in Replit

@@ -29,6 +29,26 @@
 **Follow-ups:** Phase 0 deployment readiness now validated - ready for Phase 1 development when approved  
 **Resolution Date:** 2025-09-01
 
+### [2025-09-03] Authentication & Server Entry Point Issues
+**Symptoms:** 
+- Logout endpoint not responding
+- Server crash (exit code 7)
+- "Feature not available" blocking auth
+**Investigation:** 
+- Edited server/index.ts instead of runtime index.js
+- Duplicate feature flag middleware applied globally + per-route
+- Duplicate logout routes defined (/api/auth/logout and /api/logout)
+- Feature flag ff.potato.no_drink_v1 defaulted OFF
+**Root Causes:** 
+- Wrong server file edited (index.ts not executed)
+- Middleware and route duplication
+- Feature flag gating misunderstood
+**Resolution:** 
+- Removed duplicate routes and middleware
+- Placed logout after login route in index.js
+- Enabled feature flag with admin toggle
+- Clarified runtime is index.js, not server/index.ts
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  

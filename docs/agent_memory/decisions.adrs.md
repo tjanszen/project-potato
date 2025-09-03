@@ -28,3 +28,12 @@
 **Status:** Accepted  
 **Consequences:** Complex date logic but correct user experience across timezones  
 **Links:** users table timezone field, future validation logic
+
+### ADR: Canonical Server Entry Point
+**Context:** Confusion between TypeScript file (server/index.ts) and runtime file (index.js) led to features being added in the wrong place.  
+**Decision:** Consolidate on index.js as the canonical runtime server entry point.  
+**Status:** Accepted.  
+**Consequences:**  
+- Future features must be added to index.js  
+- server/index.ts should be treated as legacy/development only until tooling is unified  
+- Reduces confusion and prevents code being added in non-executed files
