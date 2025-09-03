@@ -20,6 +20,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [markedDates, setMarkedDates] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [userTimezone, setUserTimezone] = useState<string>('America/New_York') // Default, will be updated
 
   // Month names for header display
@@ -50,17 +51,30 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
   useEffect(() => {
     const fetchCalendarData = async () => {
       setIsLoading(true)
+      setError(null) // Clear previous errors
       const monthString = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}`
-      const response = await apiClient.getCalendar(monthString)
       
-      if (response.error) {
-        console.error('Failed to fetch calendar data:', response.error)
-        setMarkedDates([])
-      } else if ((response as any).markedDates) {
-        setMarkedDates((response as any).markedDates)
-      } else {
+      try {
+        const response = await apiClient.getCalendar(monthString)
+        
+        if (response.error) {
+          const errorMessage = response.error === 'Authentication required' 
+            ? 'Please log in to view your calendar data.'
+            : `Failed to load calendar: ${response.error}`
+          setError(errorMessage)
+          setMarkedDates([])
+        } else if ((response as any).markedDates) {
+          setMarkedDates((response as any).markedDates)
+          setError(null) // Clear error on success
+        } else {
+          setMarkedDates([])
+          setError(null)
+        }
+      } catch (error) {
+        setError('Unable to connect to server. Please check your connection and try again.')
         setMarkedDates([])
       }
+      
       setIsLoading(false)
     }
     
@@ -176,6 +190,26 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
       {isLoading && (
         <div className="loading-indicator" data-testid="loading-calendar">
           Loading calendar data...
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <div 
+          className="error-message" 
+          data-testid="error-calendar"
+          style={{
+            padding: '12px',
+            backgroundColor: '#f8d7da',
+            border: '1px solid #f5c6cb',
+            borderRadius: '6px',
+            color: '#721c24',
+            fontSize: '14px',
+            margin: '10px 0',
+            textAlign: 'center'
+          }}
+        >
+          {error}
         </div>
       )}
 
