@@ -7,9 +7,11 @@ interface DayDrawerProps {
   isOpen: boolean
   onClose: () => void
   onDayMarked?: () => void // Callback to refresh calendar after marking
+  onOptimisticMark?: (date: string) => void // For immediate visual feedback
+  onOptimisticUnmark?: (date: string) => void // For rollback on failure
 }
 
-const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked }) => {
+const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked, onOptimisticMark, onOptimisticUnmark }) => {
   const [isMarking, setIsMarking] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -31,17 +33,22 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     }
   }, [isOpen])
 
-  // Handle "No Drink" button click
+  // Handle "No Drink" button click with optimistic updates
   const handleMarkNoDrink = async () => {
     if (!selectedDate) return
 
     setIsMarking(true)
     setMessage(null)
 
+    // Optimistic update - immediately show visual feedback
+    onOptimisticMark?.(selectedDate)
+
     try {
       const response = await apiClient.markDay(selectedDate)
       
       if (response.error) {
+        // Rollback optimistic update on failure
+        onOptimisticUnmark?.(selectedDate)
         setMessage({ 
           type: 'error', 
           text: response.error === 'Feature flag disabled' 
@@ -53,10 +60,12 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           type: 'success', 
           text: `Successfully marked ${formatSelectedDate(selectedDate)} as No Drink!`
         })
-        // Trigger calendar refresh
+        // Trigger calendar refresh - this will clear optimistic updates
         onDayMarked?.()
       }
     } catch (error) {
+      // Rollback optimistic update on network error
+      onOptimisticUnmark?.(selectedDate)
       setMessage({ 
         type: 'error', 
         text: 'Network error. Please check your connection and try again.'
@@ -131,8 +140,23 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
             onClick={handleMarkNoDrink}
             disabled={isMarking}
             data-testid="button-mark-no-drink"
+            style={{
+              opacity: isMarking ? 0.7 : 1,
+              cursor: isMarking ? 'not-allowed' : 'pointer',
+              transition: 'opacity 0.2s ease'
+            }}
           >
-            {isMarking ? 'Marking...' : '✓ Mark as No Drink'}
+            {isMarking ? (
+              <>
+                <span style={{ marginRight: '8px' }}>⏳</span>
+                Marking Day...
+              </>
+            ) : (
+              <>
+                <span style={{ marginRight: '8px' }}>✓</span>
+                Mark as No Drink
+              </>
+            )}
           </button>
         </div>
 

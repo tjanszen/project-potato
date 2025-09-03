@@ -7,9 +7,15 @@ interface CalendarGridProps {
   className?: string
   onDateSelect?: (date: string) => void
   refreshTrigger?: number // For forcing calendar refresh after marking
+  optimisticMarkedDates?: string[] // For immediate visual feedback
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelect, refreshTrigger }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ 
+  className = '', 
+  onDateSelect, 
+  refreshTrigger,
+  optimisticMarkedDates = []
+}) => {
   // Current date state - initialize to current month/year but restricted to 2025
   const now = new Date()
   const currentYear = 2025 // Force to 2025 for this app
@@ -80,6 +86,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
     
     fetchCalendarData()
   }, [displayMonth, displayYear, refreshTrigger])
+
 
   // Calculate if a date should be disabled (future dates except today in user timezone)
   const isDateDisabled = (date: number, month: number, year: number): boolean => {
@@ -218,7 +225,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
         {calendarDates.map((date, index) => {
           const dateString = date ? `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : null
           const isSelected = dateString === selectedDate
-          const isMarked = dateString ? markedDates.includes(dateString) : false
+          // Combine real marked dates with optimistic marked dates
+          const allMarkedDates = [...markedDates, ...optimisticMarkedDates]
+          const isMarked = dateString ? allMarkedDates.includes(dateString) : false
           const isDisabled = date ? isDateDisabled(date, displayMonth, displayYear) : false
           
           return (

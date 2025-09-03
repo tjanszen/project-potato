@@ -8,6 +8,7 @@ export function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [optimisticMarkedDates, setOptimisticMarkedDates] = useState<string[]>([])
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
@@ -22,6 +23,26 @@ export function CalendarPage() {
   const handleDayMarked = () => {
     // Trigger calendar refresh after successful day marking
     setRefreshTrigger(prev => prev + 1)
+  }
+
+  // Optimistic marking functions for immediate visual feedback
+  const handleOptimisticMark = (date: string) => {
+    setOptimisticMarkedDates(prev => {
+      if (!prev.includes(date)) {
+        return [...prev, date]
+      }
+      return prev
+    })
+  }
+
+  const handleOptimisticUnmark = (date: string) => {
+    setOptimisticMarkedDates(prev => prev.filter(d => d !== date))
+  }
+
+  // Enhanced day marked handler that clears optimistic updates
+  const handleDayMarkedSuccess = () => {
+    setOptimisticMarkedDates([]) // Clear optimistic updates on success
+    handleDayMarked() // Trigger refresh
   }
 
   return (
@@ -59,6 +80,7 @@ export function CalendarPage() {
       <CalendarGrid 
         onDateSelect={handleDateSelect}
         refreshTrigger={refreshTrigger}
+        optimisticMarkedDates={optimisticMarkedDates}
       />
       
       {/* Day Drawer Component */}
@@ -66,7 +88,9 @@ export function CalendarPage() {
         selectedDate={selectedDate}
         isOpen={isDrawerOpen}
         onClose={handleDrawerClose}
-        onDayMarked={handleDayMarked}
+        onDayMarked={handleDayMarkedSuccess}
+        onOptimisticMark={handleOptimisticMark}
+        onOptimisticUnmark={handleOptimisticUnmark}
       />
     </div>
   )
