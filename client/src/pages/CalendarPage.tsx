@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'wouter'
 import CalendarGrid from '../components/CalendarGrid'
 import DayDrawer from '../components/DayDrawer'
+import { UserInfo } from '../components/UserInfo'
 
 export function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -39,7 +40,8 @@ export function CalendarPage() {
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#333' }}>
           🥔 Potato No Drink Tracker
         </h1>
-        <nav>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <UserInfo />
           <Link 
             href="/dev" 
             style={{
