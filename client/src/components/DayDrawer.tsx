@@ -26,9 +26,11 @@ interface DayMarkResponse {
 }
 
 const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked, onOptimisticMark, onOptimisticUnmark }) => {
+  console.log('🟡 DayDrawer rendering, isOpen:', isOpen, 'selectedDate:', selectedDate)
   const [isMarking, setIsMarking] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const { showSuccess, showError } = useToast()
+  console.log('🟡 DayDrawer toast hooks:', { showSuccess: !!showSuccess, showError: !!showError })
 
   // Format date for display (e.g., "Monday, September 2, 2025")
   const formatSelectedDate = (dateString: string) => {
@@ -76,6 +78,7 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           setLastUpdated(successResponse.data.updatedAt)
         }
         
+        console.log('🟡 Day marking success - calling showSuccess')
         showSuccess(
           'Day Marked Successfully!',
           `${formatSelectedDate(selectedDate)} marked as No Drink`
