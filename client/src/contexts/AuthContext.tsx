@@ -94,11 +94,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  // Logout function
-  const logout = () => {
-    setUser(null)
-    // Note: Backend doesn't have logout endpoint yet, just clear client state
-    // In a full implementation, we'd call an API logout endpoint
+  // Logout function with proper session destruction
+  const logout = async () => {
+    try {
+      await apiClient.logout()
+    } catch (error) {
+      // Even if logout API fails, clear client state
+      console.error('Logout API error:', error)
+    } finally {
+      // Always clear client state
+      setUser(null)
+    }
   }
 
   // Check authentication on app load

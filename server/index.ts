@@ -236,6 +236,25 @@ app.get('/api/me', requireAuthentication, async (req, res) => {
   }
 });
 
+// Logout endpoint (Phase 4A) - Properly destroy session
+app.post('/api/auth/logout', requireAuthentication, async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      // Clear the session cookie
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logout successful' });
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Calendar endpoint (Phase 2A)
 app.get('/api/calendar', requireAuthentication, async (req, res) => {
   try {

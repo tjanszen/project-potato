@@ -68,6 +68,12 @@ export class ApiClient {
     return this.request('/api/me')
   }
 
+  async logout() {
+    return this.request('/api/auth/logout', {
+      method: 'POST',
+    })
+  }
+
   // Feature flag endpoints
   async getFeatureFlag(flag: string) {
     return this.request(`/api/feature-flags/${flag}`)

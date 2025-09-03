@@ -238,6 +238,29 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Logout endpoint (Phase 4A) - placed right after login
+app.post('/api/auth/logout', async (req, res) => {
+  // Check authentication manually
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      // Clear the session cookie
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logout successful' });
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Authentication middleware
 const requireAuthentication = (req, res, next) => {
   if (!req.session.userId) {
@@ -245,6 +268,7 @@ const requireAuthentication = (req, res, next) => {
   }
   next();
 };
+
 
 // User profile endpoint (gated behind feature flag and authentication)
 app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
