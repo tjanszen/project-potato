@@ -66,6 +66,42 @@
 **Follow-ups:** Created ADR "Canonical Server Entry Point" and playbook "Server Entry Point Confusion" to prevent future developers from editing non-runtime files, established `index.js` as single source of truth for backend routes  
 **Resolution Date:** 2025-09-03
 
+### [2025-09-03] Calendar Error Handling Enhancement - RESOLVED ✅
+**Symptom:** Calendar API errors only logged to console.error, providing no user feedback when data loading failed, authentication expired, or network issues occurred during month navigation  
+**Root Cause:** Missing error state management in CalendarGrid component - API errors were caught but only logged, not displayed to users  
+
+**Fix Details:**
+1. **Added error state management:**
+   ```typescript
+   const [error, setError] = useState<string | null>(null)
+   ```
+2. **Enhanced API error handling with user-friendly messages:**
+   ```typescript
+   if (response.error) {
+     const errorMessage = response.error === 'Authentication required' 
+       ? 'Please log in to view your calendar data.'
+       : `Failed to load calendar: ${response.error}`
+     setError(errorMessage)
+   }
+   ```
+3. **Added network error handling:**
+   ```typescript
+   } catch (error) {
+     setError('Unable to connect to server. Please check your connection and try again.')
+   }
+   ```
+4. **Implemented error UI display:**
+   ```jsx
+   {error && <div className="error-message" data-testid="error-calendar">{error}</div>}
+   ```
+
+**Files Modified:**
+- `client/src/components/CalendarGrid.tsx` (added error state, enhanced error handling, error display UI)
+
+**Evidence:** Calendar now displays user-friendly error messages for authentication failures, network issues, and server errors instead of silent failures with console-only logging  
+**Follow-ups:** No further action needed - error handling now provides proper user experience  
+**Resolution Date:** 2025-09-03
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  

@@ -2,10 +2,21 @@
 
 This is a simple habit tracking web application focused on allowing users to mark calendar days as "No Drink". The application features a minimal dashboard with a calendar interface where users can click on days to mark them as alcohol-free. The project is designed with phase-gated development behind feature flags, starting with core functionality and maintaining flexibility for future enhancements like streak tracking and badges.
 
-**Current Status:** Phase 3D (DayDrawer & "No Drink" Button) - COMPLETE  
-**Next Phase:** Phase 4 (Visual Day Marking State) - Ready to begin
+**Current Status:** Phase 4B (Calendar API Integration) - COMPLETE  
+**Next Phase:** Ready for user acceptance testing and next phase selection
 
 # Recent Changes
+
+## 2025-09-03 - Phase 4B (Calendar API Integration) Complete
+- ✅ **API Integration**: Calendar loads marked days from backend API on page load
+- ✅ **Month Navigation**: Navigation triggers automatic API calls with proper month parameters  
+- ✅ **Loading States**: Visible loading indicators during data fetching operations
+- ✅ **Error Handling**: User-friendly error messages for authentication, network, and server issues
+- ✅ **Visual Indicators**: Marked days display with proper CSS styling and visual dots
+- ✅ **Data Verification**: Confirmed API returns correct marked dates per month with real database data
+- ✅ **Feature Flag Gating**: All functionality properly protected behind ff.potato.no_drink_v1 flag
+- ✅ **Network Tab Evidence**: Verified month navigation triggers distinct API calls to /api/calendar
+- ✅ **Multi-User Support**: Calendar correctly shows user-specific marked days from database
 
 ## 2025-09-02 - Phase 3D (DayDrawer & "No Drink" Button) Complete
 - ✅ **Authentication Session Fix**: Resolved CORS and session handling issues blocking day marking
