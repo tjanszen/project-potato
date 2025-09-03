@@ -29,11 +29,9 @@
 **Consequences:** Complex date logic but correct user experience across timezones  
 **Links:** users table timezone field, future validation logic
 
-### ADR: Canonical Server Entry Point
-**Context:** Confusion between TypeScript file (server/index.ts) and runtime file (index.js) led to features being added in the wrong place.  
-**Decision:** Consolidate on index.js as the canonical runtime server entry point.  
-**Status:** Accepted.  
-**Consequences:**  
-- Future features must be added to index.js  
-- server/index.ts should be treated as legacy/development only until tooling is unified  
-- Reduces confusion and prevents code being added in non-executed files
+## ADR-2025-09-03 Canonical Server Entry Point
+**Context:** Architectural confusion between TypeScript development file (server/index.ts) and JavaScript runtime file (index.js) caused authentication routes to be added in non-executed files, resulting in 404 errors and server crashes during Phase 4A implementation  
+**Decision:** Consolidate on index.js as the canonical runtime server entry point for all backend routes and middleware  
+**Status:** Accepted  
+**Consequences:** Eliminates route registration failures and server crashes but creates temporary TypeScript/JavaScript split until build tooling is unified  
+**Links:** bugs_journal.md [2025-09-03 Authentication & Server Entry Point Issues], playbooks.md "Server Entry Point Confusion", package.json main field
