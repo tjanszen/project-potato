@@ -11,7 +11,6 @@ export function CalendarPage() {
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
     setIsDrawerOpen(true) // Auto-open drawer when date is selected
-    console.log('Date selected:', date) // Debug logging for testing
   }
 
   const handleDrawerClose = () => {
@@ -53,19 +52,6 @@ export function CalendarPage() {
         </nav>
       </header>
       
-      {/* Selected Date Display for Testing */}
-      {selectedDate && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '12px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #c3e6cb'
-        }}>
-          <strong>Selected Date:</strong> {selectedDate}
-        </div>
-      )}
       
       {/* Calendar Grid Component */}
       <CalendarGrid 
