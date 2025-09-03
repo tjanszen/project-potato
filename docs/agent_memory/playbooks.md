@@ -85,19 +85,33 @@ Add these to `.gitignore` and remove if committed accidentally:
 - Keeps architecture clear: one entry point, exportable modules for testing
 
 ### Playbook: Server Entry Point Confusion
-**Purpose:** Prevent wasted effort from editing non-runtime files.  
+
+**Purpose:**  
+Prevent wasted effort from editing non-runtime files that cause authentication routes to fail with 404 errors, duplicate middleware conflicts leading to server crashes (exit code 7), and confusion about which file actually executes in Replit.
+
+---
 
 **Rules:**  
-- Only edit index.js for backend routes and middleware.  
-- Ignore server/index.ts unless we migrate to full TypeScript runtime.  
-- Always confirm package.json "main" points to the correct entry file.  
+- Only edit **`index.js`** for backend routes and middleware.  
+- **Ignore `server/index.ts`** unless/until we migrate fully to TypeScript runtime.  
+- Always confirm **`package.json "main"`** field points to the intended runtime entry file.  
+- Place new routes **logically** (login → logout flow) to avoid confusion.  
+- **Don't duplicate global middleware** on individual routes.
+
+---
 
 **Verification Checklist:**  
-- [ ] Added route is reachable via curl or browser after restarting server  
+- [ ] Added route is reachable via curl or browser after server restart  
 - [ ] No duplicate routes exist (/api/auth/* vs /api/*)  
-- [ ] Feature flag ff.potato.no_drink_v1 enabled for testing if routes are gated  
+- [ ] Server starts without crashes or exit codes  
+- [ ] Feature flag ff.potato.no_drink_v1 enabled for testing gated endpoints  
+- [ ] package.json "main" points to index.js  
+
+---
 
 **Why:**  
-- Prevents "Cannot POST /api/auth/logout" errors when editing wrong file  
-- Avoids duplicate middleware conflicts and server crashes  
-- Ensures clarity on which file actually executes in Replit
+- Prevents wasted time editing non-runtime files (server/index.ts)  
+- Avoids "Cannot POST" errors when routes aren't picked up  
+- Eliminates duplicate middleware conflicts and exit code 7 crashes  
+- Ensures clarity on which file actually executes in Replit  
+- Reinforces consistency until tooling unifies around TypeScript
