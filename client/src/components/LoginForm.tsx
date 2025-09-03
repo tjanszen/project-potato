@@ -18,10 +18,8 @@ interface ValidationErrors {
 }
 
 export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
-  console.log('🔵 LoginForm rendering')
   const { login } = useAuth()
   const { showSuccess, showError } = useToast()
-  console.log('🔵 Toast hooks loaded:', { showSuccess: !!showSuccess, showError: !!showError })
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
@@ -62,13 +60,11 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const result = await login(formData.email, formData.password)
 
     if (result.success) {
-      console.log('🔵 Login success - calling showSuccess')
       showSuccess('Login Successful!', 'Welcome back!')
       setFormData({ email: '', password: '' })
       setErrors({})
       onSuccess?.()
     } else {
-      console.log('🔵 Login failed - calling showError')
       showError('Login Failed', result.error || 'Unable to log in. Please check your credentials.')
     }
 

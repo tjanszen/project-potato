@@ -6,7 +6,6 @@ interface ToastContainerProps {
 }
 
 const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }) => {
-  console.log('🍞 ToastContainer render - toasts:', toasts.length)
   if (toasts.length === 0) return null
 
   return (
@@ -16,9 +15,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }
         top: '20px',
         right: '20px',
         zIndex: 10000,
-        pointerEvents: 'none',
-        border: '2px solid red', // DEBUG: Make container visible
-        backgroundColor: 'rgba(255, 0, 0, 0.1)' // DEBUG: Add background
+        pointerEvents: 'none'
       }}
     >
       <div style={{ pointerEvents: 'auto' }}>

@@ -42,12 +42,10 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   }, [generateId])
 
   const showSuccess = useCallback((title: string, message?: string) => {
-    console.log('🟢 showSuccess called:', title, message)
     showToast({ type: 'success', title, message })
   }, [showToast])
 
   const showError = useCallback((title: string, message?: string) => {
-    console.log('🔴 showError called:', title, message)  
     showToast({ type: 'error', title, message })
   }, [showToast])
 
