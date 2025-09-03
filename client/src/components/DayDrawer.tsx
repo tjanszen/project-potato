@@ -6,9 +6,10 @@ interface DayDrawerProps {
   selectedDate: string | null
   isOpen: boolean
   onClose: () => void
+  onDayMarked?: () => void // Callback to refresh calendar after marking
 }
 
-const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose }) => {
+const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked }) => {
   const [isMarking, setIsMarking] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -52,6 +53,8 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose }) 
           type: 'success', 
           text: `Successfully marked ${formatSelectedDate(selectedDate)} as No Drink!`
         })
+        // Trigger calendar refresh
+        onDayMarked?.()
       }
     } catch (error) {
       setMessage({ 

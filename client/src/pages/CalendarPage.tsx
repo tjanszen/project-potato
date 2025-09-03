@@ -6,6 +6,7 @@ import DayDrawer from '../components/DayDrawer'
 export function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
@@ -16,6 +17,11 @@ export function CalendarPage() {
   const handleDrawerClose = () => {
     setIsDrawerOpen(false)
     // Keep selectedDate so user can see what they selected, but close drawer
+  }
+
+  const handleDayMarked = () => {
+    // Trigger calendar refresh after successful day marking
+    setRefreshTrigger(prev => prev + 1)
   }
 
   return (
@@ -62,13 +68,17 @@ export function CalendarPage() {
       )}
       
       {/* Calendar Grid Component */}
-      <CalendarGrid onDateSelect={handleDateSelect} />
+      <CalendarGrid 
+        onDateSelect={handleDateSelect}
+        refreshTrigger={refreshTrigger}
+      />
       
       {/* Day Drawer Component */}
       <DayDrawer 
         selectedDate={selectedDate}
         isOpen={isDrawerOpen}
         onClose={handleDrawerClose}
+        onDayMarked={handleDayMarked}
       />
     </div>
   )

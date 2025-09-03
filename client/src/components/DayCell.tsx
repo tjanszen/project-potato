@@ -3,6 +3,8 @@ interface DayCellProps {
   month: number // 0-based (0 = January)
   year: number
   isSelected: boolean
+  isMarked?: boolean // Whether this day is marked as "No Drink"
+  isDisabled?: boolean // Whether this day should be disabled (future dates)
   onSelect: (date: string) => void
   className?: string
 }
@@ -11,13 +13,15 @@ const DayCell: React.FC<DayCellProps> = ({
   date, 
   month, 
   year, 
-  isSelected, 
+  isSelected,
+  isMarked = false,
+  isDisabled = false,
   onSelect,
   className = '' 
 }) => {
-  // Handle click for valid dates only
+  // Handle click for valid dates only (not disabled)
   const handleClick = () => {
-    if (date) {
+    if (date && !isDisabled) {
       // Format date as YYYY-MM-DD
       const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
       onSelect(formattedDate)
@@ -34,8 +38,14 @@ const DayCell: React.FC<DayCellProps> = ({
     
     const classes = [baseClasses, 'valid-date']
     
-    if (isSelected) {
+    if (isDisabled) {
+      classes.push('disabled')
+    } else if (isSelected) {
       classes.push('selected')
+    }
+    
+    if (isMarked) {
+      classes.push('marked')
     }
     
     return classes.join(' ')
@@ -48,7 +58,10 @@ const DayCell: React.FC<DayCellProps> = ({
       data-testid={date ? `cell-date-${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : 'cell-empty'}
     >
       {date && (
-        <span className="date-number">{date}</span>
+        <>
+          <span className="date-number">{date}</span>
+          {isMarked && <div className="marked-indicator" data-testid={`indicator-marked-${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`}></div>}
+        </>
       )}
     </div>
   )

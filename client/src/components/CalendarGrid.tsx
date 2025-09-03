@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './CalendarGrid.css'
 import DayCell from './DayCell'
+import { apiClient } from '../lib/api'
 
 interface CalendarGridProps {
   className?: string
   onDateSelect?: (date: string) => void
+  refreshTrigger?: number // For forcing calendar refresh after marking
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelect }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelect, refreshTrigger }) => {
   // Current date state - initialize to current month/year but restricted to 2025
   const now = new Date()
   const currentYear = 2025 // Force to 2025 for this app
@@ -16,6 +18,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
   const [displayMonth, setDisplayMonth] = useState(currentMonth)
   const [displayYear] = useState(currentYear) // Fixed to 2025
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [markedDates, setMarkedDates] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [userTimezone, setUserTimezone] = useState<string>('America/New_York') // Default, will be updated
 
   // Month names for header display
   const monthNames = [
@@ -25,6 +30,50 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
 
   // Day labels for calendar header
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  // Get user profile and timezone
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const response = await apiClient.getProfile()
+      if (!response.error && (response as any).user?.timezone) {
+        setUserTimezone((response as any).user.timezone)
+      }
+    }
+    fetchUserProfile()
+  }, [])
+
+  // Fetch calendar data when month changes or refresh is triggered
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      setIsLoading(true)
+      const monthString = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}`
+      const response = await apiClient.getCalendar(monthString)
+      
+      if (response.error) {
+        console.error('Failed to fetch calendar data:', response.error)
+        setMarkedDates([])
+      } else if ((response as any).markedDates) {
+        setMarkedDates((response as any).markedDates)
+      } else {
+        setMarkedDates([])
+      }
+      setIsLoading(false)
+    }
+    
+    fetchCalendarData()
+  }, [displayMonth, displayYear, refreshTrigger])
+
+  // Calculate if a date should be disabled (future dates except today in user timezone)
+  const isDateDisabled = (date: number, month: number, year: number): boolean => {
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+    
+    // Get today in user's timezone
+    const today = new Date()
+    const todayString = today.toLocaleDateString('en-CA', { timeZone: userTimezone }) // YYYY-MM-DD format
+    
+    // Disable if date is in the future (after today in user's timezone)
+    return dateString > todayString
+  }
 
   // Calculate calendar grid dates
   const getCalendarDates = (month: number, year: number) => {
@@ -118,11 +167,20 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
         ))}
       </div>
 
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="loading-indicator" data-testid="loading-calendar">
+          Loading calendar data...
+        </div>
+      )}
+
       {/* Calendar Grid - 6 rows x 7 columns */}
       <div className="calendar-dates">
         {calendarDates.map((date, index) => {
           const dateString = date ? `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : null
           const isSelected = dateString === selectedDate
+          const isMarked = dateString ? markedDates.includes(dateString) : false
+          const isDisabled = date ? isDateDisabled(date, displayMonth, displayYear) : false
           
           return (
             <DayCell
@@ -131,6 +189,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
               month={displayMonth}
               year={displayYear}
               isSelected={isSelected}
+              isMarked={isMarked}
+              isDisabled={isDisabled}
               onSelect={handleDateSelect}
             />
           )
