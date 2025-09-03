@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './CalendarGrid.css'
 import DayCell from './DayCell'
 import { apiClient } from '../lib/api'
@@ -92,23 +92,25 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   }, [displayMonth, displayYear, refreshTrigger])
 
 
-  // Calculate if a date should be disabled (future dates except today in user timezone)
-  const isDateDisabled = (date: number, month: number, year: number): boolean => {
-    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
-    
-    // Get today in user's timezone using the most reliable method
+  // Memoize today's date calculation for performance
+  const todayString = useMemo(() => {
     const today = new Date()
-    const todayString = today.toLocaleDateString('en-CA', { timeZone: userTimezone }) // YYYY-MM-DD format
-    
-    
-    // Disable if date is in the future (after today in user's timezone)
-    return dateString > todayString
-  }
+    return today.toLocaleDateString('en-CA', { timeZone: userTimezone }) // YYYY-MM-DD format
+  }, [userTimezone])
 
-  // Calculate calendar grid dates
-  const getCalendarDates = (month: number, year: number) => {
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
+  // Calculate if a date should be disabled (memoized for performance)
+  const isDateDisabled = useMemo(() => {
+    return (date: number, month: number, year: number): boolean => {
+      const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+      // Disable if date is in the future (after today in user's timezone)
+      return dateString > todayString
+    }
+  }, [todayString])
+
+  // Memoize calendar grid dates calculation for performance
+  const calendarDates = useMemo(() => {
+    const firstDay = new Date(displayYear, displayMonth, 1)
+    const lastDay = new Date(displayYear, displayMonth + 1, 0)
     const firstDayOfWeek = firstDay.getDay() // 0 = Sunday
     const daysInMonth = lastDay.getDate()
     
@@ -130,7 +132,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
     
     return dates
-  }
+  }, [displayMonth, displayYear])
+
+  // Combine real marked dates with optimistic updates for better performance
+  const allMarkedDates = useMemo(() => {
+    return [...markedDates, ...optimisticMarkedDates]
+  }, [markedDates, optimisticMarkedDates])
 
   // Navigation handlers with 2025 restriction
   const goToPreviousMonth = () => {
@@ -155,11 +162,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     }
   }
 
-  // Check if navigation buttons should be disabled
-  const isPrevDisabled = displayMonth === 0 // January
-  const isNextDisabled = displayMonth === 11 // December
-
-  const calendarDates = getCalendarDates(displayMonth, displayYear)
+  // Memoize navigation button states
+  const isPrevDisabled = useMemo(() => displayMonth === 0, [displayMonth]) // January
+  const isNextDisabled = useMemo(() => displayMonth === 11, [displayMonth]) // December
 
   return (
     <div className={`calendar-grid ${className}`}>
@@ -237,8 +242,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         {calendarDates.map((date, index) => {
           const dateString = date ? `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}` : null
           const isSelected = dateString === selectedDate
-          // Combine real marked dates with optimistic marked dates
-          const allMarkedDates = [...markedDates, ...optimisticMarkedDates]
           const isMarked = dateString ? allMarkedDates.includes(dateString) : false
           const isDisabled = date ? isDateDisabled(date, displayMonth, displayYear) : false
           

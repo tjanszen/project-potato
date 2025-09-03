@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiClient } from '../lib/api'
 import { useToast } from '../contexts/ToastContext'
 import './DayDrawer.css'
@@ -29,6 +29,11 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
   const [isMarking, setIsMarking] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const { showSuccess, showError } = useToast()
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const lastClickTimeRef = useRef<number>(0)
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const markButtonRef = useRef<HTMLButtonElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   // Format date for display (e.g., "Monday, September 2, 2025")
   const formatSelectedDate = (dateString: string) => {
@@ -41,16 +46,104 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     })
   }
 
-  // Clear data when drawer closes
+  // Clear data when drawer closes and cleanup debounce timers
   useEffect(() => {
     if (!isOpen) {
       setLastUpdated(null)
+      // Clear any pending debounce timers when drawer closes
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
     }
   }, [isOpen])
 
-  // Handle "No Drink" button click with optimistic updates
-  const handleMarkNoDrink = async () => {
-    if (!selectedDate) return
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
+
+  // Focus management when drawer opens/closes
+  useEffect(() => {
+    if (isOpen && drawerRef.current) {
+      // Small delay to ensure drawer animation starts
+      const focusTimer = setTimeout(() => {
+        // Focus the mark button when drawer opens for immediate user action
+        if (markButtonRef.current) {
+          markButtonRef.current.focus()
+        }
+      }, 100)
+      return () => clearTimeout(focusTimer)
+    }
+  }, [isOpen])
+
+  // Trap focus within drawer when open
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      const focusableElements = drawerRef.current?.querySelectorAll(
+        'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      
+      if (!focusableElements || focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0] as HTMLElement
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+      if (e.shiftKey) {
+        // Shift + Tab: moving backwards
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        // Tab: moving forwards
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleTabKey)
+    return () => document.removeEventListener('keydown', handleTabKey)
+  }, [isOpen])
+
+  // Handle "No Drink" button click with debouncing and optimistic updates
+  const handleMarkNoDrink = () => {
+    if (!selectedDate || isMarking) return
+
+    const now = Date.now()
+    const timeSinceLastClick = now - lastClickTimeRef.current
+
+    // Clear any existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    // If clicks are too rapid (within 300ms), debounce them
+    if (timeSinceLastClick < 300) {
+      debounceTimerRef.current = setTimeout(() => {
+        executeMarkNoDrink()
+      }, 300)
+      return
+    }
+
+    // Record this click time and execute immediately
+    lastClickTimeRef.current = now
+    executeMarkNoDrink()
+  }
+
+  // Extracted marking logic for debouncing
+  const executeMarkNoDrink = async () => {
+    if (!selectedDate || isMarking) return
 
     setIsMarking(true)
 
@@ -126,14 +219,23 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
       />
       
       {/* Drawer */}
-      <div className={`day-drawer ${isOpen ? 'open' : ''}`}>
+      <div 
+        ref={drawerRef}
+        className={`day-drawer ${isOpen ? 'open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+        aria-describedby="drawer-description"
+      >
         {/* Header */}
         <div className="drawer-header">
-          <h2 className="drawer-title">Mark Day</h2>
+          <h2 id="drawer-title" className="drawer-title">Mark Day</h2>
           <button 
+            ref={closeButtonRef}
             className="close-btn"
             onClick={onClose}
             data-testid="button-close-drawer"
+            aria-label="Close drawer"
           >
             ×
           </button>
@@ -142,7 +244,11 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
         {/* Selected Date Display */}
         <div className="selected-date-display">
           <div className="date-label">Selected Date:</div>
-          <div className="date-value" data-testid="text-selected-date">
+          <div 
+            id="drawer-description" 
+            className="date-value" 
+            data-testid="text-selected-date"
+          >
             {formatSelectedDate(selectedDate)}
           </div>
         </div>
@@ -167,10 +273,12 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
         {/* Action Button */}
         <div className="drawer-actions">
           <button
+            ref={markButtonRef}
             className="no-drink-btn"
             onClick={handleMarkNoDrink}
             disabled={isMarking}
             data-testid="button-mark-no-drink"
+            aria-describedby="drawer-description"
             style={{
               opacity: isMarking ? 0.7 : 1,
               cursor: isMarking ? 'not-allowed' : 'pointer',
