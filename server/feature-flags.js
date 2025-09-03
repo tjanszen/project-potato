@@ -5,7 +5,7 @@ exports.featureFlagService = exports.FeatureFlagService = void 0;
 const featureFlags = {
     'ff.potato.no_drink_v1': {
         name: 'ff.potato.no_drink_v1',
-        enabled: false, // Default OFF as required
+        enabled: true, // Enabled for Phase 4D testing
         description: 'Main feature flag for No Drink tracking functionality',
     },
 };
