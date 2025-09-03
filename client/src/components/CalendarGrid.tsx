@@ -34,9 +34,16 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
   // Get user profile and timezone
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const response = await apiClient.getProfile()
-      if (!response.error && (response as any).user?.timezone) {
-        setUserTimezone((response as any).user.timezone)
+      try {
+        const response = await apiClient.getProfile()
+        if (!response.error && (response as any).user?.timezone) {
+          setUserTimezone((response as any).user.timezone)
+          console.log('User timezone loaded:', (response as any).user.timezone)
+        } else {
+          console.log('Failed to load user timezone, using default:', userTimezone)
+        }
+      } catch (error) {
+        console.log('Error fetching user profile, using default timezone:', userTimezone)
       }
     }
     fetchUserProfile()
@@ -67,9 +74,19 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ className = '', onDateSelec
   const isDateDisabled = (date: number, month: number, year: number): boolean => {
     const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
     
-    // Get today in user's timezone
+    // Get today in user's timezone using the most reliable method
     const today = new Date()
     const todayString = today.toLocaleDateString('en-CA', { timeZone: userTimezone }) // YYYY-MM-DD format
+    
+    // Debug logging
+    if (date === 4 && month === 8) { // September 4th for testing
+      console.log('Date disable check:', {
+        dateString,
+        todayString,
+        userTimezone,
+        isDisabled: dateString > todayString
+      })
+    }
     
     // Disable if date is in the future (after today in user's timezone)
     return dateString > todayString

@@ -24,7 +24,10 @@ const DayCell: React.FC<DayCellProps> = ({
     if (date && !isDisabled) {
       // Format date as YYYY-MM-DD
       const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`
+      console.log('DayCell click:', formattedDate, { isDisabled, date, month, year })
       onSelect(formattedDate)
+    } else {
+      console.log('DayCell click blocked:', { date, isDisabled, month, year })
     }
   }
 
