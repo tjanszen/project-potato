@@ -1,22 +1,6 @@
-# Authentication System Fast Follows
+# v1 Fast Follows
 
-## Current State - Phase 1C Complete ✅
-
-**Project Potato** has successfully implemented core authentication functionality with:
-
-- **User Registration**: Email/password signup with timezone support
-- **Secure Login**: bcrypt password hashing (12 salt rounds) 
-- **Session Management**: HttpOnly, SameSite=strict cookies with 24-hour expiration
-- **Database Storage**: PostgreSQL with UUID primary keys and proper constraints
-- **Feature Gating**: All functionality protected behind `ff.potato.no_drink_v1` flag
-- **Security Headers**: CORS configured, XSS/CSRF protection enabled
-- **UI Testing**: Comprehensive test interface at `/client/simple-test.html`
-
-The authentication foundation is **stable and production-ready** for the core habit tracking use case.
-
----
-
-## Fast Follow Enhancements
+## Authentication Fast Follows
 
 ### 1. Session Expiration Policy
 - **Goal**: Clarify and standardize default session lifetime
@@ -47,3 +31,12 @@ The authentication foundation is **stable and production-ready** for the core ha
 - **Goal**: Add email confirmation step before granting full access
 - **Benefit**: Prevents fake accounts and ensures communication channel
 - **Priority**: Medium - data quality improvement
+
+---
+
+## Rate Limiting Fast Follows
+
+### 7. Adjust Rate Limiting for Dev/Testing vs. Production
+- **Goal**: Adjust rate limiting for dev/testing vs. production (loosen limits for smoother testing, tighten back down before real users).
+- **Benefit**: Smoother development experience while maintaining production security
+- **Priority**: Medium - development workflow improvement
