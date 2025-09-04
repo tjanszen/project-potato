@@ -5,11 +5,17 @@
 **Agent Prompt:**
 ```
 Verify Phase 0 infrastructure:
-1. Check database tables exist: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
-2. Test health endpoint: curl http://localhost:3000/health
-3. Verify feature flag: curl http://localhost:3000/api/feature-flags/ff.potato.no_drink_v1
-4. Confirm flag is OFF by default
-Evidence: Database shows users, day_marks, click_events tables + health returns 200 + flag.enabled = false
+
+Check database tables exist: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+
+Test health endpoint: curl http://localhost:3000/health
+
+Verify feature flag via Replit Secret: echo $FF_POTATO_NO_DRINK_V1
+
+Verify feature flag via API: curl http://localhost:3000/api/feature-flags/ff.potato.no_drink_v1
+
+Confirm flag is OFF by default in both checks
+Evidence: Database shows users, day_marks, click_events tables + health returns 200 + flag.enabled = false in both Secret and API
 ```
 
 ## Feature Flag Management (via Replit Secrets)
