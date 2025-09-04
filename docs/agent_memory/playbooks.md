@@ -12,17 +12,26 @@ Verify Phase 0 infrastructure:
 Evidence: Database shows users, day_marks, click_events tables + health returns 200 + flag.enabled = false
 ```
 
-## Feature Flag Toggle
-**Use when:** enabling/disabling features safely  
+## Feature Flag Management (via Replit Secrets)
+**Use when:** enabling/disabling features safely in development or production  
 **Agent Prompt:**
-```
-Toggle feature flag safely:
-1. Current state: GET /api/feature-flags/ff.potato.no_drink_v1
-2. Test with flag OFF first to ensure proper gating
-3. Toggle to ON only after verification
-4. Monitor logs for errors after toggle
-Evidence: Flag state changes correctly, gated endpoints respond appropriately
-```
+Manage feature flag via Replit Secrets:
+
+Check current state:
+echo $FF_POTATO_NO_DRINK_V1
+curl http://localhost:3000/api/feature-flags/ff.potato.no_drink_v1
+
+Test with flag OFF first to ensure proper gating
+
+Toggle to ON by updating the Replit Secret: FF_POTATO_NO_DRINK_V1="true"
+
+Toggle to OFF by setting FF_POTATO_NO_DRINK_V1="false"
+
+Restart the server if environment variables are not hot-reloaded
+
+Monitor logs: server startup should print "[Feature Flag] FF_POTATO_NO_DRINK_V1 = <value>"
+
+Evidence: Secret value matches API response, gated endpoints respond appropriately, flag state persists across restarts
 
 ## Database Schema Verification
 **Use when:** confirming database structure matches code  
