@@ -36,7 +36,19 @@
 
 ## Rate Limiting Fast Follows
 
-### 7. Adjust Rate Limiting for Dev/Testing vs. Production
-- **Goal**: Adjust rate limiting for dev/testing vs. production (loosen limits for smoother testing, tighten back down before real users).
-- **Benefit**: Smoother development experience while maintaining production security
-- **Priority**: Medium - development workflow improvement
+### 7. Adjust general rate limiting configuration for dev/testing
+
+**Goal:** Adjust general rate limiting configuration for dev/testing
+
+**Do:**
+- Open index.js
+- Locate `generalLimiter` setup
+- Increase:
+  - `max` from `100` → `1000`
+  - `windowMs` stays `15 * 60 * 1000` (15 minutes)
+- Leave `authLimiter` untouched for now
+- Confirm middleware still works after the threshold
+
+**Proof:**
+- Show updated config snippet with `max=1000`
+- Run curl stress test: 200s until 1000 requests, then 429
