@@ -4,6 +4,9 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 
 // Add error handling for imports
 let featureFlagService, storage, insertUserSchema;
@@ -63,6 +66,79 @@ logger.info(`Starting application in ${process.env.NODE_ENV || 'development'} mo
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Security Middleware
+// HTTPS redirect middleware (for production)
+if (isProduction) {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      return res.redirect(`https://${req.header('host')}${req.url}`);
+    }
+    next();
+  });
+}
+
+// Security headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Rate limiting
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Too many requests from this IP, please try again later.',
+    retryAfter: 15 * 60 // 15 minutes in seconds
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 auth requests per windowMs
+  message: {
+    error: 'Too many authentication attempts from this IP, please try again later.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply general rate limiting to all requests
+app.use(generalLimiter);
+
+// Request validation middleware
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    logger.warn('Validation errors', { errors: errors.array(), ip: req.ip });
+    return res.status(422).json({
+      error: 'Validation failed',
+      details: errors.array()
+    });
+  }
+  next();
+};
 
 // Middleware
 app.use(cors({
@@ -154,7 +230,12 @@ const requireFeatureFlag = (flagName) => {
 // Auth routes (gated behind feature flag)
 app.use('/api/auth', requireFeatureFlag('ff.potato.no_drink_v1'));
 
-app.post('/api/auth/signup', async (req, res) => {
+app.post('/api/auth/signup', authLimiter, [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('timezone').isString().notEmpty().withMessage('Timezone is required'),
+  handleValidationErrors
+], async (req, res) => {
   try {
     // Validate request body
     const validationResult = insertUserSchema.safeParse(req.body);
@@ -217,7 +298,11 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, [
+  body('email').isEmail().normalizeEmail(),
+  body('password').notEmpty().withMessage('Password is required'),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { email, password } = req.body;
     
