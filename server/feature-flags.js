@@ -5,14 +5,31 @@ exports.featureFlagService = exports.FeatureFlagService = void 0;
 const featureFlags = {
     'ff.potato.no_drink_v1': {
         name: 'ff.potato.no_drink_v1',
-        enabled: true, // Enabled for Phase 4D testing
+        enabled: false, // Default OFF as required - overridden by environment variable
         description: 'Main feature flag for No Drink tracking functionality',
     },
 };
 class FeatureFlagService {
+    constructor() {
+        // Log feature flag status on startup
+        this.logFlagStatus();
+    }
+    logFlagStatus() {
+        const flagValue = process.env.FF_POTATO_NO_DRINK_V1;
+        console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${flagValue || 'undefined'}`);
+    }
     // Get a specific feature flag
     getFlag(flagName) {
-        return featureFlags[flagName] || null;
+        const baseFlag = featureFlags[flagName];
+        if (!baseFlag)
+            return null;
+        // For ff.potato.no_drink_v1, read from environment variable
+        if (flagName === 'ff.potato.no_drink_v1') {
+            const envValue = process.env.FF_POTATO_NO_DRINK_V1;
+            const enabled = envValue === 'true'; // Only 'true' string enables it
+            return Object.assign(Object.assign({}, baseFlag), { enabled });
+        }
+        return baseFlag;
     }
     // Check if a feature is enabled
     isEnabled(flagName) {
@@ -21,7 +38,7 @@ class FeatureFlagService {
     }
     // Get all feature flags
     getAllFlags() {
-        return { ...featureFlags };
+        return Object.assign({}, featureFlags);
     }
     // Toggle a feature flag (for testing/admin purposes)
     toggleFlag(flagName) {

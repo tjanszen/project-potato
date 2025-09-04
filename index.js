@@ -27,6 +27,40 @@ try {
 // Load environment
 require('dotenv').config();
 
+// Production logging configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const logger = {
+  info: (message, meta = {}) => {
+    if (isProduction) {
+      console.log(JSON.stringify({ level: 'info', message, timestamp: new Date().toISOString(), ...meta }));
+    } else {
+      console.log(`ℹ️ ${message}`, meta);
+    }
+  },
+  error: (message, error = null, meta = {}) => {
+    if (isProduction) {
+      console.error(JSON.stringify({ 
+        level: 'error', 
+        message, 
+        timestamp: new Date().toISOString(), 
+        error: error ? { message: error.message, stack: error.stack } : null,
+        ...meta 
+      }));
+    } else {
+      console.error(`❌ ${message}`, error, meta);
+    }
+  },
+  warn: (message, meta = {}) => {
+    if (isProduction) {
+      console.warn(JSON.stringify({ level: 'warn', message, timestamp: new Date().toISOString(), ...meta }));
+    } else {
+      console.warn(`⚠️ ${message}`, meta);
+    }
+  }
+};
+
+logger.info(`Starting application in ${process.env.NODE_ENV || 'development'} mode`);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
