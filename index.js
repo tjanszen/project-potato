@@ -7,6 +7,8 @@ const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const morgan = require('morgan');
+const crypto = require('crypto');
 
 // Add error handling for imports
 let featureFlagService, storage, insertUserSchema;
@@ -32,32 +34,128 @@ require('dotenv').config();
 
 // Production logging configuration
 const isProduction = process.env.NODE_ENV === 'production';
+
+// Application metrics tracking
+const metrics = {
+  startTime: Date.now(),
+  requests: {
+    total: 0,
+    errors: 0,
+    by_method: {},
+    by_endpoint: {},
+    response_times: []
+  },
+  errors: {
+    total: 0,
+    by_type: {},
+    recent: []
+  }
+};
+
 const logger = {
   info: (message, meta = {}) => {
+    const logData = { 
+      level: 'info', 
+      message, 
+      timestamp: new Date().toISOString(),
+      ...meta 
+    };
+    
     if (isProduction) {
-      console.log(JSON.stringify({ level: 'info', message, timestamp: new Date().toISOString(), ...meta }));
+      console.log(JSON.stringify(logData));
     } else {
       console.log(`ℹ️ ${message}`, meta);
     }
   },
+  
   error: (message, error = null, meta = {}) => {
+    metrics.errors.total++;
+    
+    const errorType = error?.constructor?.name || 'UnknownError';
+    metrics.errors.by_type[errorType] = (metrics.errors.by_type[errorType] || 0) + 1;
+    
+    // Keep recent errors (last 10)
+    metrics.errors.recent.unshift({
+      message,
+      error: error?.message,
+      timestamp: new Date().toISOString(),
+      ...meta
+    });
+    if (metrics.errors.recent.length > 10) {
+      metrics.errors.recent.pop();
+    }
+    
+    const logData = { 
+      level: 'error', 
+      message, 
+      timestamp: new Date().toISOString(), 
+      error: error ? { 
+        message: error.message, 
+        stack: error.stack,
+        name: error.constructor.name 
+      } : null,
+      ...meta 
+    };
+    
     if (isProduction) {
-      console.error(JSON.stringify({ 
-        level: 'error', 
-        message, 
-        timestamp: new Date().toISOString(), 
-        error: error ? { message: error.message, stack: error.stack } : null,
-        ...meta 
-      }));
+      console.error(JSON.stringify(logData));
     } else {
       console.error(`❌ ${message}`, error, meta);
     }
   },
+  
   warn: (message, meta = {}) => {
+    const logData = { 
+      level: 'warn', 
+      message, 
+      timestamp: new Date().toISOString(), 
+      ...meta 
+    };
+    
     if (isProduction) {
-      console.warn(JSON.stringify({ level: 'warn', message, timestamp: new Date().toISOString(), ...meta }));
+      console.warn(JSON.stringify(logData));
     } else {
       console.warn(`⚠️ ${message}`, meta);
+    }
+  },
+  
+  request: (req, res, responseTime, meta = {}) => {
+    metrics.requests.total++;
+    
+    const method = req.method;
+    const endpoint = req.route?.path || req.path;
+    
+    metrics.requests.by_method[method] = (metrics.requests.by_method[method] || 0) + 1;
+    metrics.requests.by_endpoint[endpoint] = (metrics.requests.by_endpoint[endpoint] || 0) + 1;
+    
+    // Track response times (keep last 100)
+    metrics.requests.response_times.push(responseTime);
+    if (metrics.requests.response_times.length > 100) {
+      metrics.requests.response_times.shift();
+    }
+    
+    if (res.statusCode >= 400) {
+      metrics.requests.errors++;
+    }
+    
+    const logData = {
+      level: 'info',
+      type: 'request',
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      responseTime: `${responseTime}ms`,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString(),
+      ...meta
+    };
+    
+    if (isProduction) {
+      console.log(JSON.stringify(logData));
+    } else {
+      console.log(`📡 ${req.method} ${req.url} ${res.statusCode} ${responseTime}ms [${req.correlationId}]`);
     }
   }
 };
@@ -127,6 +225,36 @@ const authLimiter = rateLimit({
 // Apply general rate limiting to all requests
 app.use(generalLimiter);
 
+// Correlation ID middleware (must be early in middleware stack)
+app.use((req, res, next) => {
+  req.correlationId = crypto.randomUUID();
+  res.set('X-Correlation-ID', req.correlationId);
+  next();
+});
+
+// Request/Response logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  
+  // Override res.end to capture response time
+  const originalEnd = res.end;
+  res.end = function(...args) {
+    const responseTime = Date.now() - startTime;
+    
+    // Log the request with performance data
+    logger.request(req, res, responseTime, {
+      userAgent: req.get('User-Agent'),
+      referer: req.get('Referer'),
+      contentLength: res.get('Content-Length')
+    });
+    
+    // Call original end method
+    originalEnd.apply(this, args);
+  };
+  
+  next();
+});
+
 // Request validation middleware
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -172,6 +300,74 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: '1.0.0'
   });
+});
+
+// Metrics endpoint
+app.get('/api/metrics', (req, res) => {
+  try {
+    const uptime = Date.now() - metrics.startTime;
+    const responseTimes = metrics.requests.response_times;
+    
+    // Calculate average response time
+    const avgResponseTime = responseTimes.length > 0 
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
+      : 0;
+    
+    // Calculate percentiles
+    const sortedTimes = [...responseTimes].sort((a, b) => a - b);
+    const p95 = sortedTimes[Math.floor(sortedTimes.length * 0.95)] || 0;
+    const p99 = sortedTimes[Math.floor(sortedTimes.length * 0.99)] || 0;
+    
+    const metricsData = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: {
+        seconds: Math.floor(uptime / 1000),
+        human: `${Math.floor(uptime / 1000 / 60)} minutes`
+      },
+      requests: {
+        total: metrics.requests.total,
+        errors: metrics.requests.errors,
+        error_rate: metrics.requests.total > 0 
+          ? ((metrics.requests.errors / metrics.requests.total) * 100).toFixed(2) + '%'
+          : '0%',
+        by_method: metrics.requests.by_method,
+        by_endpoint: metrics.requests.by_endpoint
+      },
+      performance: {
+        avg_response_time_ms: Math.round(avgResponseTime),
+        p95_response_time_ms: p95,
+        p99_response_time_ms: p99,
+        slow_requests: responseTimes.filter(t => t > 500).length
+      },
+      errors: {
+        total: metrics.errors.total,
+        by_type: metrics.errors.by_type,
+        recent: metrics.errors.recent.slice(0, 5) // Only show last 5
+      },
+      system: {
+        memory: process.memoryUsage(),
+        node_version: process.version,
+        environment: process.env.NODE_ENV || 'development',
+        feature_flag: process.env.FF_POTATO_NO_DRINK_V1 || 'undefined'
+      }
+    };
+    
+    logger.info('Metrics requested', { 
+      correlationId: req.correlationId,
+      totalRequests: metrics.requests.total 
+    });
+    
+    res.json(metricsData);
+  } catch (error) {
+    logger.error('Error generating metrics', error, { 
+      correlationId: req.correlationId 
+    });
+    res.status(500).json({ 
+      error: 'Failed to generate metrics',
+      correlationId: req.correlationId 
+    });
+  }
 });
 
 // Feature flag endpoints
