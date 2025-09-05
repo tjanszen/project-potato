@@ -17,6 +17,17 @@ This is a simple habit tracking web application focused on allowing users to mar
 
 # Recent Changes
 
+## 2025-09-05 - V2 Implementation Plan Creation & Refinement
+- ✅ **V2 Implementation Plan**: Created comprehensive 7-phase plan (docs/agent_memory/imp_plans/v2.md) for runs and totals tracking
+- ✅ **Phase 0 Research**: Added explicit spike phase for rules definition and data model validation before database changes
+- ✅ **Database Schema Design**: Designed runs table with user_id, start_date, end_date, day_count, active columns
+- ✅ **Feature Flag Strategy**: All V2 functionality gated behind ff.potato.runs_v2 (default OFF) with safe rollout procedures
+- ✅ **API Endpoint Planning**: Detailed GET /api/runs and GET /api/stats endpoints with authentication and pagination
+- ✅ **Terminology Consistency**: Standardized all references to use "runs" terminology, removed "streak" language
+- ✅ **Performance Unification**: Unified all performance targets to <500ms response time for API endpoints
+- ✅ **MVP Scope Refinement**: Removed gamification elements (badges, awards, celebrations) for focused core functionality
+- ✅ **Production Documentation**: Enhanced replit.md with production notes, deployment procedures, and playbooks reference
+
 ## 2025-09-04 - Phase 5 (Security & Monitoring) Complete
 - ✅ **Security Headers Implementation**: Helmet CSP policies, HSTS with 1-year max-age, X-Frame-Options DENY
 - ✅ **HTTPS Redirect Configuration**: Force secure connections in production environments
