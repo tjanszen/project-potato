@@ -5,9 +5,19 @@ This is a simple habit tracking web application focused on allowing users to mar
 **Current Status:** Phase 5C (Monitoring & Logging) - COMPLETE  
 **Next Phase:** Phase 5D (Feature Flag Final Validation) pending Fast Follow #7 implementation
 
+## Production Notes
+
+- **Auto-Deployment**: Replit auto-deploys on pushes to `main` branch
+- **Application Entry**: App runs via `node index.js` with PORT binding handled automatically (`process.env.PORT || 3000`)
+- **Production Secrets**: Must be set in Replit Secrets (e.g., DATABASE_URL, FF_POTATO_NO_DRINK_V1)
+- **Pre-deployment Checklist**: 
+  - Run `npm run build --prefix client` to build frontend assets
+  - Confirm database migrations applied
+  - Verify health endpoint responds locally
+
 # Recent Changes
 
-## 2025-09-04 - Phase 5C (Security & Monitoring) Complete
+## 2025-09-04 - Phase 5 (Security & Monitoring) Complete
 - ✅ **Security Headers Implementation**: Helmet CSP policies, HSTS with 1-year max-age, X-Frame-Options DENY
 - ✅ **HTTPS Redirect Configuration**: Force secure connections in production environments
 - ✅ **Session Security Validation**: HttpOnly, SameSite=strict for production, SameSite=lax for development
@@ -150,3 +160,5 @@ Preferred communication style: Simple, everyday language.
 
 ## Feature Flag System
 - **Feature toggle infrastructure**: Required to support the `ff.potato.no_drink_v1` flag and future feature gates
+
+👉 See [docs/agent_memory/playbooks.md](docs/agent_memory/playbooks.md) for operational patterns and common procedures.
