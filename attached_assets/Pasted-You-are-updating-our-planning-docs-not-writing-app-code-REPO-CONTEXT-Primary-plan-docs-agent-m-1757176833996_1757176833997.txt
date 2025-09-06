@@ -1,0 +1,115 @@
+You are updating our planning docs, not writing app code.
+
+REPO CONTEXT
+- Primary plan: docs/agent_memory/v2.md
+- Spike: docs/agent_memory/v2_phase0_research.md, docs/agent_memory/v2_phase0_completion.md
+- Adjacent docs to keep in sync: docs/agent_memory/decisions.adrs.md, features_overview.md, playbooks.md, glossary.md
+
+OBJECTIVE
+Revise and expand ALL phases in docs/agent_memory/v2.md to incorporate the Phase 0 spike results and the following upgrades:
+1) Data Invariants & DB Constraints
+2) Concurrency & Idempotency
+3) Backfill/Rebuild & Shadow Cutover
+4) Edits/Deletions Behavior (backfills & removals)
+5) Totals Strategy (+ feature flag)
+6) Observability & SLIs
+7) Expanded Testing (property-based & fuzz)
+8) API Versioning & Compatibility
+9) Implementation Tweaks (idempotent merge, short transactions)
+
+CONSTRAINTS
+- Do NOT change application code or migrations yet. Docs only.
+- Keep existing phase numbering and intent; add subphases where helpful (e.g., 6A..6E).
+- Keep our feature flagging style. Use:
+  - ff.potato.runs_v2
+  - ff.potato.totals_v2
+
+TASKS
+A) Update docs/agent_memory/v2.md
+   - Add a new section **“Data Invariants & DB Constraints”** with explicit invariants:
+     - No overlapping runs per user.
+     - day_count == end_date - start_date + 1; end_date >= start_date.
+     - ≤1 active run per user; the active run’s end_date equals the user’s most recent check-in date.
+     - Full rebuild from daily_checkins yields identical results (determinism).
+   - Add concrete DB constraint guidance (choose based on our current DB; if unknown, document both):
+     - Postgres: daterange column + EXCLUDE USING gist (user_id WITH =, date_range WITH &&),
+       CHECKs for day_count, and a partial UNIQUE(user_id) WHERE active = true,
+       index (user_id, end_date DESC).
+     - SQLite variant: trigger-based overlap prevention; CHECKs; UNIQUE(user_id) WHERE active = 1 (or application-level guard), index (user_id, end_date DESC).
+   - **Concurrency & Idempotency** section:
+     - Unique daily fact table: UNIQUE(user_id, checkin_date).
+     - Runs are a projection of facts; per-user serialization (SELECT … FOR UPDATE or advisory lock).
+     - Idempotent extend/merge operations; safe to replay.
+   - **Backfill/Rebuild & Shadow Cutover**:
+     - Define admin routine: rebuild_user_runs(user_id, from_date?, to_date?) that deletes + replays deterministically from daily_checkins.
+     - Shadow compute runs_v2 alongside legacy; produce diffs (mismatched day_count, gaps, overlaps) before enabling ff.potato.runs_v2.
+     - One-command rollback plan; leave legacy reads intact until cutover is complete.
+   - **Edits/Deletions Behavior**:
+     - On check-in removal: shrink/split affected run(s).
+     - On backfill: auto-merge adjacent runs if gap closes.
+     - Document exact state transitions and edge examples (month boundary, leap day, DST/zone changes).
+   - **Totals Strategy**:
+     - Decide & document: computed-on-read vs stored.
+     - If stored, define run_totals (user_id, yyyymm, streak_days, total_days, updated_at), recompute current & prior month on change, nightly reconciliation; gate via ff.potato.totals_v2.
+   - **Observability & SLIs**:
+     - Emit events: run_created, run_extended, run_merged, run_split, run_deactivated (with before/after).
+     - SLIs: calc latency p95 (<50ms), merge rate, overlap-violation count, rebuild duration; health checks fail if invariants break.
+   - **Expanded Testing**:
+     - Property-based generator for 1 year of random check-ins with gaps/edits/backfills across time zones/DST; assert invariants and determinism vs rebuild.
+     - Fuzz leap day & month-boundary cases; load to expected 95th-percentile history.
+   - **API Versioning & Compatibility**:
+     - Document /v2/runs, /v2/runs/active, /v2/totals; contract tests that compare legacy vs v2 for a golden user set until cutover.
+   - **Implementation Tweaks**:
+     - Make merge explicitly idempotent.
+     - Keep transactions narrow (latest + adjacent runs) and short.
+     - Optional diagnostic field: last_extended_at (timestamp) for debugging/metrics.
+
+B) Phase-by-Phase Rework (within v2.md)
+   - Phase 0 (Research) — mark complete, link to v2_phase0_* docs; summarize outcomes in “What we learned.”
+   - Phase 6A: **Database Foundations**
+     - Goal: create runs table with non-overlap guarantees, single active run enforcement, and hot-path indexes (no code yet; migration plan only).
+     - Exit: constraints/invariants precisely specified; migration plan drafted in docs; dry-run checklist.
+   - Phase 6B: **Algorithm & Transactions**
+     - Goal: finalize transaction boundaries; per-user serialization pattern; idempotent extend/merge pseudocode (already drafted—refine).
+     - Exit: invariants mapped to specific transaction steps; race scenarios documented.
+   - Phase 6C: **Backfill/Rebuild**
+     - Goal: design rebuild_user_runs routine + operator usage notes; partial vs full rebuilds.
+     - Exit: playbook entries; test data & validation queries.
+   - Phase 6D: **Shadow Read & Diff**
+     - Goal: compute v2 side-by-side; diff reports; alerting thresholds; go/no-go checklist.
+     - Exit: diff report format, acceptance gates, rollback path.
+   - Phase 6E: **Cutover via ff.potato.runs_v2**
+     - Goal: enable flag gradually; monitoring; rollback plan.
+     - Exit: SLI thresholds; success criteria; “declare steady state” checklist.
+   - Phase 7A: **Totals v2** (flagged)
+     - Goal: choose compute vs store path; define run_totals + reconciliation.
+     - Exit: plan + tests; separate flag ff.potato.totals_v2.
+   - Phase 7B: **Observability**
+     - Goal: structured events, dashboards, health checks; SLI targets.
+     - Exit: documented event schema; dashboard sketches; alert thresholds.
+   - Phase 8: **Property-Based & Fuzz Testing**
+     - Goal: generators, fuzzers, determinism checks; timezone/DST suite.
+     - Exit: test plan with seed control & reproducibility notes.
+
+C) Keep adjacent docs in sync
+   - decisions.adrs.md: add ADR “Non-overlapping date-range runs with single active run; facts-as-source; deterministic rebuild” with rationale & constraints (PG + SQLite variants).
+   - playbooks.md: add operator runbooks:
+     - “Rebuild runs (user or range)”
+     - “Shadow & diff before enabling ff.potato.runs_v2”
+     - “Cutover/rollback”
+     - “Nightly totals reconciliation”
+     - “Health checks & what to do when an invariant fails”
+   - features_overview.md: update v2 status links to v2.md sections & phase checklists.
+   - glossary.md: confirm/clarify “run”, “active run”, “day_count”, “rebuild”, “shadow”.
+
+OUTPUT FORMAT (respond with this when done)
+1) **Changed files:** list with line counts added/removed.
+2) **v2.md phase map:** bullet list of all phases/subphases with one-line goals.
+3) **New/updated sections in v2.md:** headings only.
+4) **Links:** relative paths to updated docs.
+5) **Open questions/assumptions:** any DB choice or env detail you inferred that needs confirmation.
+
+QUALITY BAR
+- Writing must be concise and implementation-ready.
+- Include example SQL/DDL snippets in the docs for both Postgres and SQLite (clearly labeled) but do not execute or add migrations yet.
+- All invariants must be testable and traced to a phase & exit criterion.
