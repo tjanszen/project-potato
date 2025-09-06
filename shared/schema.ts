@@ -1,7 +1,23 @@
-import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check, customType, integer, unique, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
+
+// Custom daterange type for PostgreSQL
+const daterange = customType<{
+  data: string;
+  driverData: string;
+}>({
+  dataType() {
+    return 'daterange';
+  },
+  fromDriver(value: string): string {
+    return value;
+  },
+  toDriver(value: string): string {
+    return value;
+  }
+});
 
 // Users table
 export const users = pgTable('users', {
@@ -38,6 +54,33 @@ export const clickEvents = pgTable('click_events', {
   valueCheck: check('value_check', sql`value = TRUE`), // v1 only stores TRUE
 }));
 
+// Runs table (V2 feature - tracks consecutive day runs)
+export const runs = pgTable('runs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  span: daterange('span').notNull(),
+  dayCount: integer('day_count').notNull(),
+  active: boolean('active').notNull().default(false),
+  lastExtendedAt: timestamp('last_extended_at').defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  // Generated helper columns (will be added via raw SQL)
+  startDate: date('start_date'),
+  endDate: date('end_date'),
+}, (table) => ({
+  // Ensure non-overlapping spans per user using PostgreSQL EXCLUDE constraint
+  nonOverlappingSpans: sql`EXCLUDE USING gist (${table.userId} WITH =, ${table.span} WITH &&) DEFERRABLE INITIALLY IMMEDIATE`,
+  // Unique active run per user (partial unique index on active = true)
+  uniqueActiveRun: sql`UNIQUE (${table.userId}) WHERE ${table.active} = true`,
+  // Day count must match span length
+  dayCountCheck: check('day_count_check', sql`${table.dayCount} = upper(${table.span}) - lower(${table.span})`),
+  // Span must be valid
+  spanCheck: check('span_check', sql`upper(${table.span}) >= lower(${table.span})`),
+  // Indexes for performance
+  userEndDateIdx: index('runs_user_end_date_idx').on(table.userId, table.endDate),
+  userActiveIdx: index('runs_user_active_idx').on(table.userId, table.active),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -57,6 +100,15 @@ export const insertClickEventSchema = createInsertSchema(clickEvents).omit({
   createdAt: true,
 });
 
+export const insertRunSchema = createInsertSchema(runs).omit({
+  id: true,
+  lastExtendedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  startDate: true,
+  endDate: true,
+});
+
 // TypeScript types
 export type User = typeof users.$inferSelect;
 export type NewUser = z.infer<typeof insertUserSchema>;
@@ -64,3 +116,5 @@ export type DayMark = typeof dayMarks.$inferSelect;
 export type NewDayMark = z.infer<typeof insertDayMarkSchema>;
 export type ClickEvent = typeof clickEvents.$inferSelect;
 export type NewClickEvent = z.infer<typeof insertClickEventSchema>;
+export type Run = typeof runs.$inferSelect;
+export type NewRun = z.infer<typeof insertRunSchema>;
