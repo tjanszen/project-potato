@@ -95,6 +95,86 @@ export const runsSqlite = sqliteTable('runs', {
   updatedAt: sqliteInteger('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
+// SQLite triggers for constraint enforcement (equivalent to PostgreSQL EXCLUDE constraints)
+export const sqliteTriggers = {
+  // Trigger to prevent overlapping spans on INSERT
+  preventOverlapInsert: sql`
+    CREATE TRIGGER prevent_overlap_insert
+    BEFORE INSERT ON runs
+    FOR EACH ROW
+    BEGIN
+      SELECT CASE
+        WHEN EXISTS (
+          SELECT 1 FROM runs 
+          WHERE user_id = NEW.user_id 
+          AND NOT (NEW.end_date < start_date OR end_date < NEW.start_date)
+        )
+        THEN RAISE(ABORT, 'Overlapping run spans not allowed for user')
+      END;
+    END;
+  `,
+
+  // Trigger to prevent overlapping spans on UPDATE  
+  preventOverlapUpdate: sql`
+    CREATE TRIGGER prevent_overlap_update
+    BEFORE UPDATE ON runs
+    FOR EACH ROW
+    BEGIN
+      SELECT CASE
+        WHEN EXISTS (
+          SELECT 1 FROM runs 
+          WHERE user_id = NEW.user_id 
+          AND id != NEW.id
+          AND NOT (NEW.end_date < start_date OR end_date < NEW.start_date)
+        )
+        THEN RAISE(ABORT, 'Overlapping run spans not allowed for user')
+      END;
+    END;
+  `,
+
+  // Trigger to prevent multiple active runs per user on INSERT
+  preventMultipleActiveInsert: sql`
+    CREATE TRIGGER prevent_multiple_active_insert
+    BEFORE INSERT ON runs
+    FOR EACH ROW WHEN NEW.active = 1
+    BEGIN
+      SELECT CASE
+        WHEN EXISTS (
+          SELECT 1 FROM runs 
+          WHERE user_id = NEW.user_id AND active = 1
+        )
+        THEN RAISE(ABORT, 'Only one active run allowed per user')
+      END;
+    END;
+  `,
+
+  // Trigger to prevent multiple active runs per user on UPDATE
+  preventMultipleActiveUpdate: sql`
+    CREATE TRIGGER prevent_multiple_active_update
+    BEFORE UPDATE ON runs
+    FOR EACH ROW WHEN NEW.active = 1
+    BEGIN
+      SELECT CASE
+        WHEN EXISTS (
+          SELECT 1 FROM runs 
+          WHERE user_id = NEW.user_id AND active = 1 AND id != NEW.id
+        )
+        THEN RAISE(ABORT, 'Only one active run allowed per user')
+      END;
+    END;
+  `,
+
+  // Trigger to update timestamp on UPDATE
+  updateTimestamp: sql`
+    CREATE TRIGGER update_timestamp
+    AFTER UPDATE ON runs
+    FOR EACH ROW
+    BEGIN
+      UPDATE runs SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END;
+  `
+};
+
 // Database-agnostic validation functions
 export const runsValidation = {
   // Check for overlapping spans (works on both PostgreSQL and SQLite)
