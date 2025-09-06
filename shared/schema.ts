@@ -1,4 +1,5 @@
 import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check, customType, integer, unique, index } from 'drizzle-orm/pg-core';
+import { sqliteTable, text as sqliteText, integer as sqliteInteger } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -80,6 +81,70 @@ export const runs = pgTable('runs', {
   userEndDateIdx: index('runs_user_end_date_idx').on(table.userId, table.endDate),
   userActiveIdx: index('runs_user_active_idx').on(table.userId, table.active),
 }));
+
+// SQLite-compatible runs table (fallback for environments without PostgreSQL)
+export const runsSqlite = sqliteTable('runs', {
+  id: sqliteText('id').primaryKey().$default(() => crypto.randomUUID()),
+  userId: sqliteText('user_id').notNull(),
+  startDate: sqliteText('start_date').notNull(), // YYYY-MM-DD format
+  endDate: sqliteText('end_date').notNull(),     // YYYY-MM-DD format (inclusive)
+  dayCount: sqliteInteger('day_count').notNull(),
+  active: sqliteInteger('active').notNull().default(0), // 0=false, 1=true
+  lastExtendedAt: sqliteInteger('last_extended_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: sqliteInteger('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: sqliteInteger('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+// Database-agnostic validation functions
+export const runsValidation = {
+  // Check for overlapping spans (works on both PostgreSQL and SQLite)
+  checkOverlaps: (dialect: 'postgres' | 'sqlite') => {
+    if (dialect === 'postgres') {
+      return sql`
+        SELECT COUNT(*) as violations
+        FROM runs r1
+        JOIN runs r2 ON r1.user_id = r2.user_id AND r1.id < r2.id
+        WHERE r1.span && r2.span
+      `;
+    } else {
+      return sql`
+        SELECT COUNT(*) as violations
+        FROM runs r1
+        JOIN runs r2 ON r1.user_id = r2.user_id AND r1.id < r2.id
+        WHERE NOT (r1.end_date < r2.start_date OR r2.end_date < r1.start_date)
+      `;
+    }
+  },
+
+  // Check for multiple active runs per user
+  checkMultipleActive: () => sql`
+    SELECT COUNT(*) as violations
+    FROM (
+      SELECT user_id, COUNT(*) as active_count
+      FROM runs
+      WHERE active = 1
+      GROUP BY user_id
+      HAVING COUNT(*) > 1
+    ) multi_active
+  `,
+
+  // Check day count accuracy
+  checkDayCount: (dialect: 'postgres' | 'sqlite') => {
+    if (dialect === 'postgres') {
+      return sql`
+        SELECT COUNT(*) as violations
+        FROM runs
+        WHERE day_count != (upper(span) - lower(span))
+      `;
+    } else {
+      return sql`
+        SELECT COUNT(*) as violations
+        FROM runs
+        WHERE day_count != (julianday(end_date) - julianday(start_date) + 1)
+      `;
+    }
+  }
+};
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
