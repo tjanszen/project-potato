@@ -263,3 +263,13 @@ export type ClickEvent = typeof clickEvents.$inferSelect;
 export type NewClickEvent = z.infer<typeof insertClickEventSchema>;
 export type Run = typeof runs.$inferSelect;
 export type NewRun = z.infer<typeof insertRunSchema>;
+
+export const insertRunSqliteSchema = createInsertSchema(runsSqlite).omit({
+  id: true,
+  lastExtendedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type RunSqlite = typeof runsSqlite.$inferSelect;
+export type NewRunSqlite = z.infer<typeof insertRunSqliteSchema>;
