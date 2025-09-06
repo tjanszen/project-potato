@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check, customType, integer, unique, index } from 'drizzle-orm/pg-core';
-import { sqliteTable, text as sqliteText, integer as sqliteInteger } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text as sqliteText, integer as sqliteInteger, index as sqliteIndex } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -80,6 +80,8 @@ export const runs = pgTable('runs', {
   // Indexes for performance
   userEndDateIdx: index('runs_user_end_date_idx').on(table.userId, table.endDate),
   userActiveIdx: index('runs_user_active_idx').on(table.userId, table.active),
+  userStartDateIdx: index('runs_user_start_date_idx').on(table.userId, table.startDate),
+  spanOverlapIdx: index('runs_span_overlap_idx').on(table.span),
 }));
 
 // SQLite-compatible runs table (fallback for environments without PostgreSQL)
@@ -93,7 +95,14 @@ export const runsSqlite = sqliteTable('runs', {
   lastExtendedAt: sqliteInteger('last_extended_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
   createdAt: sqliteInteger('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: sqliteInteger('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
-});
+}, (table) => ({
+  // SQLite indexes for performance (equivalent to PostgreSQL)
+  userStartDateIdx: sqliteIndex('sqlite_runs_user_start_date_idx').on(table.userId, table.startDate),
+  userEndDateIdx: sqliteIndex('sqlite_runs_user_end_date_idx').on(table.userId, table.endDate), 
+  userActiveIdx: sqliteIndex('sqlite_runs_user_active_idx').on(table.userId, table.active),
+  startDateIdx: sqliteIndex('sqlite_runs_start_date_idx').on(table.startDate),
+  endDateIdx: sqliteIndex('sqlite_runs_end_date_idx').on(table.endDate),
+}));
 
 // SQLite triggers for constraint enforcement (equivalent to PostgreSQL EXCLUDE constraints)
 export const sqliteTriggers = {
