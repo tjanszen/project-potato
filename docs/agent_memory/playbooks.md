@@ -329,3 +329,62 @@ Proof:
 **Why:**  
 Provides structured emergency response for constraint violations while minimizing system downtime 
 and preventing data corruption spread.
+
+### Playbook: Working with PostgreSQL Daterange Constraints
+
+**Purpose:**  
+Ensure smooth use and debugging of PostgreSQL `daterange` constraints (used in `runs.span`).
+
+**Context:**  
+The `runs` table uses a `span daterange` column with the constraint:
+
+EXCLUDE USING gist (
+  user_id WITH =,
+  span WITH &&
+) DEFERRABLE INITIALLY IMMEDIATE;
+
+This enforces that a user cannot have overlapping runs. Helper columns (`start_date`, `end_date`) are generated from `span`.
+
+**Agent Prompt:**  
+When working with daterange constraints in the runs table:
+
+1. Check for overlaps:
+   SELECT a.id, b.id, a.user_id, a.span, b.span
+   FROM runs a
+   JOIN runs b ON a.user_id = b.user_id AND a.id < b.id
+   WHERE a.span && b.span;
+
+2. Debug constraint violations:  
+   If an insert/update fails with "violates exclusion constraint", inspect spans:
+   SELECT * FROM runs WHERE user_id = '<user-uuid>' ORDER BY start_date;
+
+3. Remediation options:
+   - Merge runs:
+     UPDATE runs
+     SET span = daterange(LEAST(lower(span), lower(:other)), GREATEST(upper(span), upper(:other)))
+     WHERE id IN (:ids_to_merge);
+     DELETE FROM runs WHERE id = :redundant_id;
+
+   - Truncate run:
+     UPDATE runs
+     SET span = daterange(lower(span), DATE '2025-09-01')
+     WHERE id = :id;
+
+4. Verify integrity:
+   SELECT COUNT(*) FROM (
+     SELECT a.id
+     FROM runs a
+     JOIN runs b ON a.user_id = b.user_id AND a.id < b.id
+     WHERE a.span && b.span
+   ) q;
+   -- Should return 0
+
+5. Checklist:
+   - All spans are non-overlapping
+   - `day_count` matches span length (`upper - lower`)
+   - `active` flag points to the current run only
+
+Why:  
+- `daterange + gist` is powerful but less familiar than basic columns  
+- Prevents subtle data corruption (overlaps, misaligned runs)  
+- Provides clear recovery steps if violations occur
