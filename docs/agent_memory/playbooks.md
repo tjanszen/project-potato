@@ -163,3 +163,127 @@ Prevent wasted effort from editing non-runtime files that cause authentication r
 - Eliminates duplicate middleware conflicts and exit code 7 crashes  
 - Ensures clarity on which file actually executes in Replit  
 - Reinforces consistency until tooling unifies around TypeScript
+
+### Playbook: Rebuild Runs (User or Range)
+
+**Purpose:**  
+Administrative data recovery and maintenance for runs table corruption, timezone migrations, or algorithm updates.
+
+**Agent Prompt:**  
+Goal: Safely rebuild user runs data from authoritative day_marks table.
+
+Do:
+- Backup existing runs: `CREATE TABLE runs_backup AS SELECT * FROM runs WHERE user_id = ?`
+- Execute rebuild: `SELECT rebuild_user_runs(user_id, from_date, to_date)`
+- Validate invariants: verify no overlapping runs, single active run, correct day_counts
+- Compare before/after statistics to detect data corruption
+- Log rebuild metrics: duration, runs affected, data changes
+
+Proof:
+- Backup table created successfully
+- All data invariants hold post-rebuild
+- User statistics match expected values
+- No overlapping date ranges exist
+
+**Why:**  
+Ensures data consistency after corruption, algorithm changes, or timezone migrations while preserving rollback capability.
+
+### Playbook: Shadow & Diff Before Enabling ff.potato.runs_v2
+
+**Purpose:**  
+Validate v2 algorithm correctness by comparing shadow calculations against legacy system before production cutover.
+
+**Agent Prompt:**  
+Goal: Ensure zero discrepancies between legacy and v2 runs calculations before cutover.
+
+Do:
+- Enable shadow mode: compute v2 runs without affecting user experience
+- Generate diff reports: compare total_days, current_run_days, longest_run_days
+- Monitor for 7 days: verify consistent results across all user scenarios
+- Validate golden user dataset: test known edge cases and complex scenarios
+- Check performance impact: <5% overhead during shadow calculations
+- Document any discrepancies with root cause analysis and resolution
+
+Proof:
+- Zero diffs detected for golden user dataset
+- 7-day monitoring shows consistent calculations
+- Performance impact within acceptable limits
+- All discrepancies investigated and resolved
+
+**Why:**  
+Prevents data corruption and user experience degradation by validating algorithm correctness before production deployment.
+
+### Playbook: Cutover/Rollback
+
+**Purpose:**  
+Execute production cutover to v2 runs system with rapid rollback capability if quality gates fail.
+
+**Agent Prompt:**  
+Goal: Safely migrate users to v2 runs system with monitoring and rollback procedures.
+
+Do:
+- Pre-cutover checklist: shadow validation complete, SLI thresholds established, rollback tested
+- Gradual rollout: internal users (1%) → beta users (10%) → full deployment (100%)
+- Monitor SLIs: run_calculation_latency_p95, invariant_violations, api_response_time_p95
+- Automated rollback triggers: disable ff.potato.runs_v2 if thresholds exceeded
+- Post-cutover validation: verify user data integrity and feature functionality
+- Declare steady state: decommission legacy system after 7-day stability period
+
+Proof:
+- All rollout phases completed without rollback triggers
+- SLI metrics remain within thresholds
+- 100% user data integrity validated
+- Legacy system successfully decommissioned
+
+**Why:**  
+Ensures safe production deployment with rapid recovery capability and comprehensive quality validation.
+
+### Playbook: Nightly Totals Reconciliation
+
+**Purpose:**  
+Maintain data consistency between real-time runs calculations and stored monthly aggregates in run_totals table.
+
+**Agent Prompt:**  
+Goal: Detect and correct data inconsistencies between runs and run_totals tables.
+
+Do:
+- Query inconsistencies: compare run_totals aggregates with real-time calculations
+- Identify stale data: find totals not updated after recent day_marks changes
+- Recompute monthly aggregates: update affected user-month combinations
+- Validate corrections: verify totals match real-time calculations post-update
+- Log reconciliation results: inconsistencies found, corrections applied, errors encountered
+- Alert on persistent failures: escalate if same users fail reconciliation repeatedly
+
+Proof:
+- All identified inconsistencies corrected
+- Monthly aggregates match real-time calculations
+- Reconciliation completes within 1-hour maintenance window
+- Zero persistent reconciliation failures
+
+**Why:**  
+Maintains data accuracy for performance-optimized totals while catching calculation bugs and data corruption.
+
+### Playbook: Health Checks & Invariant Failure Response
+
+**Purpose:**  
+Respond to data invariant violations detected by automated health checks with investigation and remediation procedures.
+
+**Agent Prompt:**  
+Goal: Investigate and resolve data invariant violations to maintain system integrity.
+
+Do:
+- Identify violation type: overlapping runs, multiple active runs, incorrect day_counts, missing runs
+- Isolate affected users: query scope of data corruption and impact assessment
+- Execute emergency procedures: disable affected user access, backup corrupted data
+- Root cause analysis: investigate recent operations, concurrent access patterns, system changes
+- Apply corrective action: rebuild affected user runs, fix underlying bugs, update procedures
+- Validate resolution: verify all invariants hold post-correction, monitor for recurrence
+
+Proof:
+- All invariant violations resolved within 1 hour
+- Root cause identified and documented
+- Preventive measures implemented to avoid recurrence
+- System health checks return to healthy status
+
+**Why:**  
+Maintains data integrity guarantees essential for user trust and system reliability while enabling rapid incident response.

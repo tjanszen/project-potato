@@ -35,3 +35,10 @@
 **Status:** Accepted  
 **Consequences:** Eliminates route registration failures and server crashes but creates temporary TypeScript/JavaScript split until build tooling is unified  
 **Links:** bugs_journal.md [2025-09-03 Authentication & Server Entry Point Issues], playbooks.md "Server Entry Point Confusion", package.json main field
+
+## ADR-2025-09-06 Non-Overlapping Date-Range Runs with Single Active Run
+**Context:** V2 runs tracking requires data consistency guarantees: no overlapping runs per user, deterministic rebuilds from day_marks, and reliable concurrent access patterns  
+**Decision:** Implement dedicated runs table with PostgreSQL EXCLUDE USING gist constraints for non-overlapping date ranges, unique active run per user, and facts-as-source architecture with deterministic rebuild capability  
+**Status:** Accepted  
+**Consequences:** Higher complexity but production-grade data integrity with ACID guarantees; requires PostgreSQL-specific features with SQLite trigger-based fallback  
+**Links:** imp_plans/v2.md [Data Invariants section], v2_phase0_research.md [Data Model Decision], shared/schema.ts [runs table]
