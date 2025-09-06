@@ -42,3 +42,10 @@
 **Status:** Accepted  
 **Consequences:** Higher complexity but production-grade data integrity with ACID guarantees; requires PostgreSQL-specific features with SQLite trigger-based fallback  
 **Links:** imp_plans/v2.md [Data Invariants section], v2_phase0_research.md [Data Model Decision], shared/schema.ts [runs table]
+
+## ADR-2025-09-06 Immutable Local Date Policy for Timezone Independence
+**Context:** User timezone changes could retroactively affect historical day marking calculations, creating data inconsistency and user confusion about past achievements  
+**Decision:** Store `local_date` as immutable at mark time; past marks are never reinterpreted when user changes timezone; timezone migration requires explicit administrative rebuild action only  
+**Status:** Accepted  
+**Consequences:** Simplified temporal logic and consistent historical data but requires admin intervention for timezone corrections; users accept historical dates reflect timezone at time of marking  
+**Links:** imp_plans/v2.md [Timezone Policy], shared/schema.ts [day_marks.local_date column]

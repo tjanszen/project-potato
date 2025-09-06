@@ -287,3 +287,45 @@ Proof:
 
 **Why:**  
 Maintains data integrity guarantees essential for user trust and system reliability while enabling rapid incident response.
+
+### Playbook: Constraint Violation Remediation
+
+**Purpose:**  
+Emergency response procedure for database constraint violations that require immediate system 
+stabilization and selective data repair.
+
+**Agent Prompt:**  
+Goal: Safely remediate constraint violations while preserving system availability and data integrity.
+
+Do:
+- **Freeze writes:** Enable maintenance mode to prevent new constraint violations
+  ```sql
+  UPDATE system_config SET maintenance_mode = true, reason = 'constraint_violation_repair';
+  ```
+- **Snapshot current state:** Backup affected data before remediation
+  ```sql
+  CREATE TABLE runs_violation_backup AS SELECT * FROM runs WHERE <violation_condition>;
+  ```
+- **Selective rebuild:** Rebuild only affected users/date ranges
+  ```bash
+  rebuild_user_runs --user-list=affected_users.txt --validate-constraints=true
+  ```
+- **Invariant check:** Verify all constraints satisfied post-repair
+  ```sql
+  SELECT COUNT(*) FROM runs r1 JOIN runs r2 ON r1.user_id = r2.user_id 
+  WHERE r1.id != r2.id AND r1.span && r2.span; -- Should return 0
+  ```
+- **Thaw operations:** Re-enable writes after validation
+  ```sql
+  UPDATE system_config SET maintenance_mode = false;
+  ```
+
+Proof:
+- All constraint violations resolved
+- System invariants verified via health checks
+- Affected users' data restored to consistent state
+- Maintenance window duration <30 minutes
+
+**Why:**  
+Provides structured emergency response for constraint violations while minimizing system downtime 
+and preventing data corruption spread.
