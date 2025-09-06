@@ -1,6 +1,6 @@
 import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check, customType, integer, unique, index } from 'drizzle-orm/pg-core';
 import { sqliteTable, text as sqliteText, integer as sqliteInteger, index as sqliteIndex } from 'drizzle-orm/sqlite-core';
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -282,3 +282,31 @@ export const insertRunSqliteSchema = createInsertSchema(runsSqlite).omit({
 
 export type RunSqlite = typeof runsSqlite.$inferSelect;
 export type NewRunSqlite = z.infer<typeof insertRunSqliteSchema>;
+
+// Relations for Drizzle ORM
+export const usersRelations = relations(users, ({ many }) => ({
+  dayMarks: many(dayMarks),
+  clickEvents: many(clickEvents),
+  runs: many(runs),
+}));
+
+export const dayMarksRelations = relations(dayMarks, ({ one }) => ({
+  user: one(users, {
+    fields: [dayMarks.userId],
+    references: [users.id],
+  }),
+}));
+
+export const clickEventsRelations = relations(clickEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [clickEvents.userId], 
+    references: [users.id],
+  }),
+}));
+
+export const runsRelations = relations(runs, ({ one }) => ({
+  user: one(users, {
+    fields: [runs.userId],
+    references: [users.id],
+  }),
+}));
