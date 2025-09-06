@@ -130,3 +130,36 @@ Prevent wasted effort from editing non-runtime files that cause authentication r
 - Eliminates duplicate middleware conflicts and exit code 7 crashes  
 - Ensures clarity on which file actually executes in Replit  
 - Reinforces consistency until tooling unifies around TypeScript
+
+### Playbook: Daily Session Kickoff Context Refresh
+
+**Purpose:**  
+Ensure the agent always has full project context at the start of a session by reviewing implementation plans, decisions, history, and playbooks.
+
+**Agent Prompt:**  
+Goal: Refresh full project context before starting new work.
+
+Do:
+- Review the following files:
+  - docs/agent_memory/imp_plans/ (all implementation plan files, e.g., v1.md, v2.md, future versions)
+  - replit.md
+  - docs/agent_memory/daily_briefs/<yesterday's date>-postbrief.md
+  - docs/agent_memory/decisions.adrs.md
+  - docs/agent_memory/playbooks.md
+  - docs/agent_memory/bugs_journal.md
+- For each file, summarize:
+  - Its purpose
+  - Key completed work, decisions, or practices it records
+  - Any open questions, risks, or next steps noted
+- End with a **"Session Kickoff Summary"** that highlights:
+  - Current project status across all implementation phases
+  - Active constraints, risks, or pending decisions
+  - Playbook practices and ADRs to keep in mind
+  - Known bugs already resolved (so they're not re-investigated)
+
+Proof:
+- Provide a 1–2 paragraph digest per file
+- Finish with consolidated "Session Kickoff Summary"
+
+**Why:**  
+Guarantees continuity across sessions, prevents re-investigation of old bugs, and ensures decisions and playbooks are consistently applied.
