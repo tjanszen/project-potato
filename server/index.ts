@@ -143,10 +143,9 @@ app.post('/api/auth/signup', async (req, res) => {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Create user
+    // Create user 
     const newUser = await storage.createUser({
       email,
-      password,
       timezone,
       passwordHash
     });

@@ -235,14 +235,10 @@ export const runsValidation = {
   }
 };
 
-// Zod schemas for validation
+// Zod schemas for validation 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
-}).extend({
-  password: z.string().min(1, 'Password is required'),
-}).omit({
-  passwordHash: true,
 });
 
 export const insertDayMarkSchema = createInsertSchema(dayMarks).omit({

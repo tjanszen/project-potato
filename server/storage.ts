@@ -1301,7 +1301,6 @@ export class PostgresStorage implements IStorage {
       try {
         const user = await this.createUser({
           email,
-          password: 'stress-test-password', // Required by interface
           passwordHash: 'stress-test-hash',
           timezone: 'America/New_York'
         });
@@ -1532,13 +1531,13 @@ export class PostgresStorage implements IStorage {
       const runsDeleted = deleteResult.rowCount || 0;
 
       // Step 4: Group consecutive dates into runs
-      const runs = this.groupConsecutiveDates(dayMarks);
+      const processedRuns = this.groupConsecutiveDates(dayMarks);
 
       // Step 5: Insert new runs
       let runsCreated = 0;
       const today = new Date().toISOString().split('T')[0];
 
-      for (const run of runs) {
+      for (const run of processedRuns) {
         const isActive = run.endDate === today;
         
         await db.insert(runs).values({
@@ -1921,7 +1920,7 @@ export class PostgresStorage implements IStorage {
     const totalRuns = runs.length;
     const longestRunDays = Math.max(...runs.map((run: any) => run.day_count));
     const activeRun = runs.some((run: any) => run.active);
-    const currentRunDays = activeRun ? runs.find((run: any) => run.active)?.day_count || 0 : 0;
+    const currentRunDays: number = activeRun ? (runs.find((run: any) => run.active)?.day_count as number) || 0 : 0;
     const lastMarkDate = runs.length > 0 ? (runs[0] as any).end_date : undefined;
 
     return {
@@ -2366,14 +2365,14 @@ export class PostgresStorage implements IStorage {
     let filteredRuns = allRuns;
     if (options.fromDate || options.toDate) {
       filteredRuns = allRuns.filter(run => {
-        if (options.fromDate && run.startDate < options.fromDate) return false;
-        if (options.toDate && run.startDate > options.toDate) return false;
+        if (options.fromDate && run.startDate && run.startDate < options.fromDate) return false;
+        if (options.toDate && run.startDate && run.startDate > options.toDate) return false;
         return true;
       });
     }
     
     // Sort by start date descending
-    filteredRuns.sort((a, b) => b.startDate.localeCompare(a.startDate));
+    filteredRuns.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
     
     // Apply pagination
     const offset = options.offset || 0;
