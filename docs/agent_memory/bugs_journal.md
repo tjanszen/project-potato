@@ -115,6 +115,13 @@
 **Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers. Added Error Handling Clause and ADR-2025-09-06 "Mid-Phase Error Handling Standard" to require agents to stop, summarize, and recommend next steps instead of running indefinitely when encountering major issues. See ADR-2025-09-06 for full context and policy details.  
 **Resolution Date:** 2025-09-06
 
+### [2025-09-07] Phase 6X Validation Blocked by Authentication
+**Issue:** Initial validation of /api/v2/runs and /api/v2/totals failed with "connection refused" symptoms, later confirmed to be 401 Unauthorized responses due to missing authentication.  
+**Root Cause:** Endpoints were correctly gated by requireAuthentication middleware. Test requests were unauthenticated, leading to false assumption of server instability.  
+**Resolution:** Added test user creation/login step and session cookie handling to validation flow. Documented in Phase 6X Exit Criteria, API Validation Checklist, and ADR-2025-09-07.  
+**Status:** Resolved ✅  
+**Cross-Reference:** ADR-2025-09-07 Authenticated Endpoint Validation; imp_plans/v2.md Phase 6X Exit Criteria
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  

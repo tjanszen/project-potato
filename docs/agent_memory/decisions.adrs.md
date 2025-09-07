@@ -95,3 +95,12 @@
 - Increases clarity and trust in agent execution  
 - Cross-reference: bugs_journal.md [2025-09-06] V2 Endpoints & Storage Missing documents the incident that led to this ADR.  
 **Status:** Accepted (2025-09-06)
+
+## ADR-2025-09-07 Authenticated Endpoint Validation
+**Context:** During Phase 6X, V2 endpoints returned 401 Unauthorized on validation attempts because requests were unauthenticated. This was initially mistaken for server instability.  
+**Decision:** All implementation plans must explicitly account for authentication when validating protected endpoints. Exit Criteria for any authenticated endpoint must include validation using a valid session.  
+**Consequences:**  
+- Prevents misinterpreting 401s as crashes  
+- Ensures functional validation reflects real user flows  
+- Adds requirement to create/login a test user in validation steps  
+**Status:** Accepted (2025-09-07)

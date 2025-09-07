@@ -440,6 +440,18 @@ When preparing the daily prebrief:
 - Keeps decision history and bug history tightly aligned
 - Reduces risk of repeated mistakes or lost context
 
+### API Validation Checklist
+
+- For each endpoint, determine if authentication is required
+- Always create/login a test user for validation
+- Capture Set-Cookie session header from login response
+- Pass session cookie in subsequent curl requests
+- Confirm:
+  - Public endpoints respond without auth (e.g., health checks)
+  - Protected endpoints return HTTP 200 with correct JSON when authenticated
+  - Protected endpoints return 401 Unauthorized when unauthenticated
+- Evidence: curl outputs for both public + protected endpoints, server logs confirming authenticated access
+
 ### Server Validation Checklist
 
 Before marking any server-related phase as complete (e.g., endpoint integration, cutover, migrations), confirm:

@@ -1,0 +1,47 @@
+Goal: Capture authentication requirement for endpoint validation across v2.md, playbooks, ADRs, and bug journal
+
+Do:
+
+1. In docs/agent_memory/imp_plans/v2.md:
+- Locate Phase 6X Exit Criteria
+- Add new item:
+  - Authenticated requests to /api/v2/runs and /api/v2/totals return HTTP 200 with correct JSON structures (runs + pagination, totals data)
+
+2. In docs/agent_memory/playbooks.md:
+- Add a new section:
+  ### API Validation Checklist
+  - For each endpoint, determine if authentication is required
+  - Always create/login a test user for validation
+  - Capture Set-Cookie session header from login response
+  - Pass session cookie in subsequent curl requests
+  - Confirm:
+    - Public endpoints respond without auth (e.g., health checks)
+    - Protected endpoints return HTTP 200 with correct JSON when authenticated
+    - Protected endpoints return 401 Unauthorized when unauthenticated
+  - Evidence: curl outputs for both public + protected endpoints, server logs confirming authenticated access
+
+3. In docs/agent_memory/decisions.adrs.md:
+- Append new entry:
+  ## ADR-2025-09-07 Authenticated Endpoint Validation
+  **Context:** During Phase 6X, V2 endpoints returned 401 Unauthorized on validation attempts because requests were unauthenticated. This was initially mistaken for server instability.  
+  **Decision:** All implementation plans must explicitly account for authentication when validating protected endpoints. Exit Criteria for any authenticated endpoint must include validation using a valid session.  
+  **Consequences:**  
+  - Prevents misinterpreting 401s as crashes  
+  - Ensures functional validation reflects real user flows  
+  - Adds requirement to create/login a test user in validation steps  
+  **Status:** Accepted (2025-09-07)
+
+4. In docs/agent_memory/bugs_journal.md:
+- Append new entry:
+  ### [2025-09-07] Phase 6X Validation Blocked by Authentication
+  **Issue:** Initial validation of /api/v2/runs and /api/v2/totals failed with "connection refused" symptoms, later confirmed to be 401 Unauthorized responses due to missing authentication.  
+  **Root Cause:** Endpoints were correctly gated by requireAuthentication middleware. Test requests were unauthenticated, leading to false assumption of server instability.  
+  **Resolution:** Added test user creation/login step and session cookie handling to validation flow. Documented in Phase 6X Exit Criteria, API Validation Checklist, and ADR-2025-09-07.  
+  **Status:** Resolved ✅  
+  **Cross-Reference:** ADR-2025-09-07 Authenticated Endpoint Validation; imp_plans/v2.md Phase 6X Exit Criteria
+
+Proof:
+- v2.md updated with authenticated validation requirement in Phase 6X Exit Criteria
+- playbooks.md updated with "API Validation Checklist"
+- decisions.adrs.md updated with ADR-2025-09-07 Authenticated Endpoint Validation
+- bugs_journal.md updated with entry documenting Phase 6X authentication confusion and resolution
