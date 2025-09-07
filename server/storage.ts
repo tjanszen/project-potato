@@ -688,16 +688,17 @@ export class PostgresStorage implements IStorage {
 
   async validateIsolationLevel(): Promise<string> {
     const result = await db.execute(sql`SHOW transaction_isolation`);
-    return result.rows[0]?.transaction_isolation || 'unknown';
+    return (result.rows[0] as any)?.transaction_isolation || 'unknown';
   }
 
   // Phase 6B-3: Concurrency & Locking operations
   async initializeConcurrencyStrategy(): Promise<ConcurrencyStrategy> {
     // Determine database engine and locking strategy
-    const versionResult = await db.execute(sql`SELECT version()`);
-    const version = versionResult.rows[0]?.version || '';
+    const versionResult = await db.execute(sql`SELECT version() as version`);
+    const versionRow = versionResult.rows[0] as any;
+    const version = versionRow?.version || '';
     
-    const isPostgreSQL = version.toLowerCase().includes('postgresql');
+    const isPostgreSQL = typeof version === 'string' && version.toLowerCase().includes('postgresql');
     
     return {
       engine: isPostgreSQL ? 'postgresql' : 'sqlite',
