@@ -67,3 +67,14 @@
 - Feature flags remain the safety net for rollback  
 - If the user base grows, more robust staged rollout strategies (dashboards, alerts, gradual percentage rollout) may be reintroduced  
 **Links:** imp_plans/v2.md [Phase 6E-Lite] and future phases that involve cutovers
+
+## ADR-2025-09-06 Frontend Integration as Explicit Phase
+**Context:** In v1, frontend updates (Dashboard Integration) were handled as explicit implementation phases. In v2, Phase 7C: Frontend Integration was added in the same style, but initially documented as a one-off. To avoid ambiguity, frontend integrations should always be treated as explicit, feature-flagged phases.  
+**Decision:** All future frontend integrations will be tracked as their own implementation phases, feature-flagged independently, not bundled invisibly into backend or totals phases. This ensures visibility of user-facing work, clear rollback paths, and consistency with established practice.  
+**Status:** Accepted  
+**Consequences:**  
+- Consistent project structure: backend and frontend work both get explicit phases  
+- Rollback safety: frontend components always gated behind feature flags  
+- Prevents confusion where UI updates are hidden inside backend milestones  
+- Matches v1 and v2 precedent (Dashboard Integration, Phase 7C)  
+**Links:** imp_plans/v1.md [Dashboard Integration], imp_plans/v2.md [Phase 7C: Frontend Integration]
