@@ -56,3 +56,14 @@
 **Status:** Accepted  
 **Consequences:** Improves visibility of user-facing work, ensures rollback safety, and maintains parity with V1's Dashboard Integration phase approach  
 **Links:** imp_plans/v2.md [Phase 7C: Frontend Integration]
+
+## ADR-2025-09-06 Lightweight Cutover Strategy for Small User Base
+**Context:** Earlier plans (e.g., Phase 6E) assumed enterprise-scale gradual rollout with dashboards, alerts, and staged rollout percentages (0% → 10% → 50% → 100%). In the current environment, production has only 1–few users, making such strategies overkill.  
+**Decision:** All cutover phases (current and future) will use a lightweight approach: enable the new feature behind a feature flag, run manual validation checks, and roll back by toggling the flag off if needed. No multi-stage rollout or heavy monitoring is required at this scale.  
+**Status:** Accepted  
+**Consequences:**  
+- Faster, simpler cutovers appropriate for a small user base  
+- Manual validation replaces complex automated rollout steps  
+- Feature flags remain the safety net for rollback  
+- If the user base grows, more robust staged rollout strategies (dashboards, alerts, gradual percentage rollout) may be reintroduced  
+**Links:** imp_plans/v2.md [Phase 6E-Lite] and future phases that involve cutovers
