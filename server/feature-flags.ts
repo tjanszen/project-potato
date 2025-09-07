@@ -14,7 +14,7 @@ const featureFlags: Record<string, FeatureFlag> = {
   },
   'ff.potato.runs_v2': {
     name: 'ff.potato.runs_v2',
-    enabled: false, // Default OFF as required - overridden by environment variable
+    enabled: true, // Default ON for Phase 6E-Lite cutover - overridden by environment variable
     description: 'V2 feature flag for runs and totals tracking functionality',
   },
 };
