@@ -439,3 +439,18 @@ When preparing the daily prebrief:
 - Ensures incident-driven ADRs are always traceable to their root cause
 - Keeps decision history and bug history tightly aligned
 - Reduces risk of repeated mistakes or lost context
+
+### Server Validation Checklist
+
+Before marking any server-related phase as complete (e.g., endpoint integration, cutover, migrations), confirm:
+- Server binds to process.env.PORT (or fallback port) using app.listen()
+- Server remains running (not exiting immediately)
+- Feature flags load and log correctly at startup
+- curl /health returns HTTP 200 with { healthy: true }
+- Logs confirm "Server listening on port $PORT"
+- lsof or ss shows process bound to the expected port
+
+**Why:**
+- Prevents silent failures where server logs success but exits
+- Ensures Replit-compatible binding to dynamic $PORT
+- Guarantees endpoints are actually reachable during validation
