@@ -1,5 +1,12 @@
 # Playbooks (Agent-Ready Prompts)
 
+### Documentation Update Rules
+
+- Core docs (replit.md, ADRs, Features Overview) must never be overwritten or reformatted
+- Always append new information in the correct section, preserving prior content
+- For daily progress in replit.md, always prepend the newest entry under "Recent Progress"
+- If unsure, fetch original from GitHub before applying changes
+
 ### Playbook: Daily Session Kickoff Context Refresh
 
 **Purpose:**  
