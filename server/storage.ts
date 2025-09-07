@@ -133,6 +133,14 @@ export interface IStorage {
   runStressTest(config: StressTestConfiguration): Promise<StressTestResults>;
   validateInvariantsAfterStress(): Promise<{ overlappingRuns: number; multipleActiveRuns: number }>;
   documentDeadlockScenarios(): Promise<RaceConditionScenario[]>;
+
+  // Phase 6C: Backfill/Rebuild operations
+  rebuildUserRuns(userId: string, fromDate?: string, toDate?: string): Promise<RebuildResult>;
+  validateRebuildResults(userId: string, beforeSnapshot: Run[], afterSnapshot: Run[]): Promise<ValidationResult>;
+  backupUserRuns(userId: string): Promise<RunBackup>;
+  restoreUserRuns(userId: string, backup: RunBackup): Promise<void>;
+  bulkRebuildUsers(userIds: string[], config?: BulkRebuildConfig): Promise<BulkRebuildResult>;
+  getRebuildProgress(operationId: string): Promise<RebuildProgress>;
 }
 
 // Result types for run operations
@@ -246,6 +254,84 @@ export interface StressTestResults {
   p95ResponseTimeMs: number;
   p99ResponseTimeMs: number;
   invariantViolations: number;
+}
+
+// Phase 6C: Backfill/Rebuild types
+export interface RebuildResult {
+  success: boolean;
+  userId: string;
+  operationId: string;
+  runsDeleted: number;
+  runsCreated: number;
+  totalDaysProcessed: number;
+  durationMs: number;
+  fromDate?: string;
+  toDate?: string;
+  invariantViolations: number;
+  backup?: RunBackup;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  userId: string;
+  beforeCount: number;
+  afterCount: number;
+  invariantViolations: string[];
+  dataIntegrityChecks: {
+    noOverlappingRuns: boolean;
+    singleActiveRun: boolean;
+    dayCountAccuracy: boolean;
+    deterministicRebuild: boolean;
+  };
+}
+
+export interface RunBackup {
+  userId: string;
+  timestamp: Date;
+  runs: Run[];
+  metadata: {
+    totalRuns: number;
+    totalDays: number;
+    activeRun: boolean;
+    backupReason: string;
+  };
+}
+
+export interface BulkRebuildConfig {
+  batchSize: number;
+  maxWorkers: number;
+  dryRun: boolean;
+  fromDate?: string;
+  toDate?: string;
+  skipBackup: boolean;
+}
+
+export interface BulkRebuildResult {
+  operationId: string;
+  totalUsers: number;
+  completedUsers: number;
+  failedUsers: number;
+  skippedUsers: number;
+  averageDurationMs: number;
+  totalDurationMs: number;
+  invariantViolations: number;
+  errors: Array<{
+    userId: string;
+    error: string;
+    timestamp: Date;
+  }>;
+}
+
+export interface RebuildProgress {
+  operationId: string;
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  totalUsers?: number;
+  processedUsers: number;
+  currentUser?: string;
+  estimatedCompletionMs?: number;
+  errors: number;
+  startedAt: Date;
+  completedAt?: Date;
 }
 
 // PostgreSQL implementation
@@ -1257,6 +1343,329 @@ export class PostgresStorage implements IStorage {
         `
       }
     ];
+  }
+
+  // Phase 6C: Backfill/Rebuild operations
+  async rebuildUserRuns(userId: string, fromDate?: string, toDate?: string): Promise<RebuildResult> {
+    const operationId = randomUUID();
+    const startTime = performance.now();
+    
+    try {
+      // Step 1: Backup existing runs before rebuild
+      const backup = await this.backupUserRuns(userId);
+      
+      // Step 2: Get user's day marks for the specified date range
+      const dayMarksQuery = fromDate || toDate ? sql`
+        SELECT date, value
+        FROM day_marks
+        WHERE user_id = ${userId}
+        AND value = true
+        ${fromDate ? sql`AND date >= ${fromDate}` : sql``}
+        ${toDate ? sql`AND date <= ${toDate}` : sql``}
+        ORDER BY date
+      ` : sql`
+        SELECT date, value
+        FROM day_marks
+        WHERE user_id = ${userId}
+        AND value = true
+        ORDER BY date
+      `;
+
+      const dayMarksResult = await db.execute(dayMarksQuery);
+      const dayMarks = dayMarksResult.rows.map((row: any) => row.date);
+
+      // Step 3: Delete existing runs in the affected date range
+      const deleteQuery = fromDate || toDate ? sql`
+        DELETE FROM runs
+        WHERE user_id = ${userId}
+        ${fromDate ? sql`AND lower(span) >= ${fromDate}` : sql``}
+        ${toDate ? sql`AND upper(span) <= ${toDate}` : sql``}
+      ` : sql`
+        DELETE FROM runs WHERE user_id = ${userId}
+      `;
+      
+      const deleteResult = await db.execute(deleteQuery);
+      const runsDeleted = deleteResult.rowCount || 0;
+
+      // Step 4: Group consecutive dates into runs
+      const runs = this.groupConsecutiveDates(dayMarks);
+
+      // Step 5: Insert new runs
+      let runsCreated = 0;
+      const today = new Date().toISOString().split('T')[0];
+
+      for (const run of runs) {
+        const isActive = run.endDate === today;
+        
+        await db.insert(runs).values({
+          id: randomUUID(),
+          userId,
+          span: sql`daterange(${run.startDate}, (${run.endDate}::date + interval '1 day')::date, '[)')`,
+          dayCount: run.dayCount,
+          active: isActive,
+          lastExtendedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        
+        runsCreated++;
+      }
+
+      const endTime = performance.now();
+      const durationMs = Math.round((endTime - startTime) * 100) / 100;
+
+      // Step 6: Validate invariants
+      const invariantViolations = await this.validateInvariantsAfterStress();
+      const totalViolations = invariantViolations.overlappingRuns + invariantViolations.multipleActiveRuns;
+
+      const result: RebuildResult = {
+        success: totalViolations === 0,
+        userId,
+        operationId,
+        runsDeleted,
+        runsCreated,
+        totalDaysProcessed: dayMarks.length,
+        durationMs,
+        fromDate,
+        toDate,
+        invariantViolations: totalViolations,
+        backup
+      };
+
+      return result;
+
+    } catch (error) {
+      const endTime = performance.now();
+      const durationMs = Math.round((endTime - startTime) * 100) / 100;
+
+      return {
+        success: false,
+        userId,
+        operationId,
+        runsDeleted: 0,
+        runsCreated: 0,
+        totalDaysProcessed: 0,
+        durationMs,
+        fromDate,
+        toDate,
+        invariantViolations: -1 // Indicates error
+      };
+    }
+  }
+
+  private groupConsecutiveDates(dates: string[]): Array<{startDate: string, endDate: string, dayCount: number}> {
+    if (dates.length === 0) return [];
+
+    const runs: Array<{startDate: string, endDate: string, dayCount: number}> = [];
+    let currentRun = {
+      startDate: dates[0],
+      endDate: dates[0],
+      dayCount: 1
+    };
+
+    for (let i = 1; i < dates.length; i++) {
+      const currentDate = new Date(dates[i]);
+      const prevDate = new Date(dates[i - 1]);
+      const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (dayDiff === 1) {
+        // Consecutive day - extend current run
+        currentRun.endDate = dates[i];
+        currentRun.dayCount++;
+      } else {
+        // Gap found - finish current run and start new one
+        runs.push({ ...currentRun });
+        currentRun = {
+          startDate: dates[i],
+          endDate: dates[i],
+          dayCount: 1
+        };
+      }
+    }
+
+    // Add the last run
+    runs.push(currentRun);
+    return runs;
+  }
+
+  async validateRebuildResults(userId: string, beforeSnapshot: Run[], afterSnapshot: Run[]): Promise<ValidationResult> {
+    const violations: string[] = [];
+    
+    // Check for overlapping runs
+    const overlappingRuns = await this.validateInvariantsAfterStress();
+    const noOverlappingRuns = overlappingRuns.overlappingRuns === 0;
+    if (!noOverlappingRuns) {
+      violations.push(`Found ${overlappingRuns.overlappingRuns} overlapping runs`);
+    }
+
+    // Check for single active run
+    const singleActiveRun = overlappingRuns.multipleActiveRuns === 0;
+    if (!singleActiveRun) {
+      violations.push(`Found multiple active runs for user`);
+    }
+
+    // Check day count accuracy
+    const dayCountQuery = sql`
+      SELECT COUNT(*) as violations
+      FROM runs
+      WHERE user_id = ${userId}
+      AND day_count != (upper(span) - lower(span))
+    `;
+    const dayCountResult = await db.execute(dayCountQuery);
+    const dayCountViolations = Number((dayCountResult.rows[0] as any)?.violations) || 0;
+    const dayCountAccuracy = dayCountViolations === 0;
+    if (!dayCountAccuracy) {
+      violations.push(`Found ${dayCountViolations} day count mismatches`);
+    }
+
+    // Test deterministic rebuild by running rebuild again and comparing
+    const secondRebuild = await this.rebuildUserRuns(userId);
+    const deterministicRebuild = secondRebuild.success && secondRebuild.runsCreated === afterSnapshot.length;
+    if (!deterministicRebuild) {
+      violations.push('Rebuild is not deterministic - multiple executions produce different results');
+    }
+
+    return {
+      valid: violations.length === 0,
+      userId,
+      beforeCount: beforeSnapshot.length,
+      afterCount: afterSnapshot.length,
+      invariantViolations: violations,
+      dataIntegrityChecks: {
+        noOverlappingRuns,
+        singleActiveRun,
+        dayCountAccuracy,
+        deterministicRebuild
+      }
+    };
+  }
+
+  async backupUserRuns(userId: string): Promise<RunBackup> {
+    const userRuns = await db.select().from(runs).where(eq(runs.userId, userId));
+    const activeRun = userRuns.find(run => run.active);
+    const totalDays = userRuns.reduce((sum, run) => sum + run.dayCount, 0);
+
+    return {
+      userId,
+      timestamp: new Date(),
+      runs: userRuns,
+      metadata: {
+        totalRuns: userRuns.length,
+        totalDays,
+        activeRun: !!activeRun,
+        backupReason: 'Pre-rebuild backup'
+      }
+    };
+  }
+
+  async restoreUserRuns(userId: string, backup: RunBackup): Promise<void> {
+    // Delete current runs
+    await db.delete(runs).where(eq(runs.userId, userId));
+
+    // Restore from backup
+    if (backup.runs.length > 0) {
+      await db.insert(runs).values(backup.runs);
+    }
+  }
+
+  async bulkRebuildUsers(userIds: string[], config?: BulkRebuildConfig): Promise<BulkRebuildResult> {
+    const defaultConfig: BulkRebuildConfig = {
+      batchSize: 10,
+      maxWorkers: 5,
+      dryRun: false,
+      skipBackup: false
+    };
+    
+    const finalConfig = { ...defaultConfig, ...config };
+    const operationId = randomUUID();
+    const startTime = performance.now();
+    
+    const result: BulkRebuildResult = {
+      operationId,
+      totalUsers: userIds.length,
+      completedUsers: 0,
+      failedUsers: 0,
+      skippedUsers: 0,
+      averageDurationMs: 0,
+      totalDurationMs: 0,
+      invariantViolations: 0,
+      errors: []
+    };
+
+    if (finalConfig.dryRun) {
+      console.log(`[DRY RUN] Would rebuild ${userIds.length} users`);
+      return result;
+    }
+
+    // Process users in batches
+    const batches = this.chunkArray(userIds, finalConfig.batchSize);
+    const durations: number[] = [];
+
+    for (const batch of batches) {
+      const batchPromises = batch.map(async (userId) => {
+        try {
+          const rebuildResult = await this.rebuildUserRuns(
+            userId,
+            finalConfig.fromDate,
+            finalConfig.toDate
+          );
+          
+          durations.push(rebuildResult.durationMs);
+          
+          if (rebuildResult.success) {
+            result.completedUsers++;
+          } else {
+            result.failedUsers++;
+            result.errors.push({
+              userId,
+              error: `Rebuild failed with ${rebuildResult.invariantViolations} invariant violations`,
+              timestamp: new Date()
+            });
+          }
+          
+          result.invariantViolations += rebuildResult.invariantViolations;
+          
+        } catch (error) {
+          result.failedUsers++;
+          result.errors.push({
+            userId,
+            error: (error as Error).message,
+            timestamp: new Date()
+          });
+        }
+      });
+
+      await Promise.all(batchPromises);
+    }
+
+    const endTime = performance.now();
+    result.totalDurationMs = Math.round((endTime - startTime) * 100) / 100;
+    result.averageDurationMs = durations.length > 0 
+      ? Math.round((durations.reduce((sum, d) => sum + d, 0) / durations.length) * 100) / 100
+      : 0;
+
+    return result;
+  }
+
+  async getRebuildProgress(operationId: string): Promise<RebuildProgress> {
+    // This is a simplified implementation
+    // In production, you'd store progress in a database table or Redis
+    return {
+      operationId,
+      status: 'completed',
+      processedUsers: 0,
+      errors: 0,
+      startedAt: new Date(),
+      completedAt: new Date()
+    };
+  }
+
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
   }
 }
 
