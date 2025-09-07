@@ -1,0 +1,45 @@
+Goal: Replace Phase 6E in v2.md with simplified 6E-Lite and add ADR entry explaining rationale
+
+Do:
+1. In docs/agent_memory/imp_plans/v2.md:
+   - Find the section titled "PHASE 6E: Cutover via ff.potato.runs_v2"
+   - Replace it with the following:
+
+## PHASE 6E-Lite: Cutover for Small User Base
+
+**Goal:** Switch production over to v2 runs for a tiny user base (1–a few users) once shadow diff looks healthy.  
+
+**Tasks:**  
+- Run shadow diff (Phase 6D) until results are stable (no obvious mismatches)  
+- Flip the feature flag `ff.potato.runs_v2=true`  
+- Manually check `/api/v2/runs`, `/api/v2/totals`, and `/health/runs`  
+- Watch logs to confirm no invariant violations appear  
+
+**Exit Criteria:**  
+- v2 endpoints return correct values for known users  
+- `/health/runs` shows no overlaps or multiple active runs  
+- Logs show no unexpected errors  
+
+**Evidence to Collect:**  
+- Manual curl or browser check of totals and runs  
+- Screenshot or log output from `/health/runs`  
+- Log snippet showing clean cutover  
+
+**Rollback Plan:**  
+- If issues occur, toggle `ff.potato.runs_v2=false`  
+- Rebuild from `day_marks` if needed  
+
+**Feature Flag(s):**  
+- `ff.potato.runs_v2` (default OFF, toggled ON when ready)  
+
+2. In docs/agent_memory/decisions.adrs.md:
+   - Add new ADR entry titled: "Simplified Cutover Strategy for Small User Base"
+   - Content:
+     - **Context:** Original Phase 6E assumed gradual multi-user rollout with dashboards, alerts, and staged rollout (0% → 10% → 50% → 100%). Current production context has only 1–few users.  
+     - **Decision:** Replace Phase 6E with "6E-Lite," a lightweight cutover process using manual validation and feature flag toggling.  
+     - **Consequences:** Faster and simpler cutover, appropriate for small user base. Robust enterprise rollout steps are unnecessary but can be reintroduced later if user base grows.  
+     - **Status:** Accepted (2025-09-06).  
+
+Proof:
+- v2.md updated with Phase 6E-Lite
+- decisions.adrs.md contains new ADR entry "Simplified Cutover Strategy for Small User Base"
