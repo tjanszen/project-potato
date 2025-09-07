@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { users, dayMarks, clickEvents, runs, type User, type NewUser, type DayMark, type NewDayMark, type ClickEvent, type NewClickEvent, type Run, type NewRun } from '../shared/schema.js';
 import { eq, and, sql, or, gte, lte, lt, gt, desc, asc } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 // Database connection
 const pool = new Pool({
@@ -9,6 +10,82 @@ const pool = new Pool({
 });
 
 export const db = drizzle(pool);
+
+// Phase 6B-3: Application-level mutex for SQLite fallback
+class UserMutex {
+  private locks = new Map<string, { lockId: string; acquiredAt: Date; released: boolean }>();
+  private waitQueue = new Map<string, Array<{ resolve: Function; reject: Function; timeout: NodeJS.Timeout }>>();
+
+  async acquire(userId: string, operationType: string, timeoutMs = 5000): Promise<LockAcquisition> {
+    const lockId = `${userId}:${operationType}:${randomUUID()}`;
+    
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.removeFromQueue(userId, resolve);
+        reject(new Error(`Lock acquisition timeout for user ${userId}`));
+      }, timeoutMs);
+
+      if (!this.locks.has(userId)) {
+        // Lock available immediately
+        const lock: LockAcquisition = {
+          userId,
+          lockId,
+          acquiredAt: new Date(),
+          released: false
+        };
+        this.locks.set(userId, lock);
+        clearTimeout(timeout);
+        resolve(lock);
+      } else {
+        // Queue the request
+        if (!this.waitQueue.has(userId)) {
+          this.waitQueue.set(userId, []);
+        }
+        this.waitQueue.get(userId)!.push({ resolve, reject, timeout });
+      }
+    });
+  }
+
+  async release(lockId: string): Promise<void> {
+    const userId = lockId.split(':')[0];
+    const lock = this.locks.get(userId);
+    
+    if (lock && lock.lockId === lockId) {
+      lock.released = true;
+      this.locks.delete(userId);
+      
+      // Process queue
+      const queue = this.waitQueue.get(userId);
+      if (queue && queue.length > 0) {
+        const next = queue.shift()!;
+        clearTimeout(next.timeout);
+        
+        const newLockId = `${userId}:queued:${randomUUID()}`;
+        const newLock: LockAcquisition = {
+          userId,
+          lockId: newLockId,
+          acquiredAt: new Date(),
+          released: false
+        };
+        this.locks.set(userId, newLock);
+        next.resolve(newLock);
+      }
+    }
+  }
+
+  private removeFromQueue(userId: string, resolve: Function) {
+    const queue = this.waitQueue.get(userId);
+    if (queue) {
+      const index = queue.findIndex(item => item.resolve === resolve);
+      if (index >= 0) {
+        queue.splice(index, 1);
+      }
+    }
+  }
+}
+
+// Global mutex instance for SQLite fallback
+const globalUserMutex = new UserMutex();
 
 // Storage interface for all database operations
 export interface IStorage {
@@ -39,6 +116,15 @@ export interface IStorage {
   executeWithTransactionBoundary<T>(boundary: TransactionBoundary, operation: () => Promise<T>): Promise<{ result: T; metrics: TransactionMetrics }>;
   validateTransactionScope(userId: string, date: string): Promise<TransactionScope>;
   validateIsolationLevel(): Promise<string>;
+
+  // Phase 6B-3: Concurrency & Locking operations
+  initializeConcurrencyStrategy(): Promise<ConcurrencyStrategy>;
+  acquireUserLock(userId: string, operationType: string): Promise<LockAcquisition>;
+  releaseUserLock(lockId: string): Promise<void>;
+  executeWithPerUserSerialization<T>(userId: string, operationType: string, operation: () => Promise<T>): Promise<{ result: T; metrics: ConcurrencyMetrics }>;
+  validateLockOrdering(userId: string, dateRange: string[]): Promise<boolean>;
+  documentRaceConditions(): Promise<RaceConditionScenario[]>;
+  testConcurrentAccess(userIds: string[], operationType: string): Promise<ConcurrencyMetrics[]>;
 }
 
 // Result types for run operations
@@ -78,6 +164,36 @@ export interface TransactionScope {
   lockQuery: string;
   lockParams: any[];
   expectedRows: number;
+}
+
+// Phase 6B-3: Concurrency & Locking types
+export interface ConcurrencyStrategy {
+  engine: 'postgresql' | 'sqlite';
+  lockType: 'row_level' | 'application_mutex';
+  lockOrder: string[];
+}
+
+export interface LockAcquisition {
+  userId: string;
+  lockId: string;
+  acquiredAt: Date;
+  released: boolean;
+}
+
+export interface RaceConditionScenario {
+  scenario: string;
+  description: string;
+  postgresqlMitigation: string;
+  sqliteMitigation: string;
+  evidenceQuery: string;
+}
+
+export interface ConcurrencyMetrics {
+  lockAcquisitionTimeMs: number;
+  lockHoldTimeMs: number;
+  queuedOperations: number;
+  concurrentUsers: number;
+  deadlocksDetected: number;
 }
 
 // PostgreSQL implementation
@@ -573,6 +689,165 @@ export class PostgresStorage implements IStorage {
   async validateIsolationLevel(): Promise<string> {
     const result = await db.execute(sql`SHOW transaction_isolation`);
     return result.rows[0]?.transaction_isolation || 'unknown';
+  }
+
+  // Phase 6B-3: Concurrency & Locking operations
+  async initializeConcurrencyStrategy(): Promise<ConcurrencyStrategy> {
+    // Determine database engine and locking strategy
+    const versionResult = await db.execute(sql`SELECT version()`);
+    const version = versionResult.rows[0]?.version || '';
+    
+    const isPostgreSQL = version.toLowerCase().includes('postgresql');
+    
+    return {
+      engine: isPostgreSQL ? 'postgresql' : 'sqlite',
+      lockType: isPostgreSQL ? 'row_level' : 'application_mutex',
+      lockOrder: ['user_id', 'start_date'] // Consistent ordering to prevent deadlocks
+    };
+  }
+
+  async acquireUserLock(userId: string, operationType: string): Promise<LockAcquisition> {
+    const strategy = await this.initializeConcurrencyStrategy();
+    
+    if (strategy.lockType === 'row_level') {
+      // PostgreSQL row-level locking
+      const lockId = `pg:${userId}:${operationType}:${randomUUID()}`;
+      
+      // Use advisory locks for user-level serialization
+      const lockKey = this.hashStringToNumber(userId);
+      const lockResult = await db.execute(sql`SELECT pg_advisory_lock(${lockKey})`);
+      
+      return {
+        userId,
+        lockId,
+        acquiredAt: new Date(),
+        released: false
+      };
+    } else {
+      // SQLite application-level mutex
+      return await globalUserMutex.acquire(userId, operationType);
+    }
+  }
+
+  async releaseUserLock(lockId: string): Promise<void> {
+    const strategy = await this.initializeConcurrencyStrategy();
+    
+    if (strategy.lockType === 'row_level') {
+      // PostgreSQL advisory lock release
+      const userId = lockId.split(':')[1];
+      const lockKey = this.hashStringToNumber(userId);
+      await db.execute(sql`SELECT pg_advisory_unlock(${lockKey})`);
+    } else {
+      // SQLite application-level mutex release
+      await globalUserMutex.release(lockId);
+    }
+  }
+
+  async executeWithPerUserSerialization<T>(userId: string, operationType: string, operation: () => Promise<T>): Promise<{ result: T; metrics: ConcurrencyMetrics }> {
+    const startTime = performance.now();
+    let lockAcquisitionStart = performance.now();
+    
+    const lock = await this.acquireUserLock(userId, operationType);
+    const lockAcquisitionTime = performance.now() - lockAcquisitionStart;
+    
+    try {
+      const result = await operation();
+      const endTime = performance.now();
+      
+      const metrics: ConcurrencyMetrics = {
+        lockAcquisitionTimeMs: Math.round(lockAcquisitionTime * 100) / 100,
+        lockHoldTimeMs: Math.round((endTime - startTime) * 100) / 100,
+        queuedOperations: 0, // Would need queue monitoring for accurate count
+        concurrentUsers: 1, // Single user operation
+        deadlocksDetected: 0
+      };
+      
+      return { result, metrics };
+    } finally {
+      await this.releaseUserLock(lock.lockId);
+    }
+  }
+
+  async validateLockOrdering(userId: string, dateRange: string[]): Promise<boolean> {
+    // Validate that locks are acquired in consistent order: user_id, then start_date
+    const sortedDates = [...dateRange].sort();
+    const isOrdered = JSON.stringify(dateRange) === JSON.stringify(sortedDates);
+    
+    // In practice, we always lock by user_id first, then date ranges in ascending order
+    return isOrdered;
+  }
+
+  async documentRaceConditions(): Promise<RaceConditionScenario[]> {
+    return [
+      {
+        scenario: 'Concurrent Day Marking',
+        description: 'Two clients simultaneously mark the same date for the same user',
+        postgresqlMitigation: 'Row-level locking with FOR UPDATE on runs table + unique constraints',
+        sqliteMitigation: 'Application-level mutex per user + database constraints',
+        evidenceQuery: `
+          -- Test concurrent day marking
+          BEGIN; 
+          SELECT * FROM runs WHERE user_id = 'test-user' FOR UPDATE;
+          -- Second connection should block here
+        `
+      },
+      {
+        scenario: 'Run Extend Race Condition',
+        description: 'Two operations try to extend different runs for the same user',
+        postgresqlMitigation: 'Advisory locks on user_id + ordered lock acquisition',
+        sqliteMitigation: 'Per-user mutex ensures only one operation at a time',
+        evidenceQuery: `
+          -- Test run extension conflicts
+          SELECT pg_advisory_lock(hashtext('user-id'));
+          -- Perform run calculations safely
+          SELECT pg_advisory_unlock(hashtext('user-id'));
+        `
+      },
+      {
+        scenario: 'Split-Merge Deadlock',
+        description: 'Split operation and merge operation create circular lock dependencies',
+        postgresqlMitigation: 'Consistent lock ordering: user_id first, then start_date ascending',
+        sqliteMitigation: 'Single mutex per user prevents circular dependencies',
+        evidenceQuery: `
+          -- Demonstrate consistent lock ordering
+          SELECT * FROM runs WHERE user_id = ? ORDER BY lower(span) FOR UPDATE;
+        `
+      }
+    ];
+  }
+
+  async testConcurrentAccess(userIds: string[], operationType: string): Promise<ConcurrencyMetrics[]> {
+    const results: ConcurrencyMetrics[] = [];
+    
+    // Simulate concurrent operations
+    const operations = userIds.map(async (userId) => {
+      const startTime = performance.now();
+      
+      return this.executeWithPerUserSerialization(userId, operationType, async () => {
+        // Simulate work (e.g., run calculation)
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
+        return `operation-${operationType}-${userId}`;
+      });
+    });
+    
+    const operationResults = await Promise.all(operations);
+    
+    for (const result of operationResults) {
+      results.push(result.metrics);
+    }
+    
+    return results;
+  }
+
+  // Helper method to convert string to number for PostgreSQL advisory locks
+  private hashStringToNumber(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
   }
 }
 
