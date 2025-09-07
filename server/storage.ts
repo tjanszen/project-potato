@@ -150,6 +150,14 @@ export interface IStorage {
   monitorShadowPerformance(): Promise<ShadowPerformanceMetrics>;
   executeCutoverChecklist(): Promise<CutoverChecklistResult>;
   resolveDiffDiscrepancy(userId: string, diffType: string): Promise<DiffResolutionResult>;
+
+  // Phase 6E-Lite: V2 Endpoint operations
+  getRunsForUser(userId: string, options: { limit?: number; offset?: number; fromDate?: string; toDate?: string }): Promise<Run[]>;
+  getRunsCountForUser(userId: string): Promise<number>;
+  getTotalsForUser(userId: string): Promise<{ totalDays: number; currentRunDays: number; longestRunDays: number; totalRuns: number; avgRunLength: number }>;
+  checkRunOverlaps(): Promise<number>;
+  checkMultipleActiveRuns(): Promise<number>;
+  validateDayCounts(): Promise<number>;
 }
 
 // Result types for run operations
@@ -2347,6 +2355,82 @@ export class PostgresStorage implements IStorage {
       resolutionTimeMs,
       notes
     };
+  }
+
+  // Phase 6E-Lite: V2 Endpoint implementations
+  async getRunsForUser(userId: string, options: { limit?: number; offset?: number; fromDate?: string; toDate?: string }): Promise<Run[]> {
+    // Use the existing getRuns method as a base and add filtering/pagination
+    const allRuns = await this.getRuns(userId);
+    
+    // Apply date filters if provided
+    let filteredRuns = allRuns;
+    if (options.fromDate || options.toDate) {
+      filteredRuns = allRuns.filter(run => {
+        if (options.fromDate && run.startDate < options.fromDate) return false;
+        if (options.toDate && run.startDate > options.toDate) return false;
+        return true;
+      });
+    }
+    
+    // Sort by start date descending
+    filteredRuns.sort((a, b) => b.startDate.localeCompare(a.startDate));
+    
+    // Apply pagination
+    const offset = options.offset || 0;
+    const limit = options.limit || filteredRuns.length;
+    
+    return filteredRuns.slice(offset, offset + limit);
+  }
+
+  async getRunsCountForUser(userId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`cast(count(*) as int)` })
+      .from(runs)
+      .where(eq(runs.userId, userId));
+    
+    return result[0]?.count || 0;
+  }
+
+  async getTotalsForUser(userId: string): Promise<{ totalDays: number; currentRunDays: number; longestRunDays: number; totalRuns: number; avgRunLength: number }> {
+    const stats = await this.calculateV2UserStats(userId);
+    
+    return {
+      totalDays: stats.totalDays,
+      currentRunDays: stats.currentRunDays,
+      longestRunDays: stats.longestRunDays,
+      totalRuns: stats.totalRuns,
+      avgRunLength: stats.totalRuns > 0 ? Math.round((stats.totalDays / stats.totalRuns) * 100) / 100 : 0
+    };
+  }
+
+  async checkRunOverlaps(): Promise<number> {
+    const result = await db.execute(sql`
+      SELECT COUNT(*) as violations
+      FROM runs r1
+      JOIN runs r2 ON r1.user_id = r2.user_id AND r1.id < r2.id
+      WHERE r1.span && r2.span
+    `);
+    
+    return Number(result.rows[0]?.violations) || 0;
+  }
+
+  async checkMultipleActiveRuns(): Promise<number> {
+    const result = await db.execute(sql`
+      SELECT COUNT(*) - COUNT(DISTINCT user_id) as violations
+      FROM runs
+      WHERE active = true
+    `);
+    
+    return Math.max(0, Number(result.rows[0]?.violations) || 0);
+  }
+
+  async validateDayCounts(): Promise<number> {
+    const result = await db.execute(sql`
+      SELECT COUNT(*) as violations
+      FROM runs
+      WHERE day_count != (upper(span) - lower(span))
+    `);
+    
+    return Number(result.rows[0]?.violations) || 0;
   }
 }
 

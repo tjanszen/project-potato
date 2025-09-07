@@ -311,5 +311,100 @@ app.post('/api/days/:date/no-drink', (req, res) => {
   res.json({ message: 'Day marking endpoint - Phase 2' });
 });
 
+// V2 API endpoints (Phase 6E-Lite) - gated behind ff.potato.runs_v2
+app.use('/api/v2', requireFeatureFlag('ff.potato.runs_v2'));
+app.use('/health/runs', requireFeatureFlag('ff.potato.runs_v2'));
+
+// GET /api/v2/runs - User run history with pagination
+app.get('/api/v2/runs', requireAuthentication, async (req, res) => {
+  try {
+    const { limit = '20', offset = '0', from_date, to_date } = req.query;
+    
+    // Parse and validate pagination parameters
+    const limitNum = Math.min(parseInt(limit as string) || 20, 100);
+    const offsetNum = parseInt(offset as string) || 0;
+    
+    // Get runs from storage
+    const runs = await storage.getRunsForUser(req.session.userId!, {
+      limit: limitNum,
+      offset: offsetNum,
+      fromDate: from_date as string,
+      toDate: to_date as string
+    });
+    
+    // Get total count for pagination
+    const totalCount = await storage.getRunsCountForUser(req.session.userId!);
+    
+    res.json({
+      runs: runs,
+      total_count: totalCount,
+      has_more: offsetNum + limitNum < totalCount,
+      limit: limitNum,
+      offset: offsetNum
+    });
+    
+  } catch (error) {
+    console.error('V2 runs fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/v2/totals - User statistics summary
+app.get('/api/v2/totals', requireAuthentication, async (req, res) => {
+  try {
+    const totals = await storage.getTotalsForUser(req.session.userId!);
+    
+    res.json({
+      total_days: totals.totalDays,
+      current_run_days: totals.currentRunDays,
+      longest_run_days: totals.longestRunDays,
+      total_runs: totals.totalRuns,
+      avg_run_length: totals.avgRunLength
+    });
+    
+  } catch (error) {
+    console.error('V2 totals fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /health/runs - Runs health checks and invariant validation
+app.get('/health/runs', async (req, res) => {
+  try {
+    // Check for overlapping runs
+    const overlapCount = await storage.checkRunOverlaps();
+    
+    // Check for multiple active runs per user
+    const multiActiveCount = await storage.checkMultipleActiveRuns();
+    
+    // Check for day count accuracy (sample check)
+    const dayCountIssues = await storage.validateDayCounts();
+    
+    // Determine health status
+    const isHealthy = overlapCount === 0 && multiActiveCount === 0 && dayCountIssues === 0;
+    
+    const healthData = {
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      checks: {
+        overlapping_runs: overlapCount,
+        multiple_active_runs: multiActiveCount,
+        day_count_issues: dayCountIssues
+      }
+    };
+    
+    // Return 503 if unhealthy, 200 if healthy
+    res.status(isHealthy ? 200 : 503).json(healthData);
+    
+  } catch (error) {
+    console.error('Runs health check error:', error);
+    res.status(503).json({ 
+      status: 'error',
+      error: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Export the app for use as a module
 export default app;
