@@ -68,6 +68,11 @@
 - If the user base grows, more robust staged rollout strategies (dashboards, alerts, gradual percentage rollout) may be reintroduced  
 **Links:** imp_plans/v2.md [Phase 6E-Lite] and future phases that involve cutovers
 
+**Follow-up (2025-09-07):**  
+Phase 6E-Lite (Single-User Cutover) successfully executed after Phase 6X validation.  
+This validates the cutover strategy in a real environment.  
+Future phases can use the simplified cutover model when user base is small, provided endpoints and migrations are validated first.
+
 ## ADR-2025-09-06 Frontend Integration as Explicit Phase
 **Context:** In v1, frontend updates (Dashboard Integration) were handled as explicit implementation phases. In v2, Phase 7C: Frontend Integration was added in the same style, but initially documented as a one-off. To avoid ambiguity, frontend integrations should always be treated as explicit, feature-flagged phases.  
 **Decision:** All future frontend integrations will be tracked as their own implementation phases, feature-flagged independently, not bundled invisibly into backend or totals phases. This ensures visibility of user-facing work, clear rollback paths, and consistency with established practice.  

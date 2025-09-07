@@ -452,6 +452,13 @@ When preparing the daily prebrief:
   - Protected endpoints return 401 Unauthorized when unauthenticated
 - Evidence: curl outputs for both public + protected endpoints, server logs confirming authenticated access
 
+### Feature Flag Cutover Checklist
+
+- Always validate endpoints with authenticated requests before enabling a feature flag permanently
+- Always validate migrations and data integrity before toggling cutover
+- Collect evidence: curl outputs, DB validation queries, server logs
+- Only mark cutover complete when all validation criteria are satisfied
+
 ### Server Validation Checklist
 
 Before marking any server-related phase as complete (e.g., endpoint integration, cutover, migrations), confirm:

@@ -115,6 +115,11 @@
 **Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers. Added Error Handling Clause and ADR-2025-09-06 "Mid-Phase Error Handling Standard" to require agents to stop, summarize, and recommend next steps instead of running indefinitely when encountering major issues. See ADR-2025-09-06 for full context and policy details.  
 **Resolution Date:** 2025-09-06
 
+**Follow-up (2025-09-07):**  
+Issue resolved through Phase 6X (endpoint integration + validation) and Phase 6E-Lite re-run.  
+Cutover completed successfully with feature flag ff.potato.runs_v2 set to default ON.  
+Cross-reference: imp_plans/v2.md Phase 6E-Lite (✅ COMPLETE).
+
 ### [2025-09-07] Phase 6X Validation Blocked by Authentication
 **Issue:** Initial validation of /api/v2/runs and /api/v2/totals failed with "connection refused" symptoms, later confirmed to be 401 Unauthorized responses due to missing authentication.  
 **Root Cause:** Endpoints were correctly gated by requireAuthentication middleware. Test requests were unauthenticated, leading to false assumption of server instability.  
