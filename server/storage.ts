@@ -33,6 +33,12 @@ export interface IStorage {
   performRunMerge(userId: string, date: string): Promise<RunOperationResult>;
   performRunSplit(userId: string, date: string): Promise<RunOperationResult>;
   validateRunInvariants(userId: string): Promise<RunValidationResult>;
+  
+  // Phase 6B-2: Transaction boundary operations
+  calculateTransactionBoundary(userId: string, date: string, operationType: 'extend' | 'merge' | 'split'): Promise<TransactionBoundary>;
+  executeWithTransactionBoundary<T>(boundary: TransactionBoundary, operation: () => Promise<T>): Promise<{ result: T; metrics: TransactionMetrics }>;
+  validateTransactionScope(userId: string, date: string): Promise<TransactionScope>;
+  validateIsolationLevel(): Promise<string>;
 }
 
 // Result types for run operations
@@ -41,6 +47,7 @@ export interface RunOperationResult {
   message: string;
   affectedRuns: Run[];
   wasNoOp: boolean;
+  transactionMetrics?: TransactionMetrics;
 }
 
 export interface RunValidationResult {
@@ -50,6 +57,27 @@ export interface RunValidationResult {
     multipleActiveRuns: number;
     dayCountMismatches: number;
   };
+}
+
+// Phase 6B-2: Transaction boundary types
+export interface TransactionMetrics {
+  durationMs: number;
+  rowsLocked: number;
+  isolationLevel: string;
+  operationType: string;
+}
+
+export interface TransactionBoundary {
+  userId: string;
+  dateRange: { start: string; end: string };
+  operationType: 'extend' | 'merge' | 'split';
+  expectedRows: number;
+}
+
+export interface TransactionScope {
+  lockQuery: string;
+  lockParams: any[];
+  expectedRows: number;
 }
 
 // PostgreSQL implementation
@@ -420,6 +448,131 @@ export class PostgresStorage implements IStorage {
       .where(eq(runs.id, runId))
       .returning();
     return updatedRun;
+  }
+
+  // Phase 6B-2: Transaction boundary operations
+  async calculateTransactionBoundary(userId: string, date: string, operationType: 'extend' | 'merge' | 'split'): Promise<TransactionBoundary> {
+    // Calculate the date range that needs to be locked for this operation
+    const operationDate = new Date(date);
+    const dayBefore = new Date(operationDate);
+    dayBefore.setDate(operationDate.getDate() - 1);
+    const dayAfter = new Date(operationDate);
+    dayAfter.setDate(operationDate.getDate() + 1);
+
+    const startDate = dayBefore.toISOString().split('T')[0];
+    const endDate = dayAfter.toISOString().split('T')[0];
+
+    // Estimate expected rows based on operation type
+    let expectedRows: number;
+    switch (operationType) {
+      case 'extend':
+        expectedRows = 2; // Current run + potential adjacent run
+        break;
+      case 'merge':
+        expectedRows = 3; // Two runs being merged + potential active run
+        break;
+      case 'split':
+        expectedRows = 2; // Run being split + potential new run
+        break;
+      default:
+        expectedRows = 3;
+    }
+
+    return {
+      userId,
+      dateRange: { start: startDate, end: endDate },
+      operationType,
+      expectedRows
+    };
+  }
+
+  async executeWithTransactionBoundary<T>(boundary: TransactionBoundary, operation: () => Promise<T>): Promise<{ result: T; metrics: TransactionMetrics }> {
+    const startTime = performance.now();
+    
+    try {
+      // Start transaction with READ COMMITTED isolation level
+      await db.execute(sql`BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED`);
+      
+      // Acquire locks on affected runs only
+      const lockQuery = sql`
+        SELECT id, span, day_count, active
+        FROM runs 
+        WHERE user_id = ${boundary.userId}
+        AND (
+          active = true 
+          OR lower(span) <= ${boundary.dateRange.end}::date
+          AND upper(span) >= ${boundary.dateRange.start}::date
+        )
+        FOR UPDATE
+      `;
+      
+      const lockedRows = await db.execute(lockQuery);
+      const actualRowsLocked = lockedRows.rowCount || 0;
+      
+      // Execute the operation
+      const result = await operation();
+      
+      // Commit transaction
+      await db.execute(sql`COMMIT`);
+      
+      const endTime = performance.now();
+      const durationMs = endTime - startTime;
+      
+      const metrics: TransactionMetrics = {
+        durationMs: Math.round(durationMs * 100) / 100, // Round to 2 decimal places
+        rowsLocked: actualRowsLocked,
+        isolationLevel: 'READ COMMITTED',
+        operationType: boundary.operationType
+      };
+      
+      return { result, metrics };
+      
+    } catch (error) {
+      // Rollback on error
+      await db.execute(sql`ROLLBACK`);
+      throw error;
+    }
+  }
+
+  async validateTransactionScope(userId: string, date: string): Promise<TransactionScope> {
+    // Create the locking query that should be used for transaction boundaries
+    const lockQuery = `
+      SELECT id, span, day_count, active
+      FROM runs 
+      WHERE user_id = $1
+      AND (
+        active = true 
+        OR lower(span) <= ($2::date + interval '1 day')::date
+        AND upper(span) >= ($2::date - interval '1 day')::date
+      )
+      FOR UPDATE
+    `;
+    
+    // Calculate expected rows by running the query without FOR UPDATE
+    const countQuery = sql`
+      SELECT COUNT(*) as expected_rows
+      FROM runs 
+      WHERE user_id = ${userId}
+      AND (
+        active = true 
+        OR lower(span) <= (${date}::date + interval '1 day')::date
+        AND upper(span) >= (${date}::date - interval '1 day')::date
+      )
+    `;
+    
+    const result = await db.execute(countQuery);
+    const expectedRows = Number(result.rows[0]?.expected_rows) || 0;
+    
+    return {
+      lockQuery,
+      lockParams: [userId, date],
+      expectedRows
+    };
+  }
+
+  async validateIsolationLevel(): Promise<string> {
+    const result = await db.execute(sql`SHOW transaction_isolation`);
+    return result.rows[0]?.transaction_isolation || 'unknown';
   }
 }
 
