@@ -131,7 +131,8 @@ app.post('/api/auth/signup', async (req, res) => {
       });
     }
 
-    const { email, password, timezone } = validationResult.data;
+    const { email, passwordHash, timezone } = validationResult.data;
+    const password = req.body.password; // Get the plain password from the original request
 
     // Check if user already exists
     const existingUser = await storage.getUserByEmail(email);
@@ -141,13 +142,13 @@ app.post('/api/auth/signup', async (req, res) => {
 
     // Hash password
     const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create user 
     const newUser = await storage.createUser({
       email,
       timezone,
-      passwordHash
+      passwordHash: hashedPassword
     });
 
     // Return user without password hash
