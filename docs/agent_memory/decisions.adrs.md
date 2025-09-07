@@ -49,3 +49,10 @@
 **Status:** Accepted  
 **Consequences:** Simplified temporal logic and consistent historical data but requires admin intervention for timezone corrections; users accept historical dates reflect timezone at time of marking  
 **Links:** imp_plans/v2.md [Timezone Policy], shared/schema.ts [day_marks.local_date column]
+
+## ADR-2025-09-07 Frontend Integration as Explicit Phase
+**Context:** V2 frontend work (runs history, totals dashboard) could be hidden inside backend phases, reducing visibility of user-facing development and rollback safety  
+**Decision:** Frontend integration must be tracked as its own implementation phase (Phase 7C), feature-flagged independently, not embedded within backend totals/runs phases  
+**Status:** Accepted  
+**Consequences:** Improves visibility of user-facing work, ensures rollback safety, and maintains parity with V1's Dashboard Integration phase approach  
+**Links:** imp_plans/v2.md [Phase 7C: Frontend Integration]
