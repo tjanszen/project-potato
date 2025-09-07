@@ -800,6 +800,106 @@ app.get('/api/events', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthe
   }
 });
 
+// V2 API Endpoints - Runs and Totals (gated behind ff.potato.runs_v2)
+app.get('/api/v2/runs', requireFeatureFlag('ff.potato.runs_v2'), requireAuthentication, async (req, res) => {
+  try {
+    // Parse pagination parameters
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+    
+    // Get runs for user with pagination
+    const runs = await storage.getRunsForUser ? await storage.getRunsForUser(req.session.userId, { limit, offset }) : [];
+    
+    // Get total count for pagination
+    const totalRuns = await storage.getTotalRunsCount ? await storage.getTotalRunsCount(req.session.userId) : 0;
+    const totalPages = Math.ceil(totalRuns / limit);
+    
+    res.json({
+      runs: runs,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalRuns,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+    
+  } catch (error) {
+    console.error('V2 runs retrieval error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/v2/totals', requireFeatureFlag('ff.potato.runs_v2'), requireAuthentication, async (req, res) => {
+  try {
+    const totals = await storage.getTotalsForUser ? await storage.getTotalsForUser(req.session.userId) : {
+      total_days: 0,
+      longest_run: 0,
+      current_run: 0
+    };
+    
+    res.json(totals);
+    
+  } catch (error) {
+    console.error('V2 totals retrieval error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Health check for runs data integrity
+app.get('/health/runs', async (req, res) => {
+  try {
+    let healthy = true;
+    const issues = [];
+    
+    // Check for run overlaps
+    if (storage.checkRunOverlaps) {
+      const overlaps = await storage.checkRunOverlaps();
+      if (overlaps && overlaps.length > 0) {
+        healthy = false;
+        issues.push(`Found ${overlaps.length} overlapping runs`);
+      }
+    }
+    
+    // Check for multiple active runs per user
+    if (storage.checkMultipleActiveRuns) {
+      const multipleActive = await storage.checkMultipleActiveRuns();
+      if (multipleActive && multipleActive.length > 0) {
+        healthy = false;
+        issues.push(`Found ${multipleActive.length} users with multiple active runs`);
+      }
+    }
+    
+    // Validate day counts
+    if (storage.validateDayCounts) {
+      const invalidCounts = await storage.validateDayCounts();
+      if (invalidCounts && invalidCounts.length > 0) {
+        healthy = false;
+        issues.push(`Found ${invalidCounts.length} runs with invalid day counts`);
+      }
+    }
+    
+    const response = {
+      healthy,
+      timestamp: new Date().toISOString(),
+      ...(issues.length > 0 && { issues })
+    };
+    
+    res.status(healthy ? 200 : 503).json(response);
+    
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      healthy: false,
+      error: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Catch-all handler: serve React app for client-side routing
 // This must come AFTER all API routes
 app.use((req, res, next) => {
