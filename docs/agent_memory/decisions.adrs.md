@@ -84,3 +84,13 @@
 **Decision:** All future implementation plans must explicitly phase in endpoint and storage method implementation before cutover or shadow phases. Documentation cannot assume these layers already exist.  
 **Consequences:** Prevents plan-code drift, reduces risk of unstable cutovers, and ensures validation occurs incrementally.  
 **Status:** Accepted (2025-09-06)
+
+## ADR-2025-09-06 Mid-Phase Error Handling Standard
+**Context:** During Phase 6E, the agent worked for an extended time encountering multiple errors without pausing, leading to wasted compute and unclear progress.  
+**Decision:** All implementation plans (current and future) must include an Error Handling Clause requiring the agent to stop, summarize, and recommend next steps when significant errors are encountered mid-phase. Each phase and sub-phase must explicitly state compliance with this clause.  
+**Consequences:**  
+- Prevents runaway error handling loops  
+- Reduces wasted compute costs  
+- Ensures human oversight before further execution  
+- Increases clarity and trust in agent execution  
+**Status:** Accepted (2025-09-06)

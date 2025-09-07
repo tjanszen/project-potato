@@ -330,6 +330,36 @@ Proof:
 Provides structured emergency response for constraint violations while minimizing system downtime 
 and preventing data corruption spread.
 
+### Playbook: Mid-Phase Error Handling Protocol
+
+**Purpose:**  
+Prevent runaway error handling loops and ensure human oversight when critical issues are encountered during phase execution.
+
+**Agent Prompt:**  
+Goal: Stop execution and seek guidance when critical errors prevent progress.
+
+When to Apply:
+- Missing endpoints or API routes (>2 endpoints not responding)
+- TypeScript compilation errors (>3 blocking errors)
+- Repeated server crashes (>2 crashes in succession)
+- Unmet phase prerequisites (dependencies not satisfied)
+- Infrastructure failures (database connectivity, feature flag issues)
+
+Do:
+1. **Stop execution immediately** - Do not continue attempting fixes
+2. **Document findings** - Provide clear summary of errors encountered
+3. **Assess impact** - Identify what was completed vs. what failed
+4. **Recommend next steps** - Suggest specific actions or prerequisite phases
+5. **Wait for user approval** - Do not resume until user provides direction
+
+Proof:
+- Clear summary of error conditions and their causes
+- Specific recommendations for resolution
+- Confirmation that execution has stopped pending user guidance
+
+**Why:**  
+Prevents wasted compute cycles, reduces frustration, and ensures critical issues receive appropriate human oversight before continuing.
+
 ### Playbook: Working with PostgreSQL Daterange Constraints
 
 **Purpose:**  
