@@ -104,7 +104,7 @@
 
 ### [2025-09-06] V2 Endpoints & Storage Missing - RESOLVED ✅
 **Symptom:** During Phase 6E cutover, /api/v2/runs, /api/v2/totals, and /health/runs endpoints returned "connection refused" and storage.ts had multiple missing method errors.  
-**Root Cause:** V2 system was documented but never actually implemented in code.  
+**Root Cause:** V2 system was documented but never actually implemented in code. Additionally, the lack of a stop/summarize protocol caused the Replit agent to continue running for 11 minutes while encountering repeated errors. This led to wasted compute and unclear progress for the operator.  
 **Fix Details:**
 - Implemented missing endpoints in server/index.ts
 - Extended feature flag registry with ff.potato.runs_v2
@@ -112,7 +112,7 @@
 - Simplified Drizzle queries and resolved TypeScript mismatches
 - Stabilized server after multiple restarts  
 **Evidence:** Endpoints now return data with flag enabled, database integrity validated, TypeScript compilation passes with only minor diagnostics.  
-**Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers.  
+**Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers. Added Error Handling Clause and ADR-2025-09-06 "Mid-Phase Error Handling Standard" to require agents to stop, summarize, and recommend next steps instead of running indefinitely when encountering major issues.  
 **Resolution Date:** 2025-09-06
 
 ### {{YYYY-MM-DD}} <Short Title>
