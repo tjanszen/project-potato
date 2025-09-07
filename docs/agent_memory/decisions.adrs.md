@@ -86,11 +86,12 @@
 **Status:** Accepted (2025-09-06)
 
 ## ADR-2025-09-06 Mid-Phase Error Handling Standard
-**Context:** During Phase 6E, the agent worked for an extended time encountering multiple errors without pausing, leading to wasted compute and unclear progress.  
+**Context:** During Phase 6E, the agent worked for an extended time encountering multiple errors without pausing, leading to wasted compute and unclear progress. This ADR was triggered by issues discovered during Phase 6E (see bugs_journal.md entry [2025-09-06] V2 Endpoints & Storage Missing).  
 **Decision:** All implementation plans (current and future) must include an Error Handling Clause requiring the agent to stop, summarize, and recommend next steps when significant errors are encountered mid-phase. Each phase and sub-phase must explicitly state compliance with this clause.  
 **Consequences:**  
 - Prevents runaway error handling loops  
 - Reduces wasted compute costs  
 - Ensures human oversight before further execution  
 - Increases clarity and trust in agent execution  
+- Cross-reference: bugs_journal.md [2025-09-06] V2 Endpoints & Storage Missing documents the incident that led to this ADR.  
 **Status:** Accepted (2025-09-06)
