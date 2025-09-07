@@ -1,0 +1,46 @@
+PHASE 6C: Backfill/Rebuild
+Goal: Design and implement rebuild_user_runs administrative routine with comprehensive operator usage notes. Support both partial and full rebuilds for data maintenance and recovery scenarios.
+
+Tasks
+Implement rebuild_user_runs(user_id, from_date?, to_date?) function
+Design deterministic algorithm: DELETE old runs → GROUP consecutive dates → INSERT new runs
+Create operator playbook for rebuild scenarios (data corruption, timezone migration, algorithm updates)
+Add partial rebuild capability for performance (rebuild only affected date ranges)
+Implement rebuild validation: compare before/after invariants and user statistics
+Create bulk rebuild functionality for mass data migrations
+Design rebuild monitoring and progress reporting for large datasets
+Add rollback capability: backup runs before rebuild, restore on failure
+Risks/Assumptions
+Rebuild operation locks user runs for extended period (acceptable for admin operation)
+Deterministic algorithm produces identical results across multiple executions
+Partial rebuilds correctly identify all affected runs without missing dependencies
+Bulk rebuilds complete within maintenance windows (target: <1000 users per hour)
+Exit Criteria (Objective, Testable)
+rebuild_user_runs() produces identical results on repeated executions (deterministic)
+Partial rebuilds modify only affected date ranges, preserve unrelated runs
+Bulk rebuild completes for 1000+ users within 1 hour maintenance window
+Rebuild validation detects any data corruption or invariant violations
+Operator playbook covers all common rebuild scenarios with step-by-step procedures
+Rollback mechanism restores previous state within 5 minutes on rebuild failure
+Progress reporting shows ETA and completion percentage for long-running rebuilds
+Evidence to Collect
+-- Test deterministic rebuild
+SELECT rebuild_user_runs('test-user-1');
+backup_1 = SELECT * FROM runs WHERE user_id = 'test-user-1';
+SELECT rebuild_user_runs('test-user-1'); -- Rebuild again  
+backup_2 = SELECT * FROM runs WHERE user_id = 'test-user-1';
+-- Assert identical results
+SELECT * FROM backup_1 EXCEPT SELECT * FROM backup_2; -- Should be empty
+SELECT * FROM backup_2 EXCEPT SELECT * FROM backup_1; -- Should be empty
+-- Test partial rebuild performance
+EXPLAIN ANALYZE SELECT rebuild_user_runs('heavy-user', from_date='2025-06-01', to_date='2025-06-30');
+-- Should complete in <1s even for users with 365+ day history
+# Bulk rebuild performance test
+time rebuild_all_users --batch-size=100 --max-workers=10
+# Target: <1 hour for 1000 users
+# Operator playbook validation
+./rebuild_playbook_test.sh  # Execute all documented procedures
+# All steps should complete successfully
+Rollback Plan: Restore from backup runs table, validate data integrity
+Feature Flag(s): ff.potato.runs_v2 + default OFF + rebuild operations gated
+

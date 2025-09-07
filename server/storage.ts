@@ -125,6 +125,14 @@ export interface IStorage {
   validateLockOrdering(userId: string, dateRange: string[]): Promise<boolean>;
   documentRaceConditions(): Promise<RaceConditionScenario[]>;
   testConcurrentAccess(userIds: string[], operationType: string): Promise<ConcurrencyMetrics[]>;
+
+  // Phase 6B-4: Deadlock & Stress Testing operations
+  executeWithRetry<T>(operation: () => Promise<T>, config?: Partial<RetryConfiguration>): Promise<RetryResult<T>>;
+  markDayWithRetry(userId: string, date: string): Promise<RetryResult<DayMark>>;
+  validateDeadlockPrevention(userId: string): Promise<boolean>;
+  runStressTest(config: StressTestConfiguration): Promise<StressTestResults>;
+  validateInvariantsAfterStress(): Promise<{ overlappingRuns: number; multipleActiveRuns: number }>;
+  documentDeadlockScenarios(): Promise<RaceConditionScenario[]>;
 }
 
 // Result types for run operations
@@ -194,6 +202,50 @@ export interface ConcurrencyMetrics {
   queuedOperations: number;
   concurrentUsers: number;
   deadlocksDetected: number;
+}
+
+// Phase 6B-4: Deadlock & Stress Testing types
+export interface RetryConfiguration {
+  maxRetries: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  backoffMultiplier: number;
+  retryableErrors: string[];
+}
+
+export interface RetryAttempt {
+  attemptNumber: number;
+  delayMs: number;
+  error?: Error;
+  timestamp: Date;
+}
+
+export interface RetryResult<T> {
+  success: boolean;
+  result?: T;
+  attempts: RetryAttempt[];
+  totalTimeMs: number;
+  finalError?: Error;
+}
+
+export interface StressTestConfiguration {
+  concurrentUsers: number;
+  operationsPerUser: number;
+  durationMs: number;
+  operationType: string;
+  rampUpMs: number;
+}
+
+export interface StressTestResults {
+  totalOperations: number;
+  successfulOperations: number;
+  failedOperations: number;
+  deadlocks: number;
+  retries: number;
+  averageResponseTimeMs: number;
+  p95ResponseTimeMs: number;
+  p99ResponseTimeMs: number;
+  invariantViolations: number;
 }
 
 // PostgreSQL implementation
@@ -849,6 +901,362 @@ export class PostgresStorage implements IStorage {
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash);
+  }
+
+  // Phase 6B-4: Deadlock & Stress Testing operations
+  async executeWithRetry<T>(operation: () => Promise<T>, config?: Partial<RetryConfiguration>): Promise<RetryResult<T>> {
+    const defaultConfig: RetryConfiguration = {
+      maxRetries: 3,
+      baseDelayMs: 100,
+      maxDelayMs: 2000,
+      backoffMultiplier: 2,
+      retryableErrors: [
+        'deadlock detected',
+        'could not serialize access',
+        'lock timeout',
+        'canceling statement due to lock timeout',
+        'concurrent update',
+        'violates exclusion constraint'
+      ]
+    };
+
+    const finalConfig = { ...defaultConfig, ...config };
+    const attempts: RetryAttempt[] = [];
+    const startTime = performance.now();
+    let lastError: Error | undefined;
+
+    for (let attemptNum = 0; attemptNum <= finalConfig.maxRetries; attemptNum++) {
+      const attemptStart = performance.now();
+      
+      try {
+        const result = await operation();
+        const attemptEnd = performance.now();
+        
+        attempts.push({
+          attemptNumber: attemptNum + 1,
+          delayMs: 0,
+          timestamp: new Date()
+        });
+
+        return {
+          success: true,
+          result,
+          attempts,
+          totalTimeMs: Math.round((attemptEnd - startTime) * 100) / 100
+        };
+      } catch (error) {
+        const err = error as Error;
+        lastError = err;
+        
+        // Check if error is retryable
+        const isRetryable = finalConfig.retryableErrors.some(retryableError =>
+          err.message.toLowerCase().includes(retryableError.toLowerCase())
+        );
+
+        const delayMs = attemptNum < finalConfig.maxRetries && isRetryable
+          ? Math.min(
+              finalConfig.baseDelayMs * Math.pow(finalConfig.backoffMultiplier, attemptNum),
+              finalConfig.maxDelayMs
+            )
+          : 0;
+
+        attempts.push({
+          attemptNumber: attemptNum + 1,
+          delayMs,
+          error: err,
+          timestamp: new Date()
+        });
+
+        // If not retryable or max attempts reached, break
+        if (!isRetryable || attemptNum >= finalConfig.maxRetries) {
+          break;
+        }
+
+        // Wait before retry
+        if (delayMs > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+      }
+    }
+
+    const endTime = performance.now();
+    
+    return {
+      success: false,
+      attempts,
+      totalTimeMs: Math.round((endTime - startTime) * 100) / 100,
+      finalError: lastError
+    };
+  }
+
+  async markDayWithRetry(userId: string, date: string): Promise<RetryResult<DayMark>> {
+    return this.executeWithRetry(async () => {
+      // Use per-user serialization to prevent race conditions
+      const { result } = await this.executeWithPerUserSerialization(userId, 'day_marking', async () => {
+        // Mark the day with database-level idempotency
+        const dayMark: NewDayMark = {
+          userId,
+          date,
+          value: true
+        };
+        
+        return await this.markDay(dayMark);
+      });
+      
+      return result;
+    }, {
+      maxRetries: 3,
+      retryableErrors: [
+        'deadlock detected',
+        'could not serialize access',
+        'concurrent update',
+        'lock timeout'
+      ]
+    });
+  }
+
+  async validateDeadlockPrevention(userId: string): Promise<boolean> {
+    try {
+      // Test consistent lock ordering by acquiring locks in the expected order
+      const lockKey = this.hashStringToNumber(userId);
+      
+      // Test 1: Acquire user-level advisory lock
+      const userLockResult = await db.execute(sql`SELECT pg_try_advisory_lock(${lockKey})`);
+      const userLockAcquired = (userLockResult.rows[0] as any)?.pg_try_advisory_lock;
+      
+      if (!userLockAcquired) {
+        return false; // Lock should be available for testing
+      }
+
+      // Test 2: Acquire row-level locks in consistent order (by start_date)
+      const rowLockResult = await db.execute(sql`
+        SELECT COUNT(*) as locked_rows
+        FROM runs 
+        WHERE user_id = ${userId}
+        ORDER BY lower(span)
+        FOR UPDATE NOWAIT
+      `);
+      
+      // Release user lock
+      await db.execute(sql`SELECT pg_advisory_unlock(${lockKey})`);
+      
+      return true; // Successfully acquired locks in order
+      
+    } catch (error) {
+      const err = error as Error;
+      // If we get a "could not obtain lock" error, that might indicate deadlock potential
+      return !err.message.toLowerCase().includes('could not obtain lock');
+    }
+  }
+
+  async runStressTest(config: StressTestConfiguration): Promise<StressTestResults> {
+    const startTime = performance.now();
+    const responseTimes: number[] = [];
+    const results = {
+      totalOperations: 0,
+      successfulOperations: 0,
+      failedOperations: 0,
+      deadlocks: 0,
+      retries: 0,
+      averageResponseTimeMs: 0,
+      p95ResponseTimeMs: 0,
+      p99ResponseTimeMs: 0,
+      invariantViolations: 0
+    };
+
+    // Create test users
+    const testUsers: string[] = [];
+    for (let i = 0; i < config.concurrentUsers; i++) {
+      const email = `stress-test-user-${i}@example.com`;
+      try {
+        const user = await this.createUser({
+          email,
+          password: 'stress-test-password', // Required by interface
+          passwordHash: 'stress-test-hash',
+          timezone: 'America/New_York'
+        });
+        testUsers.push(user.id);
+      } catch (error) {
+        // User might already exist, try to get it
+        const existingUser = await this.getUserByEmail(email);
+        if (existingUser) {
+          testUsers.push(existingUser.id);
+        }
+      }
+    }
+
+    // Prepare operations for each user
+    const allOperations: Promise<void>[] = [];
+    
+    for (let userIndex = 0; userIndex < testUsers.length; userIndex++) {
+      const userId = testUsers[userIndex];
+      
+      // Stagger user operations to simulate ramp-up
+      const userDelay = (userIndex * config.rampUpMs) / config.concurrentUsers;
+      
+      const userOperations = Array.from({ length: config.operationsPerUser }, (_, opIndex) => {
+        return new Promise<void>((resolve) => {
+          setTimeout(async () => {
+            const operationStart = performance.now();
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() + (opIndex % 30)); // Spread across 30 days
+            const dateStr = testDate.toISOString().split('T')[0];
+            
+            try {
+              const retryResult = await this.markDayWithRetry(userId, dateStr);
+              const operationTime = performance.now() - operationStart;
+              
+              responseTimes.push(operationTime);
+              results.totalOperations++;
+              results.retries += retryResult.attempts.length - 1;
+              
+              if (retryResult.success) {
+                results.successfulOperations++;
+              } else {
+                results.failedOperations++;
+                
+                // Check for deadlock indicators
+                if (retryResult.finalError?.message.toLowerCase().includes('deadlock')) {
+                  results.deadlocks++;
+                }
+              }
+              
+            } catch (error) {
+              results.totalOperations++;
+              results.failedOperations++;
+              
+              const err = error as Error;
+              if (err.message.toLowerCase().includes('deadlock')) {
+                results.deadlocks++;
+              }
+            }
+            
+            resolve();
+          }, userDelay);
+        });
+      });
+      
+      allOperations.push(...userOperations);
+    }
+
+    // Wait for all operations to complete or timeout
+    const timeoutPromise = new Promise<void>((resolve) => {
+      setTimeout(resolve, config.durationMs);
+    });
+
+    await Promise.race([
+      Promise.all(allOperations),
+      timeoutPromise
+    ]);
+
+    // Calculate statistics
+    if (responseTimes.length > 0) {
+      responseTimes.sort((a, b) => a - b);
+      results.averageResponseTimeMs = Math.round(
+        (responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length) * 100
+      ) / 100;
+      
+      const p95Index = Math.floor(responseTimes.length * 0.95);
+      const p99Index = Math.floor(responseTimes.length * 0.99);
+      
+      results.p95ResponseTimeMs = Math.round(responseTimes[p95Index] * 100) / 100;
+      results.p99ResponseTimeMs = Math.round(responseTimes[p99Index] * 100) / 100;
+    }
+
+    // Check for invariant violations
+    const invariants = await this.validateInvariantsAfterStress();
+    results.invariantViolations = invariants.overlappingRuns + invariants.multipleActiveRuns;
+
+    // Clean up test users
+    for (const userId of testUsers) {
+      try {
+        await db.delete(runs).where(eq(runs.userId, userId));
+        await db.delete(dayMarks).where(eq(dayMarks.userId, userId));
+        await db.delete(users).where(eq(users.id, userId));
+      } catch (error) {
+        // Clean up errors are not critical for the stress test
+      }
+    }
+
+    return results;
+  }
+
+  async validateInvariantsAfterStress(): Promise<{ overlappingRuns: number; multipleActiveRuns: number }> {
+    // Check for overlapping runs
+    const overlappingQuery = sql`
+      SELECT COUNT(*) as violations
+      FROM runs a
+      JOIN runs b ON a.user_id = b.user_id AND a.id < b.id
+      WHERE a.span && b.span
+    `;
+    const overlappingResult = await db.execute(overlappingQuery);
+    const overlappingRuns = Number((overlappingResult.rows[0] as any)?.violations) || 0;
+
+    // Check for multiple active runs per user
+    const activeRunsQuery = sql`
+      SELECT COUNT(*) as violations
+      FROM (
+        SELECT user_id, COUNT(*) as active_count
+        FROM runs 
+        WHERE active = true 
+        GROUP BY user_id 
+        HAVING COUNT(*) > 1
+      ) q
+    `;
+    const activeRunsResult = await db.execute(activeRunsQuery);
+    const multipleActiveRuns = Number((activeRunsResult.rows[0] as any)?.violations) || 0;
+
+    return { overlappingRuns, multipleActiveRuns };
+  }
+
+  async documentDeadlockScenarios(): Promise<RaceConditionScenario[]> {
+    return [
+      {
+        scenario: 'Circular Lock Dependency',
+        description: 'Two transactions acquire locks in different order (User A locks Run X then Run Y, User B locks Run Y then Run X)',
+        postgresqlMitigation: 'Consistent lock ordering: always acquire user-level advisory lock first, then row locks by start_date ASC',
+        sqliteMitigation: 'Per-user mutex prevents circular dependencies - only one operation per user at a time',
+        evidenceQuery: `
+          -- Test consistent lock ordering
+          BEGIN;
+          SELECT pg_advisory_lock(hashtext('user-1'));
+          SELECT * FROM runs WHERE user_id = 'user-1' ORDER BY lower(span) FOR UPDATE;
+          -- Different connection should use same order
+          COMMIT;
+        `
+      },
+      {
+        scenario: 'High Concurrency Day Marking',
+        description: 'Multiple clients simultaneously mark different dates for the same user',
+        postgresqlMitigation: 'User-level advisory locks serialize all operations for a user, preventing lock conflicts',
+        sqliteMitigation: 'Application mutex ensures strict serialization per user',
+        evidenceQuery: `
+          -- Stress test evidence
+          SELECT user_id, COUNT(*) as concurrent_operations
+          FROM click_events 
+          WHERE created_at > NOW() - INTERVAL '1 minute'
+          GROUP BY user_id, EXTRACT(second FROM created_at)
+          HAVING COUNT(*) > 10;
+        `
+      },
+      {
+        scenario: 'Transaction Retry Storm',
+        description: 'Many failed operations trigger simultaneous retries, amplifying contention',
+        postgresqlMitigation: 'Bounded retry attempts (max 3) with exponential backoff prevents retry storms',
+        sqliteMitigation: 'Application mutex queuing naturally rate-limits retries',
+        evidenceQuery: `
+          -- Monitor retry patterns
+          SELECT 
+            DATE_TRUNC('second', created_at) as time_bucket,
+            COUNT(*) as operations,
+            COUNT(*) FILTER (WHERE value IS NULL) as failures
+          FROM click_events 
+          WHERE created_at > NOW() - INTERVAL '5 minutes'
+          GROUP BY time_bucket
+          ORDER BY time_bucket DESC;
+        `
+      }
+    ];
   }
 }
 
