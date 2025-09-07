@@ -418,3 +418,24 @@ Why:
 - `daterange + gist` is powerful but less familiar than basic columns  
 - Prevents subtle data corruption (overlaps, misaligned runs)  
 - Provides clear recovery steps if violations occur
+
+### Session Kickoff Reminder
+When preparing the daily prebrief:
+
+1. **Check ADR ↔ Bug Journal Cross-Links**
+   - For any ADR created in the last 7 days, confirm it is referenced by at least one bug journal entry (if triggered by an incident).
+   - For any bug journal entries in the last 7 days, confirm they reference the ADR(s) that resolved or influenced them.
+   - If cross-links are missing, add them immediately.
+
+2. **Verify Cross-Link Consistency**
+   - Bug journal entry must mention the ADR ID in *Follow-ups*.
+   - ADR must reference the bug entry in *Context* or *Consequences*.
+
+3. **Proof in Prebrief**
+   - Explicitly state in the daily prebrief:  
+     "Cross-links between ADRs and bug journal entries checked. ✅/⚠️"
+
+**Why:**
+- Ensures incident-driven ADRs are always traceable to their root cause
+- Keeps decision history and bug history tightly aligned
+- Reduces risk of repeated mistakes or lost context
