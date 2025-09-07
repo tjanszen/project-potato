@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { users, dayMarks, clickEvents, type User, type NewUser, type DayMark, type NewDayMark, type ClickEvent, type NewClickEvent } from '../shared/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { users, dayMarks, clickEvents, runs, type User, type NewUser, type DayMark, type NewDayMark, type ClickEvent, type NewClickEvent, type Run, type NewRun } from '../shared/schema.js';
+import { eq, and, sql, or, gte, lte, lt, gt, desc, asc } from 'drizzle-orm';
 
 // Database connection
 const pool = new Pool({
@@ -24,6 +24,32 @@ export interface IStorage {
   
   // Event logging
   logClickEvent(event: NewClickEvent): Promise<ClickEvent>;
+  
+  // Runs operations (V2)
+  getRuns(userId: string): Promise<Run[]>;
+  getActiveRun(userId: string): Promise<Run | null>;
+  getRunsForDateRange(userId: string, startDate: string, endDate: string): Promise<Run[]>;
+  performRunExtend(userId: string, date: string): Promise<RunOperationResult>;
+  performRunMerge(userId: string, date: string): Promise<RunOperationResult>;
+  performRunSplit(userId: string, date: string): Promise<RunOperationResult>;
+  validateRunInvariants(userId: string): Promise<RunValidationResult>;
+}
+
+// Result types for run operations
+export interface RunOperationResult {
+  success: boolean;
+  message: string;
+  affectedRuns: Run[];
+  wasNoOp: boolean;
+}
+
+export interface RunValidationResult {
+  valid: boolean;
+  violations: {
+    overlappingRuns: number;
+    multipleActiveRuns: number;
+    dayCountMismatches: number;
+  };
 }
 
 // PostgreSQL implementation
@@ -95,6 +121,305 @@ export class PostgresStorage implements IStorage {
   async logClickEvent(event: NewClickEvent): Promise<ClickEvent> {
     const [clickEvent] = await db.insert(clickEvents).values(event).returning();
     return clickEvent;
+  }
+
+  // Run operations (V2)
+  async getRuns(userId: string): Promise<Run[]> {
+    return await db.select()
+      .from(runs)
+      .where(eq(runs.userId, userId))
+      .orderBy(asc(runs.startDate));
+  }
+
+  async getActiveRun(userId: string): Promise<Run | null> {
+    const [activeRun] = await db.select()
+      .from(runs)
+      .where(and(eq(runs.userId, userId), eq(runs.active, true)));
+    return activeRun || null;
+  }
+
+  async getRunsForDateRange(userId: string, startDate: string, endDate: string): Promise<Run[]> {
+    return await db.select()
+      .from(runs)
+      .where(and(
+        eq(runs.userId, userId),
+        // Use PostgreSQL daterange overlap operator
+        sql`${runs.span} && ${sql.raw(`'[${startDate},${endDate}]'::daterange`)}` 
+      ))
+      .orderBy(asc(runs.startDate));
+  }
+
+  async performRunExtend(userId: string, date: string): Promise<RunOperationResult> {
+    // Find runs that could be extended by this date (adjacent runs)
+    const adjacentRuns = await db.select()
+      .from(runs) 
+      .where(and(
+        eq(runs.userId, userId),
+        or(
+          // Date is one day after end of run
+          sql`upper(${runs.span}) = ${date}::date`,
+          // Date is one day before start of run  
+          sql`lower(${runs.span}) = ${date}::date + interval '1 day'`,
+          // Date is within existing run (no-op case)
+          sql`${runs.span} @> ${date}::date`
+        )
+      ));
+
+    if (adjacentRuns.length === 0) {
+      // Create new run for isolated date
+      const newRun = await this.createSingleDateRun(userId, date);
+      return {
+        success: true,
+        message: `Created new run for isolated date ${date}`,
+        affectedRuns: [newRun],
+        wasNoOp: false
+      };
+    }
+
+    // Check if date is already within an existing run (idempotent no-op)
+    const existingRunsContainingDate = await db.select()
+      .from(runs)
+      .where(and(
+        eq(runs.userId, userId),
+        sql`${runs.span} @> ${date}::date`
+      ));
+
+    if (existingRunsContainingDate.length > 0) {
+      return {
+        success: true,
+        message: `Date ${date} already exists in run, no operation needed`,
+        affectedRuns: existingRunsContainingDate,
+        wasNoOp: true
+      };
+    }
+
+    // Extend the run(s)
+    const updatedRuns: Run[] = [];
+    for (const run of adjacentRuns) {
+      const updatedRun = await this.extendRunWithDate(run.id, date);
+      updatedRuns.push(updatedRun);
+    }
+
+    return {
+      success: true,
+      message: `Extended run(s) to include ${date}`,
+      affectedRuns: updatedRuns,
+      wasNoOp: false
+    };
+  }
+
+  async performRunMerge(userId: string, date: string): Promise<RunOperationResult> {
+    // Find runs that could be merged by filling gap at this date
+    const beforeRun = await db.select()
+      .from(runs)
+      .where(and(
+        eq(runs.userId, userId),
+        sql`upper(${runs.span}) = ${date}::date - interval '1 day'`
+      ));
+
+    const afterRun = await db.select()
+      .from(runs)  
+      .where(and(
+        eq(runs.userId, userId),
+        sql`lower(${runs.span}) = ${date}::date + interval '1 day'`
+      ));
+
+    if (beforeRun.length === 0 || afterRun.length === 0) {
+      // Can't merge - treat as extend instead
+      return await this.performRunExtend(userId, date);
+    }
+
+    const before = beforeRun[0];
+    const after = afterRun[0];
+
+    // Merge the runs by updating the first run to include the second run's span
+    const mergedRun = await db.update(runs)
+      .set({
+        span: sql`${runs.span} + ${after.span}`,
+        dayCount: sql`${before.dayCount} + ${after.dayCount} + 1`, // +1 for the gap date
+        active: before.active || after.active, // Preserve active status
+        updatedAt: new Date()
+      })
+      .where(eq(runs.id, before.id))
+      .returning();
+
+    // Delete the second run
+    await db.delete(runs).where(eq(runs.id, after.id));
+
+    return {
+      success: true,
+      message: `Merged runs by filling gap at ${date}`,
+      affectedRuns: mergedRun,
+      wasNoOp: false
+    };
+  }
+
+  async performRunSplit(userId: string, date: string): Promise<RunOperationResult> {
+    // Find run containing this date
+    const [containingRun] = await db.select()
+      .from(runs)
+      .where(and(
+        eq(runs.userId, userId),
+        sql`${runs.span} @> ${date}::date`
+      ));
+
+    if (!containingRun) {
+      return {
+        success: true,
+        message: `Date ${date} not found in any run, no operation needed`,
+        affectedRuns: [],
+        wasNoOp: true
+      };
+    }
+
+    // Check if removing this date would split the run
+    const runStart = sql`lower(${runs.span})`;
+    const runEnd = sql`upper(${runs.span})`;
+    
+    if (sql`${runStart} = ${date}::date`) {
+      // Remove from start of run
+      if (containingRun.dayCount === 1) {
+        // Delete single-day run
+        await db.delete(runs).where(eq(runs.id, containingRun.id));
+        return {
+          success: true,
+          message: `Deleted single-day run at ${date}`,
+          affectedRuns: [],
+          wasNoOp: false
+        };
+      } else {
+        // Shrink run from start
+        const [updatedRun] = await db.update(runs)
+          .set({
+            span: sql`daterange((${date}::date + interval '1 day')::date, upper(${runs.span}), '[)')`,
+            dayCount: containingRun.dayCount - 1,
+            updatedAt: new Date()
+          })
+          .where(eq(runs.id, containingRun.id))
+          .returning();
+        
+        return {
+          success: true,
+          message: `Removed ${date} from start of run`,
+          affectedRuns: [updatedRun],
+          wasNoOp: false
+        };
+      }
+    } else if (sql`${runEnd} = ${date}::date + interval '1 day'`) {
+      // Remove from end of run
+      const [updatedRun] = await db.update(runs)
+        .set({
+          span: sql`daterange(lower(${runs.span}), ${date}::date, '[)')`,
+          dayCount: containingRun.dayCount - 1,
+          active: false, // End date removed, so no longer active
+          updatedAt: new Date()
+        })
+        .where(eq(runs.id, containingRun.id))
+        .returning();
+      
+      return {
+        success: true,
+        message: `Removed ${date} from end of run`,
+        affectedRuns: [updatedRun],
+        wasNoOp: false
+      };
+    } else {
+      // Split run in middle
+      const originalRun = containingRun;
+      
+      // Create first part of split run
+      const [firstRun] = await db.update(runs)
+        .set({
+          span: sql`daterange(lower(${runs.span}), ${date}::date, '[)')`,
+          dayCount: sql`${date}::date - lower(${runs.span})`,
+          active: false, // First part is no longer active
+          updatedAt: new Date()
+        })
+        .where(eq(runs.id, originalRun.id))
+        .returning();
+
+      // Create second part of split run  
+      const [secondRun] = await db.insert(runs)
+        .values({
+          userId: userId,
+          span: sql`daterange((${date}::date + interval '1 day')::date, upper(${runs.span}), '[)')`,
+          dayCount: sql`upper(${runs.span}) - (${date}::date + interval '1 day')`,
+          active: originalRun.active, // Second part preserves active status
+        })
+        .returning();
+
+      return {
+        success: true,
+        message: `Split run by removing ${date} from middle`,
+        affectedRuns: [firstRun, secondRun],
+        wasNoOp: false
+      };
+    }
+  }
+
+  async validateRunInvariants(userId: string): Promise<RunValidationResult> {
+    // Check for overlapping runs
+    const overlappingResult = await db.execute(sql`
+      SELECT COUNT(*) as violations
+      FROM runs r1
+      JOIN runs r2 ON r1.user_id = r2.user_id AND r1.id < r2.id
+      WHERE r1.user_id = ${userId} AND r1.span && r2.span
+    `);
+
+    // Check for multiple active runs
+    const multipleActiveResult = await db.execute(sql`
+      SELECT COUNT(*) - 1 as violations
+      FROM runs
+      WHERE user_id = ${userId} AND active = true
+    `);
+
+    // Check day count accuracy
+    const dayCountResult = await db.execute(sql`
+      SELECT COUNT(*) as violations
+      FROM runs
+      WHERE user_id = ${userId} AND day_count != (upper(span) - lower(span))
+    `);
+
+    const violations = {
+      overlappingRuns: Number(overlappingResult.rows[0]?.violations) || 0,
+      multipleActiveRuns: Math.max(0, Number(multipleActiveResult.rows[0]?.violations) || 0),
+      dayCountMismatches: Number(dayCountResult.rows[0]?.violations) || 0,
+    };
+
+    return {
+      valid: violations.overlappingRuns === 0 && 
+             violations.multipleActiveRuns === 0 && 
+             violations.dayCountMismatches === 0,
+      violations
+    };
+  }
+
+  // Helper method to create a single-date run
+  private async createSingleDateRun(userId: string, date: string): Promise<Run> {
+    const [newRun] = await db.insert(runs)
+      .values({
+        userId: userId,
+        span: sql`daterange(${date}::date, (${date}::date + interval '1 day')::date, '[)')`,
+        dayCount: 1,
+        active: true,
+      })
+      .returning();
+    return newRun;
+  }
+
+  // Helper method to extend a run with a new date
+  private async extendRunWithDate(runId: string, date: string): Promise<Run> {
+    const [updatedRun] = await db.update(runs)
+      .set({
+        span: sql`${runs.span} + daterange(${date}::date, (${date}::date + interval '1 day')::date, '[)')`,
+        dayCount: sql`${runs.dayCount} + 1`,
+        active: true,
+        lastExtendedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(runs.id, runId))
+      .returning();
+    return updatedRun;
   }
 }
 
