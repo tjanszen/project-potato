@@ -1,0 +1,49 @@
+Goal: Update docs to reflect Phase 6E discovery that V2 endpoints and storage were never implemented
+
+Do:
+
+1. In docs/agent_memory/imp_plans/v2.md:
+   - In Phase 6C, 6D, and 6E sections, add a note that V2 endpoints and storage methods are prerequisites, not assumed to exist.
+   - Insert a new sub-phase between 6D and 6E titled "PHASE 6X: V2 Endpoints & Storage Implementation"
+     - Goal: Implement and validate V2 API endpoints and storage methods
+     - Tasks:
+       - Implement /api/v2/runs, /api/v2/totals, /health/runs endpoints
+       - Extend feature flag system with ff.potato.runs_v2 registration
+       - Add storage methods: getRunsForUser, getRunsCountForUser, getTotalsForUser, checkRunOverlaps, checkMultipleActiveRuns, validateDayCounts
+       - Resolve TypeScript compilation errors in storage.ts
+     - Exit Criteria:
+       - Endpoints respond correctly with feature flag enabled
+       - curl tests confirm API returns valid data
+       - TypeScript compiles with no blocking errors
+     - Evidence to Collect:
+       - curl responses from all new endpoints
+       - Successful TypeScript build with 0 diagnostics for storage.ts
+       - Logs showing ff.potato.runs_v2 correctly registered at startup
+
+2. In docs/agent_memory/decisions.adrs.md:
+   - Append a new ADR entry:
+     ## ADR-2025-09-06 Explicit Endpoint & Storage Phasing
+     **Context:** Phase 6E cutover assumed V2 endpoints and storage methods already existed, but they had not been implemented. This caused server crashes, TypeScript errors, and unstable testing.
+     **Decision:** All future implementation plans must explicitly phase in endpoint and storage method implementation before cutover or shadow phases. Documentation cannot assume these layers already exist.
+     **Consequences:** Prevents plan-code drift, reduces risk of unstable cutovers, and ensures validation occurs incrementally.
+     **Status:** Accepted (2025-09-06)
+
+3. In docs/agent_memory/bugs_journal.md:
+   - Add a new entry:
+     ### [2025-09-06] V2 Endpoints & Storage Missing - RESOLVED ✅
+     **Symptom:** During Phase 6E cutover, /api/v2/runs, /api/v2/totals, and /health/runs endpoints returned "connection refused" and storage.ts had multiple missing method errors.
+     **Root Cause:** V2 system was documented but never actually implemented in code.
+     **Fix Details:**
+     - Implemented missing endpoints in server/index.ts
+     - Extended feature flag registry with ff.potato.runs_v2
+     - Added storage methods: getRunsForUser, getTotalsForUser, etc.
+     - Simplified Drizzle queries and resolved TypeScript mismatches
+     - Stabilized server after multiple restarts
+     **Evidence:** Endpoints now return data with flag enabled, database integrity validated, TypeScript compilation passes with only minor diagnostics.
+     **Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers.
+     **Resolution Date:** 2025-09-06
+
+Proof:
+- v2.md updated with notes + new Phase 6X
+- decisions.adrs.md contains new ADR "Explicit Endpoint & Storage Phasing"
+- bugs_journal.md contains new resolved issue for missing V2 endpoints and storage

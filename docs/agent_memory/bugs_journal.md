@@ -102,6 +102,19 @@
 **Follow-ups:** No further action needed - error handling now provides proper user experience  
 **Resolution Date:** 2025-09-03
 
+### [2025-09-06] V2 Endpoints & Storage Missing - RESOLVED ✅
+**Symptom:** During Phase 6E cutover, /api/v2/runs, /api/v2/totals, and /health/runs endpoints returned "connection refused" and storage.ts had multiple missing method errors.  
+**Root Cause:** V2 system was documented but never actually implemented in code.  
+**Fix Details:**
+- Implemented missing endpoints in server/index.ts
+- Extended feature flag registry with ff.potato.runs_v2
+- Added storage methods: getRunsForUser, getTotalsForUser, etc.
+- Simplified Drizzle queries and resolved TypeScript mismatches
+- Stabilized server after multiple restarts  
+**Evidence:** Endpoints now return data with flag enabled, database integrity validated, TypeScript compilation passes with only minor diagnostics.  
+**Follow-ups:** Added Phase 6X to v2.md to ensure endpoint/storage work is phased in before future cutovers.  
+**Resolution Date:** 2025-09-06
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  

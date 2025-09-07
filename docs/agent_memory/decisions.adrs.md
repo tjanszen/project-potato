@@ -78,3 +78,9 @@
 - Prevents confusion where UI updates are hidden inside backend milestones  
 - Matches v1 and v2 precedent (Dashboard Integration, Phase 7C)  
 **Links:** imp_plans/v1.md [Dashboard Integration], imp_plans/v2.md [Phase 7C: Frontend Integration]
+
+## ADR-2025-09-06 Explicit Endpoint & Storage Phasing
+**Context:** Phase 6E cutover assumed V2 endpoints and storage methods already existed, but they had not been implemented. This caused server crashes, TypeScript errors, and unstable testing.  
+**Decision:** All future implementation plans must explicitly phase in endpoint and storage method implementation before cutover or shadow phases. Documentation cannot assume these layers already exist.  
+**Consequences:** Prevents plan-code drift, reduces risk of unstable cutovers, and ensures validation occurs incrementally.  
+**Status:** Accepted (2025-09-06)
