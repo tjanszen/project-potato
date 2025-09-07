@@ -12,6 +12,11 @@ const featureFlags: Record<string, FeatureFlag> = {
     enabled: false, // Default OFF as required - overridden by environment variable
     description: 'Main feature flag for No Drink tracking functionality',
   },
+  'ff.potato.runs_v2': {
+    name: 'ff.potato.runs_v2',
+    enabled: false, // Default OFF as required - overridden by environment variable
+    description: 'V2 feature flag for runs and totals tracking functionality',
+  },
 };
 
 export class FeatureFlagService {
@@ -21,8 +26,10 @@ export class FeatureFlagService {
   }
 
   private logFlagStatus(): void {
-    const flagValue = process.env.FF_POTATO_NO_DRINK_V1;
-    console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${flagValue || 'undefined'}`);
+    const v1Flag = process.env.FF_POTATO_NO_DRINK_V1;
+    const v2Flag = process.env.FF_POTATO_RUNS_V2;
+    console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${v1Flag || 'undefined'}`);
+    console.log(`[Feature Flag] FF_POTATO_RUNS_V2 = ${v2Flag || 'undefined'}`);
   }
 
   // Get a specific feature flag
@@ -33,6 +40,16 @@ export class FeatureFlagService {
     // For ff.potato.no_drink_v1, read from environment variable
     if (flagName === 'ff.potato.no_drink_v1') {
       const envValue = process.env.FF_POTATO_NO_DRINK_V1;
+      const enabled = envValue === 'true'; // Only 'true' string enables it
+      return {
+        ...baseFlag,
+        enabled
+      };
+    }
+
+    // For ff.potato.runs_v2, read from environment variable
+    if (flagName === 'ff.potato.runs_v2') {
+      const envValue = process.env.FF_POTATO_RUNS_V2;
       const enabled = envValue === 'true'; // Only 'true' string enables it
       return {
         ...baseFlag,
