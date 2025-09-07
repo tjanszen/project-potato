@@ -57,3 +57,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Feature Flag System
 - **Replit Secrets**: Used for managing feature flag configurations in production.
+
+# Recent Progress
+
+### 2025-09-07
+- Completed Phase 6X: V2 endpoints integrated, authenticated validation confirmed
+- Completed Phase 6E-Lite: Single-user cutover successful, V2 system now production
+- Added ADR-2025-09-07 + new playbook checklists (API Validation, Feature Flag Cutover)
+- V2 runs system is live, stable, and fully documented
