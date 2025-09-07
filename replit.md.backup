@@ -1,0 +1,43 @@
+# Overview
+
+This project is a minimalist habit tracking web application designed to help users record alcohol-free days. It provides a calendar-based interface where users can easily mark specific dates as "No Drink". The application is built with a focus on core functionality, allowing for future expansion into features like streak tracking and badges, while maintaining a robust and flexible architecture through feature flags. The business vision is to provide a simple, effective tool for personal habit management, starting with alcohol abstinence.
+
+# User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+# System Architecture
+
+## Frontend Architecture
+The UI is calendar-centric, featuring a single dashboard with a scrollable monthly calendar for 2025. Interactions are handled via an interactive drawer system that opens upon clicking a calendar day. The display is timezone-aware, showing dates based on the user's configured timezone. Visual feedback includes subtle filled dots for marked days and toast notifications for user actions. Performance is optimized with debounced interactions and memoized calculations. Accessibility is enhanced with focus management, ARIA attributes, and keyboard navigation.
+
+## Backend Architecture
+The backend utilizes a feature flag system, with all core functionality gated behind `ff.potato.no_drink_v1`. It employs a dual-table data model: an append-only `click_events` log for audit trails and a `day_marks` state table for deduplicated current data with unique constraints. Server-side timezone handling validates dates using the user's timezone, enforcing a backdating window from 2025-01-01 to the current date. Idempotency ensures that multiple clicks on the same day do not result in duplicate entries.
+
+## Authentication & Authorization
+The system uses a simple email/password authentication scheme with secure password hashing. All day marks and events are user-scoped and tied to authenticated accounts.
+
+## Data Storage Design
+Data is stored in a PostgreSQL database, utilizing UUID primary keys. The design follows an event sourcing pattern, combining an immutable event log with a materialized state table. Unique constraints (`UNIQUE (user_id, date)`) prevent duplicate day marks. User timezone preferences are stored as text (e.g., "America/New_York"), and dates are stored in YYYY-MM-DD format, independent of time.
+
+## Business Logic Constraints
+The system primarily stores `true` values for "No Drink" days, with the absence of a mark indicating an unknown state. The data model is designed for future extensibility to accommodate "Did Drink" values with last-write-wins semantics. Server-side validation enforces date boundaries and timezone-aware current date calculations.
+
+## Technical Implementations
+Key technical decisions include the use of Drizzle ORM for PostgreSQL interactions, bcryptjs for password hashing, and React with Vite for the frontend. date-fns handles timezone and date calculations, while Zod is used for runtime validation.
+
+# External Dependencies
+
+## Database
+- **PostgreSQL**: Primary relational data storage.
+
+## Implemented Dependencies
+- **Express.js**: Backend web framework.
+- **Drizzle ORM**: ORM for PostgreSQL interaction.
+- **bcryptjs**: Password hashing library.
+- **React + Vite**: Frontend framework.
+- **date-fns**: Date and time utility library.
+- **Zod**: Data validation library.
+
+## Feature Flag System
+- **Custom Feature Flag Infrastructure**: For managing `ff.potato.no_drink_v1` and other feature gates.
