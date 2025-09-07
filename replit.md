@@ -1,6 +1,6 @@
 # Overview
 
-This project is a web application designed for tracking "No Drink" days on a calendar. It provides a minimal dashboard where users can mark specific calendar days as alcohol-free. The application is built with a focus on core functionality first, using feature flags to manage phased development and allow for future expansion, such as streak tracking and badges. The business vision is to provide a simple, effective tool for personal habit tracking.
+This project is a minimalist web application for tracking "No Drink" days on a calendar. Its core purpose is to provide a simple, interactive dashboard where users can easily mark specific days as alcohol-free. The development follows a phase-gated approach using feature flags, ensuring core functionality is stable before expanding to features like streak tracking or badges. The application is designed for scalability and maintains flexibility for future enhancements.
 
 # User Preferences
 
@@ -9,32 +9,50 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Frontend Architecture
-The user interface is calendar-centric, presenting a single dashboard view with a scrollable monthly calendar. Users interact by clicking days to open an interactive drawer for marking. The display is timezone-aware, showing dates according to the user's configured timezone. Visual feedback includes subtle filled dots for marked days and toast notifications for user actions. The frontend is performance-optimized with debounced interactions and memoized calculations and enhanced for accessibility with ARIA attributes and keyboard navigation.
+- **Calendar-centric UI**: Single dashboard view with a scrollable monthly calendar limited to 2025.
+- **Interactive Drawer System**: Clicking calendar days opens a drawer for marking functionality.
+- **Timezone-aware Display**: Calendar shows dates based on the user's configured timezone.
+- **Visual Feedback**: Marked days are indicated with subtle filled dots and color.
+- **Toast Notifications**: Provide success/failure feedback for user actions.
+- **Performance Optimized**: Features debounced interactions and memoized calculations for responsiveness.
+- **Accessibility Enhanced**: Includes focus management, ARIA attributes, and keyboard navigation support.
 
 ## Backend Architecture
-All functionality is gated behind a feature flag system (`ff.potato.no_drink_v1`). The data model uses a dual-table approach: an append-only `click_events` log for auditing and a `day_marks` state table with unique constraints for deduplicated current state. Server-side timezone handling ensures accurate date validation based on the user's timezone, enforcing a backdating window from 2025-01-01 to the current date. Idempotency is built-in, preventing duplicate day marks from multiple clicks.
+- **Feature Flag System**: All functionality is gated behind a `ff.potato.no_drink_v1` flag (default OFF).
+- **Dual-table Data Model**: Uses an event log (`click_events`) for an append-only audit trail and a state table (`day_marks`) for deduplicated current state with unique constraints.
+- **Timezone Handling**: Server-side validation uses the user's timezone setting for date range determination.
+- **Date Validation**: Enforces a backdating window from 2025-01-01 to the current date in the user's timezone.
+- **Idempotency**: Multiple clicks on the same day result in no-op operations.
 
 ## Authentication & Authorization
-The system uses a simple email/password authentication mechanism with secure password hashing. All day marks and events are user-scoped, tied to authenticated user accounts.
+- **Email/Password Authentication**: Simple credential-based authentication system.
+- **Password Hashing**: Secure storage of user credentials.
+- **User-scoped Data**: All day marks and events are tied to authenticated user accounts.
 
 ## Data Storage Design
-The primary data storage is a PostgreSQL database utilizing UUID primary keys. It employs an event sourcing pattern combining an immutable event log with a materialized state table. Unique constraints (`UNIQUE (user_id, date)`) prevent duplicate day marks. User timezone preferences are stored as text (e.g., "America/New_York"), and dates are stored in YYYY-MM-DD format, independent of time.
+- **PostgreSQL Database**: Relational database utilizing UUID primary keys.
+- **Event Sourcing Pattern**: Combines an immutable event log with a materialized state table.
+- **Unique Constraints**: Prevents duplicate day marks per user using `UNIQUE (user_id, date)`.
+- **Timezone Storage**: User timezone preference stored as text (e.g., "America/New_York").
+- **Date-only Semantics**: Days are stored in YYYY-MM-DD format, independent of time.
 
 ## Business Logic Constraints
-The system primarily stores `true` values for "No Drink" days, with the absence of a mark indicating an unknown state. The data model is designed for future extensibility to accommodate "Did Drink" values with last-write-wins semantics. Server-side validation enforces date boundaries and timezone-aware current date calculations.
+- **Truth Table Logic**: Only stores `true` values for "No Drink"; absence represents an unknown state.
+- **Future Extensibility**: Data model designed to accommodate `false` values for "Did Drink" with last-write-wins semantics.
+- **Validation Rules**: Server-side enforcement of date boundaries and timezone-aware current date calculations.
 
 # External Dependencies
 
 ## Database
-- **PostgreSQL**: Used for primary data storage.
+- **PostgreSQL**: Primary data storage, supporting UUID v4 for primary keys.
 
 ## Implemented Dependencies
-- **Express.js**: Backend web framework, including CORS and session middleware.
+- **Express.js**: Backend web framework used for routing, CORS, and session management.
 - **Drizzle ORM**: For PostgreSQL interaction, schema management, and type safety.
-- **bcryptjs**: For password hashing.
-- **React + Vite**: Frontend framework.
-- **date-fns**: For timezone handling and date calculations.
-- **Zod**: For runtime validation, integrated with Drizzle ORM.
+- **bcryptjs**: Used for secure password hashing.
+- **React + Vite**: Frontend framework for building the user interface.
+- **date-fns**: For robust timezone handling and date calculations.
+- **Zod**: Runtime validation with integration for Drizzle.
 
 ## Feature Flag System
-- A custom feature toggle infrastructure is in place to manage the `ff.potato.no_drink_v1` flag and future feature gates.
+- **Feature Toggle Infrastructure**: Essential for managing the `ff.potato.no_drink_v1` flag and future feature gates.
