@@ -109,3 +109,17 @@ Future phases can use the simplified cutover model when user base is small, prov
 - Ensures functional validation reflects real user flows  
 - Adds requirement to create/login a test user in validation steps  
 **Status:** Accepted (2025-09-07)
+
+---
+## ADR-2025-09-08: Doc Organization Rule
+
+**Context:** Phase-specific artifacts (like validation evidence and operator playbooks) were previously stored in `docs/agent_memory/`, cluttering core long-term memory.  
+
+**Decision:** Create a dedicated `docs/phase_artifacts/` folder for all phase-specific outputs. Restrict `docs/agent_memory/` to long-term memory only (plans, ADRs, playbooks, bug journals, glossary, features_overview, daily briefs, fast follows).  
+
+**Consequences:**  
+- Prevents clutter and confusion in `agent_memory/`  
+- Ensures agents always know where to find long-term vs temporary docs  
+- Supports project scale with clean separation of artifacts  
+
+**Status:** Accepted (2025-09-08)
