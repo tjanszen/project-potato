@@ -1,6 +1,13 @@
 # Daily Postbrief - September 7, 2025
 
-## ✅ Completed Today
+## ✅ Completed Summary Today
+
+6A → Schema, constraints, indexes, migrations → ✅ COMPLETE
+6B → Transaction boundaries → ✅ COMPLETE (6B-2 validated)
+6C → Backfill/Rebuild → ✅ COMPLETE
+6D → Shadow Read & Diff → ✅ COMPLETE
+6X → V2 Endpoints & Storage Implementation → ✅ COMPLETE
+6E-Lite → Single-user cutover → ✅ COMPLETE
 
 ### Phase 6X: V2 Endpoints & Storage Implementation - COMPLETE
 **TypeScript & Config Resolution**

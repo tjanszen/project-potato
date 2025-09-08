@@ -1,0 +1,53 @@
+Goal: Rewrite Phase 7A in docs/agent_memory/imp_plans/v2.md into 3 sub-phases (7A-1 → 7A-3) with fixed wording and testable steps.
+
+Do:
+1. Locate the current Phase 7A: Totals v2 section.
+2. Replace it with three sub-phases:
+
+### PHASE 7A-1: Schema & Strategy Lock-in
+Goal: Implement hybrid totals strategy (real-time current stats + stored monthly aggregates). Create run_totals table and lock in schema.
+Tasks:
+- Create run_totals table schema with monthly aggregate fields and indexes
+- Write forward + rollback migrations
+- Validate schema applies cleanly in PostgreSQL and SQLite fallback
+Exit Criteria:
+- run_totals table exists with correct schema
+- Forward/rollback migrations succeed with no corruption
+Evidence to Collect:
+- `\d run_totals` output confirming schema
+- Forward + rollback cycle proof
+
+### PHASE 7A-2: Aggregation & Reconciliation
+Goal: Implement aggregate update procedures and nightly reconciliation job.
+Tasks:
+- Implement monthly aggregate calculation/update logic
+- Add reconciliation job comparing aggregates vs runs
+- Create reconciliation_log table and validation queries
+Exit Criteria:
+- Aggregate recomputation completes within 1h for 1000+ users
+- Reconciliation detects inconsistencies and logs them
+Evidence to Collect:
+- EXPLAIN ANALYZE timing of aggregate queries
+- Sample reconciliation_log entries showing detection/correction
+
+### PHASE 7A-3: API, Caching & Migration
+Goal: Expose totals via API and optimize for performance.
+Tasks:
+- Implement /api/v2/totals endpoint (auth + ff.potato.totals_v2 gated)
+- Add invalidation strategy when runs change
+- Add caching and query optimization for <100ms performance
+- Implement migration of totals for existing users
+Exit Criteria:
+- /api/v2/totals responds <100ms (wrk benchmark)
+- Migration results match real-time totals (validation script PASS)
+Evidence to Collect:
+- curl /api/v2/totals JSON response with totals data
+- wrk benchmark results <100ms p95
+- Migration validation logs with PASS
+
+3. Remove outdated wording “Choose between compute-on-read vs stored aggregates approach” from the goal. Instead, explicitly state “Implement hybrid totals strategy (real-time current stats + stored monthly aggregates).”
+
+Proof:
+- v2.md shows 7A rewritten as 7A-1, 7A-2, 7A-3
+- Outdated “choose between” line removed
+- Each sub-phase has Goal, Tasks, Exit Criteria, Evidence

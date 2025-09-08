@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, date, boolean, timestamp, primaryKey, check, customType, integer, unique, index } from 'drizzle-orm/pg-core';
-import { sqliteTable, text as sqliteText, integer as sqliteInteger, index as sqliteIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text as sqliteText, integer as sqliteInteger, index as sqliteIndex, primaryKey as sqlitePrimaryKey } from 'drizzle-orm/sqlite-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -284,6 +284,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   dayMarks: many(dayMarks),
   clickEvents: many(clickEvents),
   runs: many(runs),
+  runTotals: many(runTotals),
 }));
 
 export const dayMarksRelations = relations(dayMarks, ({ one }) => ({
@@ -303,6 +304,62 @@ export const clickEventsRelations = relations(clickEvents, ({ one }) => ({
 export const runsRelations = relations(runs, ({ one }) => ({
   user: one(users, {
     fields: [runs.userId],
+    references: [users.id],
+  }),
+}));
+
+// Run totals table (V2 totals feature - monthly aggregates for performance)
+export const runTotals = pgTable('run_totals', {
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  yearMonth: text('year_month').notNull(), // 'YYYY-MM' format
+  totalDays: integer('total_days').notNull().default(0),
+  longestRunDays: integer('longest_run_days').notNull().default(0),
+  activeRunDays: integer('active_run_days'), // NULL if no active run
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.yearMonth] }),
+  // Indexes for performance
+  userMonthIdx: index('totals_user_month_idx').on(table.userId, table.yearMonth),
+  // Validation constraints
+  yearMonthFormat: check('year_month_format', sql`${table.yearMonth} ~ '^[0-9]{4}-[0-9]{2}$'`),
+  totalDaysNonNegative: check('total_days_non_negative', sql`${table.totalDays} >= 0`),
+  longestRunNonNegative: check('longest_run_non_negative', sql`${table.longestRunDays} >= 0`),
+  activeRunNonNegative: check('active_run_non_negative', sql`${table.activeRunDays} IS NULL OR ${table.activeRunDays} >= 0`),
+}));
+
+// SQLite-compatible run totals table (fallback for environments without PostgreSQL)
+export const runTotalsSqlite = sqliteTable('run_totals', {
+  userId: sqliteText('user_id').notNull(),
+  yearMonth: sqliteText('year_month').notNull(), // 'YYYY-MM' format
+  totalDays: sqliteInteger('total_days').notNull().default(0),
+  longestRunDays: sqliteInteger('longest_run_days').notNull().default(0),
+  activeRunDays: sqliteInteger('active_run_days'), // NULL if no active run
+  updatedAt: sqliteInteger('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+}, (table) => ({
+  pk: sqlitePrimaryKey({ columns: [table.userId, table.yearMonth] }),
+  // SQLite indexes for performance
+  userMonthIdx: sqliteIndex('sqlite_totals_user_month_idx').on(table.userId, table.yearMonth),
+}));
+
+// Zod schemas for run totals validation
+export const insertRunTotalsSchema = createInsertSchema(runTotals).omit({
+  updatedAt: true,
+});
+
+export const insertRunTotalsSqliteSchema = createInsertSchema(runTotalsSqlite).omit({
+  updatedAt: true,
+});
+
+// TypeScript types for run totals
+export type RunTotals = typeof runTotals.$inferSelect;
+export type NewRunTotals = z.infer<typeof insertRunTotalsSchema>;
+export type RunTotalsSqlite = typeof runTotalsSqlite.$inferSelect;
+export type NewRunTotalsSqlite = z.infer<typeof insertRunTotalsSqliteSchema>;
+
+// Update user relations to include run totals
+export const runTotalsRelations = relations(runTotals, ({ one }) => ({
+  user: one(users, {
+    fields: [runTotals.userId],
     references: [users.id],
   }),
 }));
