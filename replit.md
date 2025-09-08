@@ -56,3 +56,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Feature Flag System
 - **Feature Toggle Infrastructure**: Essential for managing the `ff.potato.no_drink_v1` flag and other future feature gates.
+
+# Recent Changes
+
+## 2025-09-08
+- **Phase 7A-1 & 7A-2 Complete**: Hybrid totals strategy implemented with `run_totals` schema and reconciliation system
+- **ADR-2025-09-08**: Doc Organization Rule established → created `docs/phase_artifacts/` for phase-specific outputs
+- **Schema Patch Plan**: Added between Phase 7C-1 and 7C-2 to fix missing `day_marks` table (root cause of 500 errors)
+- **Right-Sizing Updates**: Simplified Phase 7A-3 and 7B-Lite for ~100-500 user base, broke Phase 7C into manageable sub-phases
+- **File Organization**: Moved phase artifacts out of `agent_memory/`, updated playbooks with new organizational rules
