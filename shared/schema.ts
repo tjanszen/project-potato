@@ -285,6 +285,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   clickEvents: many(clickEvents),
   runs: many(runs),
   runTotals: many(runTotals),
+  reconciliationLogs: many(reconciliationLog),
 }));
 
 export const dayMarksRelations = relations(dayMarks, ({ one }) => ({
@@ -360,6 +361,78 @@ export type NewRunTotalsSqlite = z.infer<typeof insertRunTotalsSqliteSchema>;
 export const runTotalsRelations = relations(runTotals, ({ one }) => ({
   user: one(users, {
     fields: [runTotals.userId],
+    references: [users.id],
+  }),
+}));
+
+// Reconciliation log table (V2 totals feature - tracks data consistency checks)
+export const reconciliationLog = pgTable('reconciliation_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  yearMonth: text('year_month').notNull(), // 'YYYY-MM' format
+  checkType: text('check_type').notNull(), // 'total_days', 'longest_run', 'active_run'
+  expectedValue: integer('expected_value'), // Value from real-time calculation
+  actualValue: integer('actual_value'),    // Value from stored aggregates
+  status: text('status').notNull(), // 'match', 'mismatch', 'corrected', 'error'
+  errorMessage: text('error_message'),
+  processingTimeMs: integer('processing_time_ms'),
+  correlationId: text('correlation_id'), // For tracing reconciliation runs
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  // Indexes for performance and querying
+  userMonthIdx: index('recon_user_month_idx').on(table.userId, table.yearMonth),
+  statusIdx: index('recon_status_idx').on(table.status),
+  createdAtIdx: index('recon_created_at_idx').on(table.createdAt),
+  correlationIdx: index('recon_correlation_idx').on(table.correlationId),
+  // Validation constraints
+  yearMonthFormat: check('recon_year_month_format', sql`${table.yearMonth} ~ '^[0-9]{4}-[0-9]{2}$'`),
+  statusValues: check('recon_status_values', sql`${table.status} IN ('match', 'mismatch', 'corrected', 'error')`),
+  checkTypeValues: check('recon_check_type_values', sql`${table.checkType} IN ('total_days', 'longest_run', 'active_run')`),
+  processingTimeNonNegative: check('recon_processing_time_non_negative', sql`${table.processingTimeMs} IS NULL OR ${table.processingTimeMs} >= 0`),
+}));
+
+// SQLite-compatible reconciliation log table
+export const reconciliationLogSqlite = sqliteTable('reconciliation_log', {
+  id: sqliteText('id').primaryKey().$default(() => crypto.randomUUID()),
+  userId: sqliteText('user_id').notNull(),
+  yearMonth: sqliteText('year_month').notNull(), // 'YYYY-MM' format
+  checkType: sqliteText('check_type').notNull(), // 'total_days', 'longest_run', 'active_run'
+  expectedValue: sqliteInteger('expected_value'), // Value from real-time calculation
+  actualValue: sqliteInteger('actual_value'),    // Value from stored aggregates
+  status: sqliteText('status').notNull(), // 'match', 'mismatch', 'corrected', 'error'
+  errorMessage: sqliteText('error_message'),
+  processingTimeMs: sqliteInteger('processing_time_ms'),
+  correlationId: sqliteText('correlation_id'), // For tracing reconciliation runs
+  createdAt: sqliteInteger('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+}, (table) => ({
+  // SQLite indexes for performance
+  userMonthIdx: sqliteIndex('sqlite_recon_user_month_idx').on(table.userId, table.yearMonth),
+  statusIdx: sqliteIndex('sqlite_recon_status_idx').on(table.status),
+  createdAtIdx: sqliteIndex('sqlite_recon_created_at_idx').on(table.createdAt),
+  correlationIdx: sqliteIndex('sqlite_recon_correlation_idx').on(table.correlationId),
+}));
+
+// Zod schemas for reconciliation log validation
+export const insertReconciliationLogSchema = createInsertSchema(reconciliationLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReconciliationLogSqliteSchema = createInsertSchema(reconciliationLogSqlite).omit({
+  id: true,
+  createdAt: true,
+});
+
+// TypeScript types for reconciliation log
+export type ReconciliationLog = typeof reconciliationLog.$inferSelect;
+export type NewReconciliationLog = z.infer<typeof insertReconciliationLogSchema>;
+export type ReconciliationLogSqlite = typeof reconciliationLogSqlite.$inferSelect;
+export type NewReconciliationLogSqlite = z.infer<typeof insertReconciliationLogSqliteSchema>;
+
+// Reconciliation log relations
+export const reconciliationLogRelations = relations(reconciliationLog, ({ one }) => ({
+  user: one(users, {
+    fields: [reconciliationLog.userId],
     references: [users.id],
   }),
 }));
