@@ -11,7 +11,7 @@ const morgan = require('morgan');
 const crypto = require('crypto');
 
 // Add error handling for imports
-let featureFlagService, storage, insertUserSchema;
+let featureFlagService, storage, insertUserSchema, totalsAggregation;
 try {
   console.log('Loading feature flags...');
   ({ featureFlagService } = require('./server/feature-flags.js'));
@@ -24,6 +24,14 @@ try {
   console.log('Loading schema...');
   ({ insertUserSchema } = require('./shared/schema.js'));
   console.log('✅ Schema loaded');
+  
+  console.log('Loading totals aggregation...');
+  totalsAggregation = require('./server/totals-aggregation.js');
+  console.log('✅ Totals aggregation loaded');
+  
+  console.log('Loading totals invalidation...');
+  const totalsInvalidation = require('./server/totals-invalidation.js');
+  console.log('✅ Totals invalidation loaded');
 } catch (error) {
   console.error('❌ Import error:', error);
   process.exit(1);
@@ -763,6 +771,29 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     
     const createdMark = await storage.markDay(dayMark);
     
+    // Invalidate totals asynchronously (Phase 7A-3 - invalidation strategy)
+    if (totalsInvalidation && totalsInvalidation.invalidateUserTotals) {
+      const yearMonth = date.slice(0, 7); // Extract YYYY-MM from YYYY-MM-DD
+      setImmediate(async () => {
+        try {
+          await totalsInvalidation.invalidateUserTotals(storage, req.session.userId, yearMonth);
+          logger.info('Totals invalidated after day marking', { 
+            userId: req.session.userId, 
+            date, 
+            yearMonth,
+            correlationId: req.correlationId 
+          });
+        } catch (error) {
+          logger.error('Totals invalidation failed after day marking', error, { 
+            userId: req.session.userId, 
+            date, 
+            yearMonth,
+            correlationId: req.correlationId 
+          });
+        }
+      });
+    }
+    
     res.status(201).json({
       message: 'Day marked successfully',
       data: {
@@ -833,19 +864,100 @@ app.get('/api/v2/runs', requireFeatureFlag('ff.potato.runs_v2'), requireAuthenti
   }
 });
 
-app.get('/api/v2/totals', requireFeatureFlag('ff.potato.runs_v2'), requireAuthentication, async (req, res) => {
+app.get('/api/v2/totals', requireFeatureFlag('ff.potato.totals_v2'), requireAuthentication, async (req, res) => {
   try {
-    const totals = await storage.getTotalsForUser ? await storage.getTotalsForUser(req.session.userId) : {
+    // Check if aggregation functions are available
+    if (!totalsAggregation || !totalsAggregation.calculateRealTimeTotals) {
+      // Fallback to basic calculation if aggregation not available
+      const totals = await storage.getTotalsForUser ? await storage.getTotalsForUser(req.session.userId) : {
+        total_days: 0,
+        longest_run: 0,
+        current_run: 0
+      };
+      return res.json(totals);
+    }
+
+    // Use the database pool from storage for aggregation functions
+    const dbPool = storage.getRawPool ? storage.getRawPool() : null;
+    if (!dbPool) {
+      throw new Error('Database pool not available');
+    }
+
+    // Use real-time totals calculation from Phase 7A-2
+    const totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    
+    // Transform to match API contract
+    const response = {
+      total_days: totals.totalDays,
+      longest_run: totals.longestRun,
+      current_run: totals.currentRun
+    };
+    
+    logger.info('V2 totals calculated', { 
+      userId: req.session.userId,
+      processingTime: totals.processingTimeMs,
+      correlationId: req.correlationId 
+    });
+    
+    res.json(response);
+    
+  } catch (error) {
+    logger.error('V2 totals retrieval error', error, { 
+      userId: req.session.userId,
+      correlationId: req.correlationId 
+    });
+    
+    // Fallback to basic response
+    res.json({
       total_days: 0,
       longest_run: 0,
       current_run: 0
-    };
+    });
+  }
+});
+
+// Admin endpoint for manual totals invalidation (Phase 7A-3)
+app.post('/api/admin/invalidate-totals', requireAuthentication, async (req, res) => {
+  try {
+    const { userId, yearMonth } = req.body;
     
-    res.json(totals);
+    if (!userId) {
+      return res.status(400).json({ 
+        error: 'User ID is required',
+        usage: 'POST { "userId": "uuid", "yearMonth": "2025-09" }' 
+      });
+    }
+
+    if (!totalsInvalidation || !totalsInvalidation.invalidateUserTotals) {
+      return res.status(503).json({ 
+        error: 'Totals invalidation service not available' 
+      });
+    }
+
+    const result = await totalsInvalidation.invalidateUserTotals(storage, userId, yearMonth);
     
+    logger.info('Manual totals invalidation completed', { 
+      adminUserId: req.session.userId,
+      targetUserId: userId,
+      yearMonth,
+      result,
+      correlationId: req.correlationId 
+    });
+    
+    res.json({
+      message: 'Totals invalidation completed',
+      result
+    });
+
   } catch (error) {
-    console.error('V2 totals retrieval error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    logger.error('Manual totals invalidation error', error, { 
+      adminUserId: req.session.userId,
+      correlationId: req.correlationId 
+    });
+    res.status(500).json({ 
+      error: 'Invalidation failed',
+      message: error.message 
+    });
   }
 });
 

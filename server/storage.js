@@ -10,6 +10,8 @@ const pool = new pg_1.Pool({
     connectionString: process.env.DATABASE_URL,
 });
 exports.db = (0, node_postgres_1.drizzle)(pool);
+// Export pool for raw SQL queries (used by totals aggregation)
+exports.pool = pool;
 // PostgreSQL implementation
 class PostgresStorage {
     async createUser(user) {
@@ -70,6 +72,16 @@ class PostgresStorage {
             .orderBy((0, drizzle_orm_1.desc)(schema_js_1.clickEvents.createdAt))
             .limit(limit);
         return events;
+    }
+    
+    // Raw database access for aggregation functions
+    async executeRawQuery(query, params = []) {
+        return await pool.query(query, params);
+    }
+    
+    // Get the raw pool for aggregation functions that need direct access
+    getRawPool() {
+        return pool;
     }
 }
 exports.PostgresStorage = PostgresStorage;
