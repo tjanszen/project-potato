@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
+import { useQueryClient } from '@tanstack/react-query'
 import CalendarGrid from '../components/CalendarGrid'
 import DayDrawer from '../components/DayDrawer'
 import { UserInfo } from '../components/UserInfo'
+import { TotalsPanel } from '../components/TotalsPanel'
 
 export function CalendarPage() {
+  const queryClient = useQueryClient()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -23,6 +26,8 @@ export function CalendarPage() {
   const handleDayMarked = () => {
     // Trigger calendar refresh after successful day marking
     setRefreshTrigger(prev => prev + 1)
+    // Invalidate totals cache to refresh stats (Phase 7C-1)
+    queryClient.invalidateQueries({ queryKey: ['totals'] })
   }
 
   // Optimistic marking functions for immediate visual feedback
@@ -75,6 +80,10 @@ export function CalendarPage() {
         </nav>
       </header>
       
+      {/* Totals Panel - Phase 7C-1 */}
+      <div style={{ marginBottom: '30px' }}>
+        <TotalsPanel />
+      </div>
       
       {/* Calendar Grid Component */}
       <CalendarGrid 

@@ -101,6 +101,11 @@ export class ApiClient {
     return this.request(`/api/events${queryParam}`)
   }
 
+  // V2 Totals endpoint (Phase 7C-1)
+  async getTotals() {
+    return this.request('/api/v2/totals')
+  }
+
   // Health check
   async health() {
     return this.request('/health')
