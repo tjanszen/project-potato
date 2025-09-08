@@ -480,3 +480,11 @@ Before marking any server-related phase as complete (e.g., endpoint integration,
 - Prevents silent failures where server logs success but exits
 - Ensures Replit-compatible binding to dynamic $PORT
 - Guarantees endpoints are actually reachable during validation
+
+### Right-Sizing Implementation Plans (100–500 Users)
+- Scope implementation plans and tasks for small-scale (100–500 user) apps, not enterprise scale.
+- Avoid premature optimizations (e.g., nightly jobs, high-concurrency stress tests, complex capacity planning) unless clearly needed.
+- Prefer simple, direct solutions that balance correctness with maintainability.
+- If a phase/sub-phase looks like it's designed for thousands of users, simplify it (e.g., batch jobs → on-demand checks, global dashboards → minimal logs).
+- Cross-reference: Apply this principle whenever evaluating risks, tasks, or exit criteria in implementation plans.
+- For large-scale readiness (1k+ users), explicitly add a "Phase X-Lite" now, and defer "Phase X-Full" as a fast-follow only when justified.
