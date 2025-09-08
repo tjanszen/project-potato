@@ -488,3 +488,10 @@ Before marking any server-related phase as complete (e.g., endpoint integration,
 - If a phase/sub-phase looks like it's designed for thousands of users, simplify it (e.g., batch jobs → on-demand checks, global dashboards → minimal logs).
 - Cross-reference: Apply this principle whenever evaluating risks, tasks, or exit criteria in implementation plans.
 - For large-scale readiness (1k+ users), explicitly add a "Phase X-Lite" now, and defer "Phase X-Full" as a fast-follow only when justified.
+
+---
+## File Organization Rule
+
+- **`docs/agent_memory/`**: Reserved only for long-lived memory files that agents must keep referencing (implementation plans, ADRs, playbooks, bug journals, daily briefs, fast follows, features_overview, glossary).  
+- **`docs/phase_artifacts/`**: Store all phase-specific outputs (validation logs, operator playbooks, completion reports, evidence dumps).  
+- **Rule**: When creating new files tied to a single phase or piece of evidence, always save them under `docs/phase_artifacts/` with clear filenames (e.g., `phase-7a2-completion.md`). Never place them in `agent_memory/`.

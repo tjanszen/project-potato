@@ -1,0 +1,53 @@
+# Replit Agent Prompt
+
+Goal: Fix doc sprawl by reorganizing files and enshrining rules.
+
+Do:
+
+1. Create new folder `docs/phase_artifacts/` if it doesn’t exist.
+
+2. Move the following files from `docs/agent_memory/` into `docs/phase_artifacts/`:
+   - `v2_phase0_completion.md`
+   - `v2_phase0_research.md`
+   - `phase6c_operator_playbook.md`
+   - `phase6d_diff_resolution_playbook.md`
+   - `phase-7a-2-completion-evidence.md`
+
+   ✅ Ensure filenames are unchanged, only the folder path changes.
+
+3. Update `docs/agent_memory/playbooks.md` by appending this new section:
+
+   ---
+   ## File Organization Rule
+
+   - **`docs/agent_memory/`**: Reserved only for long-lived memory files that agents must keep referencing (implementation plans, ADRs, playbooks, bug journals, daily briefs, fast follows, features_overview, glossary).  
+   - **`docs/phase_artifacts/`**: Store all phase-specific outputs (validation logs, operator playbooks, completion reports, evidence dumps).  
+   - **Rule**: When creating new files tied to a single phase or piece of evidence, always save them under `docs/phase_artifacts/` with clear filenames (e.g., `phase-7a2-completion.md`). Never place them in `agent_memory/`.
+
+4. Update `docs/agent_memory/bugs_journal.md` by appending this entry:
+
+   ---
+   ### [2025-09-08] Doc Sprawl in agent_memory
+
+   **Issue:** Phase-specific artifacts (completion reports, operator playbooks) were placed inside `docs/agent_memory/`, mixing long-term memory with temporary evidence.  
+   **Root Cause:** No enforced rule distinguishing persistent memory vs artifacts.  
+   **Resolution:** Introduced dedicated `docs/phase_artifacts/` folder. Moved all phase-specific files there. Added File Organization Rule to `playbooks.md`.  
+   **Status:** Resolved ✅  
+   **Cross-Reference:** Playbooks → File Organization Rule
+   ---
+
+5. Verify that the following **remain in `docs/agent_memory/`**:
+   - `daily_briefs/`
+   - `fast_follows/`
+   - `imp_plans/`
+   - `bugs_journal.md`
+   - `decisions.adrs.md`
+   - `features_overview.md`
+   - `glossary.md`
+   - `playbooks.md`
+
+Proof:
+- All phase-specific files relocated to `docs/phase_artifacts/`
+- `playbooks.md` updated with File Organization Rule
+- `bugs_journal.md` entry added confirming fix
+- Core `agent_memory/` files and folders preserved exactly

@@ -147,6 +147,16 @@ The database schema had not been fully initialized. Critical tables defined in `
 
 ---
 
+### [2025-09-08] Doc Sprawl in agent_memory
+
+**Issue:** Phase-specific artifacts (completion reports, operator playbooks) were placed inside `docs/agent_memory/`, mixing long-term memory with temporary evidence.  
+**Root Cause:** No enforced rule distinguishing persistent memory vs artifacts.  
+**Resolution:** Introduced dedicated `docs/phase_artifacts/` folder. Moved all phase-specific files there. Added File Organization Rule to `playbooks.md`.  
+**Status:** Resolved ✅  
+**Cross-Reference:** Playbooks → File Organization Rule
+
+---
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  
