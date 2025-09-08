@@ -127,6 +127,26 @@ Cross-reference: imp_plans/v2.md Phase 6E-Lite (✅ COMPLETE).
 **Status:** Resolved ✅  
 **Cross-Reference:** ADR-2025-09-07 Authenticated Endpoint Validation; imp_plans/v2.md Phase 6X Exit Criteria
 
+### [2025-09-08] Missing `day_marks` Table During Phase 7C Testing
+
+**Issue:**  
+When attempting to mark a day via `/api/days/:date/no-drink`, the server returned a 500 Internal Server Error. Investigation showed the `day_marks` table did not exist in the database.
+
+**Root Cause:**  
+The database schema had not been fully initialized. Critical tables defined in `shared/schema.ts` (such as `day_marks`) were missing in the actual database. This caused the `storage.markDay()` call to fail.
+
+**Planned Resolution:**  
+- Added corrective "Patch Plan: Schema Fix & Validation" to `v2.md` (between 7C-1 and 7C-2).  
+- Next steps: Run schema check (`\dt`), apply safe migrations to add missing tables, and validate day marking works.  
+
+**Status:** ❌ Open (Pending Schema Patch Plan Execution)  
+
+**Cross-References:**  
+- Implementation Plan: `v2.md` → Patch Plan: Schema Fix & Validation  
+- Playbook (Optional Rule): Always run schema check before new phases  
+
+---
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  
