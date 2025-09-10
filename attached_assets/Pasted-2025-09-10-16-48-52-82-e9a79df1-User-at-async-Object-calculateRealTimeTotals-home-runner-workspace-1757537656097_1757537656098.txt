@@ -1,0 +1,160 @@
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at async Object.calculateRealTimeTotals (/home/runner/workspace/server/totals-aggregation.js:25:20)
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at async /home/runner/workspace/index.js:892:20 {
+2025-09-10 16:48:52.82
+e9a79df1
+User
+length: 104,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+severity: 'ERROR',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+code: '42P01',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+detail: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+hint: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+position: '232',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+internalPosition: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+internalQuery: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+where: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+schema: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+table: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+column: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+dataType: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+constraint: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+file: 'parse_relation.c',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+line: '1449',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+routine: 'parserOpenTable'
+2025-09-10 16:48:52.82
+e9a79df1
+User
+}
+2025-09-10 16:48:52.82
+e9a79df1
+User
+❌ V2 totals retrieval error error: relation "runs" does not exist
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at async Object.calculateRealTimeTotals (/home/runner/workspace/server/totals-aggregation.js:25:20)
+2025-09-10 16:48:52.82
+e9a79df1
+User
+at async /home/runner/workspace/index.js:892:20 {
+2025-09-10 16:48:52.82
+e9a79df1
+User
+length: 104,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+severity: 'ERROR',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+code: '42P01',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+detail: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+hint: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+position: '232',
+2025-09-10 16:48:52.82
+e9a79df1
+User
+internalPosition: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+internalQuery: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+where: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+schema: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+table: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+column: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+dataType: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+constraint: undefined,
+2025-09-10 16:48:52.82
+e9a79df1
+User
+file: 'parse_relation.c',
