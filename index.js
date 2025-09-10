@@ -657,7 +657,7 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
     const dayMarks = await storage.getDayMarksForMonth(req.session.userId, month);
     
     // Format response data
-    const markedDates = dayMarks.map(mark => mark.date);
+    const markedDates = dayMarks.map(mark => mark.localDate);
     
     res.json({
       month: month,
