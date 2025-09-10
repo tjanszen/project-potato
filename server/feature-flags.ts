@@ -17,6 +17,11 @@ const featureFlags: Record<string, FeatureFlag> = {
     enabled: true, // Default ON for Phase 6E-Lite cutover - overridden by environment variable
     description: 'V2 feature flag for runs and totals tracking functionality',
   },
+  'ff.potato.calendar_fix_v1': {
+    name: 'ff.potato.calendar_fix_v1',
+    enabled: false, // Default OFF - overridden by environment variable
+    description: 'Fix for calendar API to use localDate instead of date field',
+  },
 };
 
 export class FeatureFlagService {
@@ -28,8 +33,10 @@ export class FeatureFlagService {
   private logFlagStatus(): void {
     const v1Flag = process.env.FF_POTATO_NO_DRINK_V1;
     const v2Flag = process.env.FF_POTATO_RUNS_V2;
+    const calendarFixFlag = process.env.FF_POTATO_CALENDAR_FIX_V1;
     console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${v1Flag || 'undefined'}`);
     console.log(`[Feature Flag] FF_POTATO_RUNS_V2 = ${v2Flag || 'undefined'}`);
+    console.log(`[Feature Flag] FF_POTATO_CALENDAR_FIX_V1 = ${calendarFixFlag || 'undefined'}`);
   }
 
   // Get a specific feature flag
@@ -50,6 +57,16 @@ export class FeatureFlagService {
     // For ff.potato.runs_v2, read from environment variable
     if (flagName === 'ff.potato.runs_v2') {
       const envValue = process.env.FF_POTATO_RUNS_V2;
+      const enabled = envValue === 'true'; // Only 'true' string enables it
+      return {
+        ...baseFlag,
+        enabled
+      };
+    }
+
+    // For ff.potato.calendar_fix_v1, read from environment variable
+    if (flagName === 'ff.potato.calendar_fix_v1') {
+      const envValue = process.env.FF_POTATO_CALENDAR_FIX_V1;
       const enabled = envValue === 'true'; // Only 'true' string enables it
       return {
         ...baseFlag,

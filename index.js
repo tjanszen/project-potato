@@ -657,7 +657,9 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
     const dayMarks = await storage.getDayMarksForMonth(req.session.userId, month);
     
     // Format response data
-    const markedDates = dayMarks.map(mark => mark.date);
+    // Use localDate if FF_POTATO_CALENDAR_FIX_V1 is enabled, otherwise fallback to date
+    const useLocalDate = featureFlagService.isEnabled('ff.potato.calendar_fix_v1');
+    const markedDates = dayMarks.map(mark => useLocalDate ? mark.localDate : mark.date);
     
     res.json({
       month: month,
