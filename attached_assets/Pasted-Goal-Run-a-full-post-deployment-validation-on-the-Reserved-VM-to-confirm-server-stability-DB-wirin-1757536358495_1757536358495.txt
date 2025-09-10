@@ -1,0 +1,65 @@
+Goal: Run a full post-deployment validation on the Reserved VM to confirm server stability, DB wiring, and API functionality.
+
+Do:
+1. Environment & Server Startup
+- Open Reserved VM logs. Confirm:
+  - "Server listening on port 3000"
+  - Feature flags loaded (FF_POTATO_*)
+  - No fatal schema or DB connection errors at startup.
+
+2. Health Check Endpoint
+- Run:
+  curl -v https://<your-app>.replit.app/health
+- Expected: HTTP 200 with JSON like:
+  {"status":"ok","version":"1.0.0","timestamp":"..."}
+
+3. Database Connectivity
+- Run SQL check:
+  \dt
+- Confirm tables: users, day_marks, runs, run_totals.
+- Run:
+  SELECT * FROM day_marks ORDER BY local_date DESC LIMIT 5;
+- Confirm presence of historical rows (shouldn’t be empty if prod DB is wired correctly).
+- ⚠️ If empty → likely connected to a fresh DB instance, not your existing one.
+
+4. Authentication & User Data
+- Log in with a known production user.
+- Run:
+  SELECT * FROM users WHERE email='your-user@example.com';
+- Confirm UUID matches what the app shows.
+
+5. Calendar Endpoint
+- Run:
+  curl -v https://<your-app>.replit.app/api/calendar?month=2025-09 \
+    -b prod_cookies.txt -c prod_cookies.txt
+- Expected: HTTP 200 + JSON body with "markedDates" array populated.
+- If error → check VM logs for missing property (mark.localDate) or auth issues.
+
+6. Mark Day Endpoint
+- Run:
+  curl -X POST https://<your-app>.replit.app/api/days/2025-09-10/no-drink \
+    -H "Content-Type: application/json" \
+    -b prod_cookies.txt -c prod_cookies.txt -v
+- Expected:
+  - HTTP 200
+  - JSON response with confirmation
+  - DB row inserted into day_marks with today’s date.
+- If error → logs will tell us if it’s schema mismatch or missing DB rows.
+
+7. Logs Review
+- Tail logs while hitting endpoints:
+  - Look for "500 Internal Server Error" stack trace.
+  - Identify if it’s:
+    - DB error (column mismatch, null values),
+    - Auth error (missing session),
+    - Code bug (undefined field).
+
+Proof:
+- Report results for each checklist step (startup, health, DB check, auth, calendar API, mark day API, logs).
+- Final summary with Pass/Fail against these criteria:
+  - ✅ Server boots with no fatal errors.
+  - ✅ /health returns 200 JSON.
+  - ✅ DB shows expected tables + existing rows.
+  - ✅ /api/calendar returns 200 JSON with marked dates.
+  - ✅ /api/days/:date/no-drink inserts successfully.
+  - ✅ UI calendar loads without “Internal server error.”

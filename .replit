@@ -5,8 +5,9 @@ channel = "stable-25_05"
 packages = ["sqlite"]
 
 [deployment]
-deploymentTarget = "cloudrun"
+deploymentTarget = "gce"
 run = "node index.js"
+build = ["sh", "-c", "npm install"]
 
 [[ports]]
 localPort = 3000
