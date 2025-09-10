@@ -489,6 +489,17 @@ Before marking any server-related phase as complete (e.g., endpoint integration,
 - Cross-reference: Apply this principle whenever evaluating risks, tasks, or exit criteria in implementation plans.
 - For large-scale readiness (1k+ users), explicitly add a "Phase X-Lite" now, and defer "Phase X-Full" as a fast-follow only when justified.
 
+### Replit Server Persistence
+
+- Always run servers via **Replit Workflows/Deployments**.  
+- Never background processes manually (e.g., `nohup node index.js &` or `PORT=3000 node index.js &`).  
+- Backgrounded processes are killed immediately in the Replit environment, causing false negatives in health checks and API validation.  
+- Configure `.replit` ports explicitly (e.g., `[[ports]] localPort=3000 externalPort=80`).  
+- Validate with both:  
+  - Internal curl: `curl http://0.0.0.0:$PORT/health`  
+  - External curl: `curl https://$REPLIT_DOMAINS/health`  
+- If external fails with 502 while internal succeeds, the issue is Replit proxy configuration, not application code.
+
 ---
 ## File Organization Rule
 
