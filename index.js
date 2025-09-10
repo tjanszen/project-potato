@@ -173,6 +173,11 @@ logger.info(`Starting application in ${process.env.NODE_ENV || 'development'} mo
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Log PORT configuration for debugging
+console.log(`🚀 PORT Configuration:`);
+console.log(`  - process.env.PORT: ${process.env.PORT || 'undefined'}`);
+console.log(`  - Using PORT: ${PORT}`);
+
 // Security Middleware
 // HTTPS redirect middleware (for production)
 if (isProduction) {
