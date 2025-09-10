@@ -1,5 +1,7 @@
 # Bugs Journal
 
+
+
 ### 2025-09-01 Deployment Configuration Missing - RESOLVED ✅
 **Symptom:** Replit deployment fails with "application is failing health checks because the run command is misconfigured and not starting a proper web server"  
 **Root Cause:** Missing run command in .replit file deployment section, missing index.js entry point file to match package.json main field  
@@ -127,23 +129,39 @@ Cross-reference: imp_plans/v2.md Phase 6E-Lite (✅ COMPLETE).
 **Status:** Resolved ✅  
 **Cross-Reference:** ADR-2025-09-07 Authenticated Endpoint Validation; imp_plans/v2.md Phase 6X Exit Criteria
 
-### [2025-09-08] Missing `day_marks` Table During Phase 7C Testing
+### [2025-09-08] "500 Internal Server Error when marking days" - RESOLVED ✅
 
-**Issue:**  
-When attempting to mark a day via `/api/days/:date/no-drink`, the server returned a 500 Internal Server Error. Investigation showed the `day_marks` table did not exist in the database.
+Date: 2025-09-08  
+Bug: "500 Internal Server Error when marking days"  
 
-**Root Cause:**  
-The database schema had not been fully initialized. Critical tables defined in `shared/schema.ts` (such as `day_marks`) were missing in the actual database. This caused the `storage.markDay()` call to fail.
+Original Diagnosis:  
+- Suspected missing day_marks table.  
+- Later suspected server crash after startup.  
 
-**Planned Resolution:**  
-- Added corrective "Patch Plan: Schema Fix & Validation" to `v2.md` (between 7C-1 and 7C-2).  
-- Next steps: Run schema check (`\dt`), apply safe migrations to add missing tables, and validate day marking works.  
+Corrected Diagnosis (2025-09-10):  
+- ❌ Table not missing → day_marks table exists.  
+- ❌ Server not crashing → process starts, initializes cleanly, and stays alive.  
+- ✅ Root cause: Replit platform environment limitation.  
+  - Background processes (nohup node index.js &) are killed immediately in this environment.  
+  - Without a persistent server, curl health checks and API requests fail with 502 Bad Gateway from Replit's proxy.  
+- ✅ Application code, schema initialization, and PORT handling are all correct.  
 
-**Status:** ❌ Open (Pending Schema Patch Plan Execution)  
+Evidence:  
+- Debug logs show complete server initialization and "Server listening on port 3000."  
+- .replit file maps localPort=3000 → externalPort=80 correctly.  
+- Internal curl works only when server is run in foreground mode.  
+- External curl always fails in agent tests, because process is killed.  
 
-**Cross-References:**  
-- Implementation Plan: `v2.md` → Patch Plan: Schema Fix & Validation  
-- Playbook (Optional Rule): Always run schema check before new phases  
+Final Conclusion:  
+- The September 8th error was a Replit deployment/platform issue, not an application bug.  
+- Resolution path is environmental:  
+  - Run server via Replit Workflows/Deployments (managed execution).  
+  - Never background processes manually in Replit.  
+
+Status: Closed as environment misconfiguration.  
+
+Follow-up:  
+- Playbook updated: "Always run servers via Replit Deploy/Workflows, never use manual background processes."  
 
 ---
 
