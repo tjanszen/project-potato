@@ -64,10 +64,82 @@ We also updated core documentation (Bug Journal, Playbooks, Patch Plan) to lock 
 
 ---
 
+---
+
+## 🚨 Reserved VM Deployment Troubleshooting (FAILED)
+
+### Problem Statement
+User has a **working development environment** but **Reserved VM deployment shows "Internal server error"** when trying to login or access calendar. User spent multiple hours attempting to resolve database connection issues.
+
+### Initial Diagnosis
+- **Root Cause Identified**: Reserved VM connected to wrong database instance
+  - Dev environment: `ep-spring-salad-aelsxv77.c-2.us-east-2.aws.neon.tech` ✅ (has data)
+  - Reserved VM: `ep-muddy-base-a5ythzqj.us-east-2.aws.neon.tech` ❌ (wrong instance)
+
+### Attempted Solutions (All Failed)
+
+#### 1. Manual Deployment Secrets Update
+- **Action**: Updated DATABASE_URL in Reserved VM deployment secrets
+- **Expected**: VM uses correct database connection
+- **Result**: ❌ Changes were overridden after deployment
+
+#### 2. Main Project Secrets Update  
+- **Action**: Updated DATABASE_URL in main Replit project secrets
+- **Expected**: Reserved VM inherits correct DATABASE_URL
+- **Result**: ❌ Still connected to wrong database
+
+#### 3. Database Integration Removal
+- **Action**: Removed "Production Database" integration that auto-injected muddy-base credentials
+- **Expected**: Manual DATABASE_URL takes precedence
+- **Result**: ❌ Login failed with "password authentication failed" errors
+
+#### 4. Credential Synchronization
+- **Action**: Updated DATABASE_URL with exact working credentials from dev environment
+- **Expected**: Authentication succeeds with correct password
+- **Result**: ❌ Still getting "Internal server error" on login
+
+#### 5. Environment Variable Cleanup
+- **Action**: Removed conflicting PG* variables (PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT)
+- **Expected**: Forces app to use only DATABASE_URL
+- **Result**: ❌ Login still fails with server error
+
+### Error Patterns Observed
+- **404 errors** on all `/api/*` endpoints initially (Express server not starting)
+- **500 errors** on login with "password authentication failed" 
+- **"Login Failed"** in UI with "Internal server error" message
+- **Authentication errors** persisting despite correct credentials
+
+### User Impact
+- **Multiple hours spent** on deployment troubleshooting
+- **High frustration** due to repeated failed attempts
+- **Loss of confidence** in deployment capabilities
+- **Credits consumed** without resolution
+
+### Current Status
+- ✅ **Development environment**: Fully functional
+- ❌ **Reserved VM deployment**: Non-functional, login fails
+- ❌ **Root cause**: Still unresolved after 5+ attempted solutions
+
+### Outstanding Issues
+1. **Database connection** still failing in production despite correct credentials
+2. **Environment variable precedence** unclear in Reserved VM context
+3. **Production deployment** completely non-functional for user authentication
+4. **No clear path forward** identified after extensive troubleshooting
+
+### Lessons Learned
+1. **Reserved VM deployment** has complex environment variable inheritance
+2. **Database integrations** can override manual settings in unexpected ways
+3. **Deployment troubleshooting** requires more systematic approach
+4. **Clear instructions** needed to avoid user confusion about what to delete/keep
+
+---
+
 ## ✅ Status
 - Server code: Correct.  
-- Environment: Limiting factor.  
+- Development environment: Working.
+- Reserved VM deployment: **BROKEN** - login fails with server errors.
 - Bug Journal: Updated.  
 - Playbooks: Updated.  
 - Patch Plan: Updated.  
-- Schema fix: Pending.
+- Schema fix: Completed (local_date column rename applied).
+- **Production deployment: URGENT - requires resolution for user to continue.**
