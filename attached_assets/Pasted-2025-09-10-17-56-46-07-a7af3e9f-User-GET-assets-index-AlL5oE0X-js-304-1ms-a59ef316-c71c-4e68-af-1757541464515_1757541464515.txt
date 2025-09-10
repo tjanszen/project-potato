@@ -1,0 +1,167 @@
+2025-09-10 17:56:46.07
+a7af3e9f
+User
+📡 GET /assets/index-AlL5oE0X.js 304 1ms [a59ef316-c71c-4e68-af80-4c6b9c551b70]
+2025-09-10 17:56:46.09
+a7af3e9f
+User
+📡 GET /assets/index-mcAsMlT4.css 304 1ms [99c202aa-3c3b-4b73-805c-b1463fc7e1a4]
+2025-09-10 17:56:46.19
+a7af3e9f
+User
+📡 GET /api/me 401 2ms [2d77f423-b229-487d-867b-63dcbac43ac4]
+2025-09-10 17:56:46.20
+a7af3e9f
+User
+📡 GET /favicon.ico 304 4ms [b4c16e93-6072-4ab5-bee2-2b892c6d694c]
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+Login error: DrizzleQueryError: Failed query: select "id", "email", "password_hash", "timezone", "created_at" from "users" where "users"."email" = $1
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+params: tommy@me.com
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/drizzle-orm/pg-core/session.cjs:66:15)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async /home/runner/workspace/node_modules/drizzle-orm/node-postgres/session.cjs:152:22
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async PostgresStorage.getUserByEmail (/home/runner/workspace/server/storage.js:26:24)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async /home/runner/workspace/index.js:526:18 {
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+query: 'select "id", "email", "password_hash", "timezone", "created_at" from "users" where "users"."email" = $1',
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+params: [ 'tommy@me.com' ],
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+cause: error: password authentication failed for user 'neondb_owner'
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async /home/runner/workspace/node_modules/drizzle-orm/node-postgres/session.cjs:159:18
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/drizzle-orm/pg-core/session.cjs:64:16)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async /home/runner/workspace/node_modules/drizzle-orm/node-postgres/session.cjs:152:22
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async PostgresStorage.getUserByEmail (/home/runner/workspace/server/storage.js:26:24)
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+at async /home/runner/workspace/index.js:526:18 {
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+length: 75,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+severity: 'ERROR',
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+code: 'XX000',
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+detail: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+hint: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+position: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+internalPosition: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+internalQuery: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+where: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+schema: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+table: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+column: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+dataType: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+constraint: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+file: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+line: undefined,
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+routine: undefined
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+}
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+}
+2025-09-10 17:56:53.88
+a7af3e9f
+User
+📡 POST /api/auth/login 500 146ms [0d9b7f2e-cd32-4cb0-9e2c-e7fdb36adcd0]
+
+Wrap
+
