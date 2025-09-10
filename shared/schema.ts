@@ -32,12 +32,12 @@ export const users = pgTable('users', {
 // Day marks table (deduped current state)
 export const dayMarks = pgTable('day_marks', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  date: date('date').notNull(),
+  localDate: date('local_date').notNull(),
   value: boolean('value').notNull(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  pk: primaryKey({ columns: [table.userId, table.date] }),
-  dateCheck: check('date_check', sql`date >= DATE '2025-01-01'`),
+  pk: primaryKey({ columns: [table.userId, table.localDate] }),
+  dateCheck: check('date_check', sql`local_date >= DATE '2025-01-01'`),
   valueCheck: check('value_check', sql`value = TRUE`), // v1 only stores TRUE
 }));
 

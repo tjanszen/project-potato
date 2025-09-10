@@ -514,7 +514,7 @@ export class PostgresStorage implements IStorage {
       );
     
     // Filter by month on the application side for simplicity
-    return marks.filter(mark => mark.date.startsWith(month));
+    return marks.filter(mark => mark.localDate.startsWith(month));
   }
 
   async getDayMark(userId: string, date: string): Promise<DayMark | null> {
@@ -523,7 +523,7 @@ export class PostgresStorage implements IStorage {
       .where(
         and(
           eq(dayMarks.userId, userId),
-          eq(dayMarks.date, date)
+          eq(dayMarks.localDate, date)
         )
       );
     return mark || null;
@@ -534,7 +534,7 @@ export class PostgresStorage implements IStorage {
     const [mark] = await db.insert(dayMarks)
       .values(dayMark)
       .onConflictDoUpdate({
-        target: [dayMarks.userId, dayMarks.date],
+        target: [dayMarks.userId, dayMarks.localDate],
         set: { 
           value: dayMark.value, 
           updatedAt: new Date() 
@@ -1226,7 +1226,7 @@ export class PostgresStorage implements IStorage {
         // Mark the day with database-level idempotency
         const dayMark: NewDayMark = {
           userId,
-          date,
+          localDate: date,
           value: true
         };
         
@@ -2130,7 +2130,7 @@ export class PostgresStorage implements IStorage {
           date.setDate(date.getDate() + i);
           await db.insert(dayMarks).values({
             userId: testUserId,
-            date: date.toISOString().split('T')[0],
+            localDate: date.toISOString().split('T')[0],
             value: true
           });
         }
@@ -2144,7 +2144,7 @@ export class PostgresStorage implements IStorage {
         for (const date of dates) {
           await db.insert(dayMarks).values({
             userId: testUserId,
-            date,
+            localDate: date,
             value: true
           });
         }
@@ -2159,7 +2159,7 @@ export class PostgresStorage implements IStorage {
             date.setDate(date.getDate() + i);
             await db.insert(dayMarks).values({
               userId: testUserId,
-              date: date.toISOString().split('T')[0],
+              localDate: date.toISOString().split('T')[0],
               value: true
             });
           }
