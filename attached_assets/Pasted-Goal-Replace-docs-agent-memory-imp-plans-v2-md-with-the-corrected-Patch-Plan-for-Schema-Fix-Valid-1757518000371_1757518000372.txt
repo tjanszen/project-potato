@@ -1,3 +1,8 @@
+Goal: Replace docs/agent_memory/imp_plans/v2.md with the corrected Patch Plan for Schema Fix & Validation.
+
+Do:
+- Overwrite the entire contents of docs/agent_memory/imp_plans/v2.md with exactly the following:
+
 # 🛠️ Patch Plan: Schema Fix & Validation (v2)
 
 **Goal:**  
@@ -8,7 +13,7 @@ Ensure the `day_marks` table schema matches Drizzle definitions. Specifically, c
 ## Step 1: Schema Check
 - List current DB tables: `\dt`
 - Show schema for `day_marks`: `\d+ day_marks`
-- Compare against Drizzle's `shared/schema.ts`
+- Compare against Drizzle’s `shared/schema.ts`
 
 👉 **Output:** Confirm mismatch (table has `date`, Drizzle expects `local_date`).
 
@@ -61,3 +66,6 @@ If migration introduces issues:
 - **Low** — affects only one column name in one table.  
 - **Safe** — preserves existing rows.  
 - **Scoped** — does not touch unrelated tables or schema.
+
+Proof:
+- File docs/agent_memory/imp_plans/v2.md contains only the updated Patch Plan above.
