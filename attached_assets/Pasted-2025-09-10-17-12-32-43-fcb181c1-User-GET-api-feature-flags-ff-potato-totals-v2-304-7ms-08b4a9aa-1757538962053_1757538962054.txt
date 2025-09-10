@@ -1,0 +1,144 @@
+2025-09-10 17:12:32.43
+fcb181c1
+User
+📡 GET /api/feature-flags/ff.potato.totals_v2 304 7ms [08b4a9aa-0fef-4628-b16a-14110457d90d]
+2025-09-10 17:12:32.43
+fcb181c1
+User
+📡 GET /api/calendar?month=2025-09 500 29ms [e62c282f-2174-4105-9032-a0b8fb8e20f8]
+2025-09-10 17:12:32.44
+fcb181c1
+User
+[Totals] Real-time calculation for user 4c263504-a4af-4793-a4c5-cc9fa27d3c91: 30ms
+2025-09-10 17:12:32.44
+fcb181c1
+User
+ℹ️ V2 totals calculated {
+2025-09-10 17:12:32.44
+fcb181c1
+User
+userId: '4c263504-a4af-4793-a4c5-cc9fa27d3c91',
+2025-09-10 17:12:32.44
+fcb181c1
+User
+processingTime: 30,
+2025-09-10 17:12:32.44
+fcb181c1
+User
+correlationId: '43b490e6-9568-4b20-b525-3ea3934c88b6'
+2025-09-10 17:12:32.44
+fcb181c1
+User
+}
+2025-09-10 17:12:32.44
+fcb181c1
+User
+📡 GET /api/feature-flags/ff.potato.runs_v2 304 7ms [4c20dddf-028f-455f-9820-6a833c8a13c1]
+2025-09-10 17:12:32.44
+fcb181c1
+User
+📡 GET /api/v2/totals 200 38ms [43b490e6-9568-4b20-b525-3ea3934c88b6]
+2025-09-10 17:12:32.61
+fcb181c1
+User
+📡 GET /api/me 304 181ms [05269a07-b1a8-44ae-8a3a-3f778e94d505]
+2025-09-10 17:13:54.22
+fcb181c1
+User
+where: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+schema: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+table: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+column: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+dataType: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+constraint: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+file: 'postgres.c',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+line: '3289',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+routine: 'ProcessInterrupts',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+client: Client {
+2025-09-10 17:13:54.22
+fcb181c1
+User
+_events: [Object: null prototype] { error: [Function (anonymous)] },
+2025-09-10 17:13:54.22
+fcb181c1
+User
+_eventsCount: 1,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+_maxListeners: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+connectionParameters: ConnectionParameters {
+2025-09-10 17:13:54.22
+fcb181c1
+User
+user: 'neondb_owner',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+database: 'neondb',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+port: 5432,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+host: 'ep-muddy-base-a5ythzqj.us-east-2.aws.neon.tech',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+binary: false,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+options: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+ssl: {},
+2025-09-10 17:13:54.22
+fcb181c1
+User
+client_encoding: '',
+2025-09-10 17:13:54.22
+fcb181c1
+User
+replication: undefined,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+isDomainSocket: false,
+2025-09-10 17:13:54.22
+fcb181c1
+User
+application_name: undefined,
