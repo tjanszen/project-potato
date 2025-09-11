@@ -1,0 +1,41 @@
+# Bug Fix Plan — 2025-09-11 (Refined)
+
+**Issue:** "Internal server error" on login and calendar endpoints (dev + Reserved VM).  
+**Approach:** Full database reset with strict environment hygiene.
+
+## Step 1: Create New Neon Database
+- In Neon dashboard, create a new database instance (e.g., `project-potato-fresh`).
+- Copy the new connection string:
+  `postgresql://neondb_owner:XXXXX@ep-NEWNAME-XXXXX.us-east-2.aws.neon.tech/neondb?sslmode=require`
+
+## Step 2: Update Environment Variables
+- In Replit (both Dev and Reserved VM):
+  - Set only:
+    - `DATABASE_URL` → new Neon connection string
+    - `SESSION_SECRET` → generate a secure random string
+- ⚠️ Do NOT set any PG* (PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT) or NEON_* vars.
+
+## Step 3: Apply Schema with Drizzle
+- Run: `npx drizzle-kit push`
+- Confirm logs show creation of tables: `users`, `day_marks`, `runs`, `run_totals`, `click_events`, `reconciliation_log`.
+
+## Step 4: Verify Schema
+- Run: `\dt` → should list all 6 tables.
+- Run: `\d+ day_marks` → should show `local_date`, `user_id`, `value`, `updated_at`.
+- Run: `\d+ users` → should show `id`, `email`, `password_hash`, `timezone`.
+
+## Step 5: Application Reset Note
+- All old user data and day marks are lost.
+- You must create new users to test login and calendar.
+
+## Step 6: Proof of Success
+- `GET /health` → 200 JSON
+- `POST /api/signup` → 200 (user created)
+- `POST /api/login` → 200 (session established)
+- `GET /api/calendar?month=2025-09` → 200 (empty `markedDates`, not 500)
+- `POST /api/days/2025-09-11/no-drink` → 200 (DB row inserted)
+- `GET /api/calendar?month=2025-09` → 200 (returns new marked date)
+
+## Step 7: Rollback Plan
+- If needed, restore old DB by resetting `DATABASE_URL` to the spring-salad connection string.
+- ⚠️ Do not restore PG* or NEON_* variables.
