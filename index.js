@@ -14,7 +14,7 @@ const morgan = require('morgan');
 const crypto = require('crypto');
 
 // Add error handling for imports
-let featureFlagService, storage, insertUserSchema, totalsAggregation;
+let featureFlagService, storage, insertUserSchema, totalsAggregation, totalsInvalidation;
 try {
   console.log('Loading feature flags...');
   ({ featureFlagService } = require('./server/feature-flags.js'));
@@ -33,7 +33,7 @@ try {
   console.log('✅ Totals aggregation loaded');
   
   console.log('Loading totals invalidation...');
-  const totalsInvalidation = require('./server/totals-invalidation.js');
+  totalsInvalidation = require('./server/totals-invalidation.js');
   console.log('✅ Totals invalidation loaded');
 } catch (error) {
   console.error('❌ Import error:', error);
@@ -774,7 +774,7 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     // Create day mark entry
     const dayMark = {
       userId: req.session.userId,
-      date: date,
+      localDate: date,
       value: true // Phase 2E only handles "no drink" = true
     };
     
