@@ -33,18 +33,24 @@ class PostgresStorage {
     async getDayMarksForMonth(userId, month) {
         // month format: "2025-06"
         const startDate = `${month}-01`;
-        const endDate = `${month}-31`; // Simplified - covers all possible month lengths
+        const [y, m] = month.split('-').map(Number);
+        const nextMonth = `${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2,'0')}-01`;
+        
         const marks = await exports.db.select()
             .from(schema_js_1.dayMarks)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_js_1.dayMarks.userId, userId), (0, drizzle_orm_1.eq)(schema_js_1.dayMarks.value, true) // Only get true values in v1
-        ));
-        // Filter by month on the application side for simplicity
-        return marks.filter(mark => mark.date.startsWith(month));
+            .where((0, drizzle_orm_1.and)(
+                (0, drizzle_orm_1.eq)(schema_js_1.dayMarks.userId, userId), 
+                (0, drizzle_orm_1.eq)(schema_js_1.dayMarks.value, true), // Only get true values in v1
+                (0, drizzle_orm_1.gte)(schema_js_1.dayMarks.localDate, startDate),
+                (0, drizzle_orm_1.lt)(schema_js_1.dayMarks.localDate, nextMonth)
+            ));
+        
+        return marks;
     }
     async getDayMark(userId, date) {
         const [mark] = await exports.db.select()
             .from(schema_js_1.dayMarks)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_js_1.dayMarks.userId, userId), (0, drizzle_orm_1.eq)(schema_js_1.dayMarks.date, date)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_js_1.dayMarks.userId, userId), (0, drizzle_orm_1.eq)(schema_js_1.dayMarks.localDate, date)));
         return mark || null;
     }
     async markDay(dayMark) {
@@ -52,7 +58,7 @@ class PostgresStorage {
         const [mark] = await exports.db.insert(schema_js_1.dayMarks)
             .values(dayMark)
             .onConflictDoUpdate({
-            target: [schema_js_1.dayMarks.userId, schema_js_1.dayMarks.date],
+            target: [schema_js_1.dayMarks.userId, schema_js_1.dayMarks.localDate],
             set: {
                 value: dayMark.value,
                 updatedAt: new Date()

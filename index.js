@@ -1,3 +1,6 @@
+// CRITICAL: Load environment variables FIRST before any modules that read process.env
+require('dotenv').config();
+
 // Simple combined server for Project Potato Phase 1B testing
 const express = require('express');
 const path = require('path');
@@ -624,6 +627,11 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
   try {
     const { month } = req.query;
     
+    // Early guard: Ensure user session exists
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
     // Validate month parameter format (YYYY-MM)
     if (!month || typeof month !== 'string') {
       return res.status(400).json({ 
@@ -656,8 +664,20 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
     // Fetch day marks for the user and month
     const dayMarks = await storage.getDayMarksForMonth(req.session.userId, month);
     
-    // Format response data
-    const markedDates = dayMarks.map(mark => mark.localDate);
+    // DEBUG: Log the exact structure of returned data
+    console.log('DEBUG: dayMarks data:', JSON.stringify(dayMarks, null, 2));
+    console.log('DEBUG: first mark keys:', dayMarks.length > 0 ? Object.keys(dayMarks[0]) : 'no data');
+    
+    // Normalize field mapping - handle both camelCase and snake_case, Date and string types
+    const markedDates = (Array.isArray(dayMarks) ? dayMarks : []).map(mark => {
+      const dateValue = mark.localDate ?? mark.local_date ?? mark.date;
+      if (!dateValue) return null;
+      // Handle both Date objects and strings, ensure YYYY-MM-DD format
+      const dateStr = dateValue instanceof Date 
+        ? dateValue.toISOString().slice(0,10) 
+        : String(dateValue).slice(0,10);
+      return dateStr;
+    }).filter(Boolean);
     
     res.json({
       month: month,
@@ -667,7 +687,11 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
     
   } catch (error) {
     console.error('Calendar fetch error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error details:', error.message, error.stack);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      correlationId: req.correlationId || 'unknown'
+    });
   }
 });
 

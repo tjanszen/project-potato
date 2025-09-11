@@ -514,7 +514,13 @@ export class PostgresStorage implements IStorage {
       );
     
     // Filter by month on the application side for simplicity
-    return marks.filter(mark => mark.localDate.startsWith(month));
+    // Convert localDate to string (YYYY-MM-DD format) before filtering
+    return marks.filter(mark => {
+      const dateStr = typeof mark.localDate === 'object' && mark.localDate instanceof Date
+        ? mark.localDate.toISOString().split('T')[0] 
+        : String(mark.localDate);
+      return dateStr.startsWith(month);
+    });
   }
 
   async getDayMark(userId: string, date: string): Promise<DayMark | null> {
