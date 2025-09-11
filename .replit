@@ -13,45 +13,5 @@ build = ["sh", "-c", "npm install"]
 localPort = 3000
 externalPort = 80
 
-[[ports]]
-localPort = 3001
-externalPort = 3001
-
-[[ports]]
-localPort = 4000
-externalPort = 3003
-
-[[ports]]
-localPort = 4567
-externalPort = 3002
-
-[[ports]]
-localPort = 5000
-externalPort = 6800
-
-[[ports]]
-localPort = 5173
-externalPort = 5173
-
-[[ports]]
-localPort = 5174
-externalPort = 6000
-
-[[ports]]
-localPort = 5432
-externalPort = 3000
-
-[[ports]]
-localPort = 7777
-externalPort = 5000
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 9999
-externalPort = 4200
-
 [agent]
 integrations = ["javascript_database==1.0.0"]
