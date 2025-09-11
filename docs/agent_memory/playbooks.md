@@ -506,3 +506,13 @@ Before marking any server-related phase as complete (e.g., endpoint integration,
 - **`docs/agent_memory/`**: Reserved only for long-lived memory files that agents must keep referencing (implementation plans, ADRs, playbooks, bug journals, daily briefs, fast follows, features_overview, glossary).  
 - **`docs/phase_artifacts/`**: Store all phase-specific outputs (validation logs, operator playbooks, completion reports, evidence dumps).  
 - **Rule**: When creating new files tied to a single phase or piece of evidence, always save them under `docs/phase_artifacts/` with clear filenames (e.g., `phase-7a2-completion.md`). Never place them in `agent_memory/`.
+
+## Server Persistence in Replit
+
+- ❌ Do not attempt: One-shot shell commands combining server startup, login, API test, log capture, and cleanup.  
+- ✅ Do instead:  
+  - Run the server in **foreground** for investigation (`DEBUG=* node index.js`).  
+  - Use **Reserved VM Deployments/Workflows** for persistent execution.  
+  - Capture logs directly via foreground mode.  
+- **Reason:** Replit environments kill background processes. One-shot chaining does not solve this; it only masks failures and produces misleading logs.  
+- **Lesson:** Always run servers via foreground mode or Reserved VM. Never attempt chained background execution for API tests.
