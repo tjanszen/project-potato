@@ -1,0 +1,61 @@
+## 2025-09-10 — Reserved VM Deployment Database Conflict
+
+### Bug
+Both development and Reserved VM deployments fail with "Internal server error" on login and calendar endpoints.
+
+### Context
+- Development environment was previously functional against Neon DB at `ep-spring-salad-aelsxv77.c-2.us-east-2.aws.neon.tech`.
+- After schema patch and multiple DB connection attempts, both dev and Reserved VM environments now fail consistently:
+  - Login → 500 error
+  - Calendar → "Failed to load calendar: Internal server error"
+- Issue appears tied to database connection misconfiguration and environment variable overrides.
+
+### Findings
+1. **Database Host Mismatch**
+   - Dev DB host (expected): `ep-spring-salad...`
+   - Reserved VM DB host (observed in logs): `ep-muddy-base...` (fresh DB, missing V2 tables)
+   - Confirms that different environments are pointing at different Neon instances.
+
+2. **Environment Variable Override**
+   - Reserved VM contained stale `PG*` variables (`PGHOST`, `PGUSER`, `PGPASSWORD`, etc.) from an old Neon integration.
+   - Node.js client prefers `PG*` vars over `DATABASE_URL`, causing misrouting even after `DATABASE_URL` was updated.
+
+3. **Attempted Fixes**
+   - Updated `DATABASE_URL` in both project and deployment secrets → ❌ overridden.
+   - Removed `PG*` variables → ❌ errors persisted.
+   - Removed "Production Database" integration → ❌ no change.
+   - Synced credentials from dev → ❌ authentication still failed.
+   - Result: both dev and Reserved VM fail to connect to correct DB.
+
+4. **Error Patterns**
+   - `/api/*` endpoints → 500 Internal Server Error.
+   - Login fails with "Internal server error".
+   - Calendar fails to load with "Internal server error".
+   - Logs show database authentication/connection issues.
+
+### Root Cause
+- **Database integration conflict**: Reserved VM and dev environments both polluted with stale Neon DB credentials.
+- `PG*` and/or `NEON_*` variables override `DATABASE_URL`, forcing connections to the wrong DB instance (`muddy-base`).
+- This breaks both development and production deployments.
+
+### Status
+- ❌ Reserved VM deployment: **Broken**
+- ❌ Development environment: **Broken**
+- Schema fix (`date → local_date`): ✅ Completed
+- Documentation (Bug Journal, Playbooks, Patch Plan): ✅ Updated
+- Production deployment: 🚨 **Critical blocker** — app cannot be used.
+
+### Next Steps
+1. **Purge environment variable conflicts** in both dev and Reserved VM:
+   - Delete all `PG*` and `NEON_*` variables.
+   - Keep only `DATABASE_URL` (pointing to `spring-salad`) and `SESSION_SECRET`.
+2. **Confirm runtime environment variables** with `printenv` to ensure only `DATABASE_URL` is active.
+3. Redeploy Reserved VM and restart dev environment.
+4. Validate `/health`, `/api/login`, `/api/calendar`, and day marking endpoints.
+5. If issues persist → escalate with Replit support for environment isolation.
+
+### Lessons Learned
+- PostgreSQL drivers prioritize `PG*` over `DATABASE_URL`.
+- Replit Neon integration can override secrets invisibly.
+- Conflicts can spread across dev and prod if environment is not purged carefully.
+- Always verify runtime env (`printenv`) to confirm effective DB configuration.
