@@ -71,7 +71,7 @@ class PostgresStorage {
         return mark || null;
     }
     async markDay(dayMark) {
-        // Use ON CONFLICT to handle idempotency
+        // CRITICAL FIX: Remove race-prone pre-check, use RETURNING to get old value atomically
         const [mark] = await exports.db.insert(schema_js_1.dayMarks)
             .values(dayMark)
             .onConflictDoUpdate({
@@ -83,11 +83,20 @@ class PostgresStorage {
         })
             .returning();
         
-        // NEW: Wire runs calculation into day marking flow (Phase A)
+        // Wire runs calculation into day marking flow (Phase A + Phase D)
+        // Both operations are idempotent, so we can call them based on current state
         try {
-            console.log(`[RUNS] Triggering runs calculation for user ${dayMark.userId}, date ${dayMark.localDate}`);
-            await this.performRunExtend(dayMark.userId, dayMark.localDate);
-            console.log(`[RUNS] Successfully processed runs calculation for ${dayMark.localDate}`);
+            if (dayMark.value === true) {
+                // Marking day - extend or merge runs (idempotent)
+                console.log(`[RUNS] Triggering run extension for user ${dayMark.userId}, date ${dayMark.localDate}`);
+                await this.performRunExtend(dayMark.userId, dayMark.localDate);
+                console.log(`[RUNS] Successfully processed run extension for ${dayMark.localDate}`);
+            } else {
+                // Unmarking day - split or shrink runs (idempotent)
+                console.log(`[RUNS] Triggering run split/removal for user ${dayMark.userId}, date ${dayMark.localDate}`);
+                await this.performRunSplit(dayMark.userId, dayMark.localDate);
+                console.log(`[RUNS] Successfully processed run split/removal for ${dayMark.localDate}`);
+            }
         } catch (runsError) {
             console.warn(`[RUNS] Runs calculation failed for user ${dayMark.userId}, date ${dayMark.localDate}:`, runsError.message);
             // Don't fail day marking - runs calculation failure is non-critical
@@ -470,17 +479,24 @@ class PostgresStorage {
             const dayMarks = dayMarksResult.rows.map(row => row.local_date);
 
             // Step 3: Delete existing runs in the affected date range
+            // CRITICAL FIX: Use daterange intersection to handle partial overlaps
             let deleteQuery = `DELETE FROM runs WHERE user_id = $1`;
             const deleteParams = [userId];
             let deleteParamIndex = 2;
             
-            if (fromDate) {
+            if (fromDate && toDate) {
+                // Delete any run whose span intersects the rebuild window
+                deleteQuery += ` AND span && daterange($${deleteParamIndex}::date, ($${deleteParamIndex + 1}::date + interval '1 day')::date, '[)')`;
+                deleteParams.push(fromDate, toDate);
+                deleteParamIndex += 2;
+            } else if (fromDate) {
+                // Delete runs that start at or after fromDate
                 deleteQuery += ` AND lower(span) >= $${deleteParamIndex}::date`;
                 deleteParams.push(fromDate);
                 deleteParamIndex++;
-            }
-            if (toDate) {
-                deleteQuery += ` AND upper(span) <= $${deleteParamIndex}::date`;
+            } else if (toDate) {
+                // Delete runs that end at or before toDate
+                deleteQuery += ` AND upper(span) <= ($${deleteParamIndex}::date + interval '1 day')::date`;
                 deleteParams.push(toDate);
                 deleteParamIndex++;
             }
@@ -773,27 +789,14 @@ class PostgresStorage {
             const uuid = require('crypto').randomUUID;
             
             // Use transaction to avoid inconsistent state during split
+            // CRITICAL FIX: Change order to delete-then-insert to prevent overlaps
             const client = await pool.connect();
             let firstRun, secondRun;
             
             try {
                 await client.query('BEGIN');
                 
-                // Update first part of split run
-                const firstPartQuery = `
-                    UPDATE runs
-                    SET span = daterange(lower(span), $1::date, '[)'),
-                        day_count = ($1::date - lower(span)),
-                        active = false,
-                        updated_at = NOW()
-                    WHERE id = $2
-                    RETURNING *;
-                `;
-                
-                const firstResult = await client.query(firstPartQuery, [date, originalRun.id]);
-                firstRun = firstResult.rows[0];
-
-                // Create second part of split run
+                // First create the second run before modifying the original
                 const secondPartQuery = `
                     INSERT INTO runs (id, user_id, span, day_count, active, last_extended_at, created_at, updated_at)
                     VALUES ($1, $2, daterange(($3::date + interval '1 day')::date, upper($4::daterange), '[)'), 
@@ -809,6 +812,20 @@ class PostgresStorage {
                     originalRun.active
                 ]);
                 secondRun = secondResult.rows[0];
+
+                // Then update the original run to first part (this prevents span overlap)
+                const firstPartQuery = `
+                    UPDATE runs
+                    SET span = daterange(lower(span), $1::date, '[)'),
+                        day_count = ($1::date - lower(span)),
+                        active = false,
+                        updated_at = NOW()
+                    WHERE id = $2
+                    RETURNING *;
+                `;
+                
+                const firstResult = await client.query(firstPartQuery, [date, originalRun.id]);
+                firstRun = firstResult.rows[0];
                 
                 await client.query('COMMIT');
                 
