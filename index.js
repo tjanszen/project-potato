@@ -700,6 +700,9 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
 // Day marking endpoint (Phase 2C - timezone-aware validation)
 app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
   try {
+    console.log("Mark Day request session:", req.session);
+    console.log("Mark Day request params:", req.params);
+    
     const { date } = req.params;
     
     // Get user data including timezone
@@ -794,12 +797,14 @@ app.post('/api/days/:date/no-drink', requireFeatureFlag('ff.potato.no_drink_v1')
     
     try {
       // Always log the event attempt (even if marking fails)
+      console.log("Calling storage.logClickEvent with:", JSON.stringify(clickEvent, null, 2));
       await storage.logClickEvent(clickEvent);
     } catch (eventError) {
       // Event logging should not block day marking
       console.warn('Event logging failed:', eventError);
     }
     
+    console.log("Calling storage.markDay with:", JSON.stringify(dayMark, null, 2));
     const createdMark = await storage.markDay(dayMark);
     
     // Invalidate totals asynchronously (Phase 7A-3 - invalidation strategy)
