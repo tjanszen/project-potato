@@ -13,5 +13,9 @@ build = ["sh", "-c", "npm install"]
 localPort = 3000
 externalPort = 80
 
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
 [agent]
 integrations = ["javascript_database==1.0.0"]
