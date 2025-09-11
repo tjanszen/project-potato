@@ -516,9 +516,11 @@ export class PostgresStorage implements IStorage {
     // Filter by month on the application side for simplicity
     // Convert localDate to string (YYYY-MM-DD format) before filtering
     return marks.filter(mark => {
-      const dateStr = typeof mark.localDate === 'object' && mark.localDate instanceof Date
-        ? mark.localDate.toISOString().split('T')[0] 
-        : String(mark.localDate);
+      // Handle both Date objects and strings safely
+      const dateValue = mark.localDate as any; // Type assertion to handle mixed types
+      const dateStr = (dateValue instanceof Date)
+        ? dateValue.toISOString().split('T')[0] 
+        : String(dateValue);
       return dateStr.startsWith(month);
     });
   }
