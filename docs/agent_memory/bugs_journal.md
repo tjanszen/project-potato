@@ -238,6 +238,50 @@ Follow-up:
 
 ---
 
+## 2025-09-11 — Calendar & Mark Day Schema + Logic Bugs
+
+### Bug
+- Calendar API (`/api/calendar`) failed with HTTP 500.
+- Mark Day API (`/api/days/:date/no-drink`) failed with HTTP 500.
+
+### Context
+- Both endpoints were failing in development and Reserved VM.
+- Prior diagnosis blamed infra/deployment, but systematic investigation revealed schema mapping issues in code.
+- Additional logic bug found in Mark Day endpoint (variable scope issue).
+
+### Findings
+1. **Calendar API**
+   - SQL generated with missing column names (`and >= $3 and < $4`).
+   - Query selected `"date"` instead of `"local_date"`.
+   - Root cause: Drizzle schema + storage code mismatch.
+
+2. **Mark Day API**
+   - **Field Mapping Bug**: Insert attempted with `date` instead of `localDate`.  
+     - Drizzle mapped `date` → null, violating NOT NULL constraint on `local_date`.  
+     - Fixed by renaming field in insertion object.
+   - **Variable Scoping Bug**: `totalsInvalidation` referenced outside of its scope.  
+     - Declared inside try/catch but used at line ~811.  
+     - Fixed by hoisting `totalsInvalidation` declaration to outer scope.
+
+### Root Cause
+- Codebase referenced outdated schema (`date` instead of `localDate`).
+- Logic error caused undefined variable at runtime.
+
+### Resolution
+- Calendar: Updated `shared/schema.js` and storage code to use `localDate` consistently.
+- Mark Day:
+  - Fixed insertion object to `{ localDate: req.params.date }`.
+  - Hoisted `totalsInvalidation` variable declaration to outer scope.
+- Both APIs now return HTTP 200/201 and work end-to-end.
+
+### Lessons Learned
+- Always align DB schema, Drizzle schema, and storage code before endpoint testing.
+- Schema mismatches cause SQL errors (calendar) or constraint violations (mark day).
+- Undefined variables from scope issues can hide behind primary failures — must check logs carefully.
+- Infra/deployment was not the issue — systematic 3-phase investigation isolated the true cause.
+
+---
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  
