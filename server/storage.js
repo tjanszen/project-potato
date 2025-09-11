@@ -662,6 +662,173 @@ class PostgresStorage {
         console.log(`[BULK REBUILD] Completed: ${result.completedUsers}, Failed: ${result.failedUsers}, Total: ${result.totalUsers} in ${result.totalDurationMs}ms`);
         return result;
     }
+    
+    // Phase D: Split/Remove-Day operations
+    
+    /**
+     * Perform run split operation: remove a day from run, splitting if necessary
+     * @param {string} userId - User ID
+     * @param {string} date - Date to remove in YYYY-MM-DD format
+     * @returns {Promise<Object>} RunOperationResult-like object
+     */
+    async performRunSplit(userId, date) {
+        console.log(`[RUNS] performRunSplit called for user ${userId}, date ${date}`);
+        
+        // Find run containing this date
+        const containingRuns = await exports.db.select()
+            .from(runs)
+            .where((0, drizzle_orm_1.and)(
+                (0, drizzle_orm_1.eq)(runs.userId, userId),
+                (0, drizzle_orm_1.sql)`${runs.span} @> ${date}::date`
+            ));
+
+        if (containingRuns.length === 0) {
+            console.log(`[RUNS] Date ${date} not found in any run, no operation needed`);
+            return {
+                success: true,
+                message: `Date ${date} not found in any run, no operation needed`,
+                affectedRuns: [],
+                wasNoOp: true
+            };
+        }
+
+        const containingRun = containingRuns[0];
+        console.log(`[RUNS] Found run ${containingRun.id} containing date ${date}, day_count: ${containingRun.dayCount}`);
+
+        // Use raw SQL to check position in run since we need precise date arithmetic
+        const positionQuery = `
+            SELECT 
+                CASE 
+                    WHEN lower(span) = $1::date THEN 'start'
+                    WHEN upper(span) = ($1::date + interval '1 day')::date THEN 'end'
+                    ELSE 'middle'
+                END as position
+            FROM runs 
+            WHERE id = $2
+        `;
+        
+        const positionResult = await pool.query(positionQuery, [date, containingRun.id]);
+        const position = positionResult.rows[0]?.position;
+
+        if (position === 'start') {
+            // Remove from start of run
+            if (containingRun.dayCount === 1) {
+                // Delete single-day run
+                console.log(`[RUNS] Deleting single-day run at ${date}`);
+                await exports.db.delete(runs).where((0, drizzle_orm_1.eq)(runs.id, containingRun.id));
+                return {
+                    success: true,
+                    message: `Deleted single-day run at ${date}`,
+                    affectedRuns: [],
+                    wasNoOp: false
+                };
+            } else {
+                // Shrink run from start
+                console.log(`[RUNS] Shrinking run from start, removing ${date}`);
+                const shrinkQuery = `
+                    UPDATE runs
+                    SET span = daterange(($1::date + interval '1 day')::date, upper(span), '[)'),
+                        day_count = day_count - 1,
+                        updated_at = NOW()
+                    WHERE id = $2
+                    RETURNING *;
+                `;
+                
+                const shrinkResult = await pool.query(shrinkQuery, [date, containingRun.id]);
+                const updatedRun = shrinkResult.rows[0];
+                
+                return {
+                    success: true,
+                    message: `Removed ${date} from start of run`,
+                    affectedRuns: [updatedRun],
+                    wasNoOp: false
+                };
+            }
+        } else if (position === 'end') {
+            // Remove from end of run
+            console.log(`[RUNS] Shrinking run from end, removing ${date}`);
+            const shrinkQuery = `
+                UPDATE runs
+                SET span = daterange(lower(span), $1::date, '[)'),
+                    day_count = day_count - 1,
+                    active = false,
+                    updated_at = NOW()
+                WHERE id = $2
+                RETURNING *;
+            `;
+            
+            const shrinkResult = await pool.query(shrinkQuery, [date, containingRun.id]);
+            const updatedRun = shrinkResult.rows[0];
+            
+            return {
+                success: true,
+                message: `Removed ${date} from end of run`,
+                affectedRuns: [updatedRun],
+                wasNoOp: false
+            };
+        } else {
+            // Split run in middle
+            console.log(`[RUNS] Splitting run in middle, removing ${date}`);
+            const originalRun = containingRun;
+            const uuid = require('crypto').randomUUID;
+            
+            // Use transaction to avoid inconsistent state during split
+            const client = await pool.connect();
+            let firstRun, secondRun;
+            
+            try {
+                await client.query('BEGIN');
+                
+                // Update first part of split run
+                const firstPartQuery = `
+                    UPDATE runs
+                    SET span = daterange(lower(span), $1::date, '[)'),
+                        day_count = ($1::date - lower(span)),
+                        active = false,
+                        updated_at = NOW()
+                    WHERE id = $2
+                    RETURNING *;
+                `;
+                
+                const firstResult = await client.query(firstPartQuery, [date, originalRun.id]);
+                firstRun = firstResult.rows[0];
+
+                // Create second part of split run
+                const secondPartQuery = `
+                    INSERT INTO runs (id, user_id, span, day_count, active, last_extended_at, created_at, updated_at)
+                    VALUES ($1, $2, daterange(($3::date + interval '1 day')::date, upper($4::daterange), '[)'), 
+                            (upper($4::daterange) - ($3::date + interval '1 day')::date), $5, NOW(), NOW(), NOW())
+                    RETURNING *;
+                `;
+                
+                const secondResult = await client.query(secondPartQuery, [
+                    uuid(),
+                    userId,
+                    date,
+                    originalRun.span,
+                    originalRun.active
+                ]);
+                secondRun = secondResult.rows[0];
+                
+                await client.query('COMMIT');
+                
+            } catch (error) {
+                await client.query('ROLLBACK');
+                throw error;
+            } finally {
+                client.release();
+            }
+            
+            console.log(`[RUNS] Successfully split run: first_run day_count = ${firstRun.dayCount}, second_run day_count = ${secondRun.dayCount}`);
+
+            return {
+                success: true,
+                message: `Split run by removing ${date} from middle`,
+                affectedRuns: [firstRun, secondRun],
+                wasNoOp: false
+            };
+        }
+    }
 }
 exports.PostgresStorage = PostgresStorage;
 // Export singleton instance
