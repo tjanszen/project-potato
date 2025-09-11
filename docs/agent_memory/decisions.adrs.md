@@ -123,3 +123,11 @@ Future phases can use the simplified cutover model when user base is small, prov
 - Supports project scale with clean separation of artifacts  
 
 **Status:** Accepted (2025-09-08)
+
+## ADR-2025-09-11 Runs Calculation Wiring Fix (Phase 6B-1)
+**Context:** Runs table remains empty despite day_marks data existing because runs calculation logic exists in server/storage.ts but runtime imports server/storage.js. Phase 6B-1 (Idempotent Core Operations) was never completed, leaving day marking flow disconnected from runs calculation.  
+**Decision:** Port runs calculation logic from storage.ts to storage.js and wire into markDay() flow. Use incremental phased approach: A) wire performRunExtend, B) add merge logic, C) backfill existing data, D) complete Phase 6B-1 operations.  
+**Status:** Accepted  
+**Alternatives Considered:** Migrate runtime to TypeScript (rejected: broader changes, compilation complexity)  
+**Consequences:** Fixes blocking issue for Phase 7C-1 dashboard but requires porting TypeScript logic to JavaScript and backfilling existing user data  
+**Links:** bugs_journal.md [2025-09-11 Broken Wiring], imp_plans/2025-09-11-runs_calc_fix.md, server/storage.js, server/storage.ts
