@@ -129,6 +129,12 @@ class PostgresStorage {
     async performRunExtend(userId, date) {
         console.log(`[RUNS] performRunExtend called for user ${userId}, date ${date}`);
         
+        // First check if this date could fill a gap between two runs (Phase B: Merge logic)
+        const mergeResult = await this.checkAndPerformMerge(userId, date);
+        if (mergeResult) {
+            return mergeResult;
+        }
+        
         // Find runs that could be extended by this date (adjacent runs)
         const adjacentRuns = await exports.db.select()
             .from(runs)
@@ -202,7 +208,8 @@ class PostgresStorage {
                 userId: userId,
                 span: (0, drizzle_orm_1.sql)`daterange(${date}::date, (${date}::date + interval '1 day')::date, '[)')`,
                 dayCount: 1,
-                active: true,
+                active: true
+                // Note: start_date and end_date are generated columns, so we don't insert them
             })
             .returning();
         return newRun;
@@ -215,17 +222,145 @@ class PostgresStorage {
      * @returns {Promise<Object>} Updated run object
      */
     async extendRunWithDate(runId, date) {
-        const [updatedRun] = await exports.db.update(runs)
-            .set({
-                span: (0, drizzle_orm_1.sql)`${runs.span} + daterange(${date}::date, (${date}::date + interval '1 day')::date, '[)')`,
-                dayCount: (0, drizzle_orm_1.sql)`${runs.dayCount} + 1`,
-                active: true,
-                lastExtendedAt: new Date(),
-                updatedAt: new Date()
-            })
-            .where((0, drizzle_orm_1.eq)(runs.id, runId))
-            .returning();
-        return updatedRun;
+        // Use raw SQL with proper boundary construction (no illegal + operator)
+        const extendQuery = `
+            UPDATE runs
+            SET span = daterange(
+                    LEAST(lower(span), $1::date), 
+                    GREATEST(upper(span), ($1::date + interval '1 day')::date), 
+                    '[)'
+                ),
+                day_count = (GREATEST(upper(span), ($1::date + interval '1 day')::date) - LEAST(lower(span), $1::date)),
+                active = true,
+                last_extended_at = NOW(),
+                updated_at = NOW()
+            WHERE id = $2
+            RETURNING *;
+        `;
+        
+        const result = await pool.query(extendQuery, [date, runId]);
+        return result.rows[0];
+    }
+    
+    /**
+     * Check if a date fills a gap between two runs and perform merge if so (Phase B)
+     * @param {string} userId - User ID
+     * @param {string} date - Date to check for gap filling
+     * @returns {Promise<Object|null>} Merge result or null if no merge needed
+     */
+    async checkAndPerformMerge(userId, date) {
+        console.log(`[RUNS] Checking for merge opportunity at date ${date}`);
+        
+        // Find run that ends one day before this date
+        const beforeRun = await exports.db.select()
+            .from(runs)
+            .where((0, drizzle_orm_1.and)(
+                (0, drizzle_orm_1.eq)(runs.userId, userId),
+                (0, drizzle_orm_1.sql)`upper(${runs.span}) = ${date}::date`
+            ));
+
+        // Find run that starts one day after this date  
+        const afterRun = await exports.db.select()
+            .from(runs)
+            .where((0, drizzle_orm_1.and)(
+                (0, drizzle_orm_1.eq)(runs.userId, userId),
+                (0, drizzle_orm_1.sql)`lower(${runs.span}) = ${date}::date + interval '1 day'`
+            ));
+
+        if (beforeRun.length === 0 || afterRun.length === 0) {
+            console.log(`[RUNS] No merge opportunity found - missing before (${beforeRun.length}) or after (${afterRun.length}) run`);
+            return null; // No merge opportunity
+        }
+
+        console.log(`[RUNS] Found merge opportunity! Merging runs by filling gap at ${date}`);
+        return await this.performRunMerge(userId, date, beforeRun[0], afterRun[0]);
+    }
+    
+    /**
+     * Perform run merge operation: merge two runs by filling gap between them (Phase B)
+     * @param {string} userId - User ID
+     * @param {string} date - Gap date to fill
+     * @param {Object} beforeRun - Run that ends before the gap
+     * @param {Object} afterRun - Run that starts after the gap
+     * @returns {Promise<Object>} RunOperationResult-like object
+     */
+    async performRunMerge(userId, date, beforeRun, afterRun) {
+        console.log(`[RUNS] performRunMerge: merging run ${beforeRun.id} and ${afterRun.id} via gap date ${date}`);
+        
+        // Check if date is already within an existing run (idempotent no-op)
+        const existingRunsContainingDate = await exports.db.select()
+            .from(runs)
+            .where((0, drizzle_orm_1.and)(
+                (0, drizzle_orm_1.eq)(runs.userId, userId),
+                (0, drizzle_orm_1.sql)`${runs.span} @> ${date}::date`
+            ));
+
+        if (existingRunsContainingDate.length > 0) {
+            console.log(`[RUNS] Date ${date} already exists in run, merge not needed (idempotent)`);
+            return {
+                success: true,
+                message: `Date ${date} already exists in run, merge not needed`,
+                affectedRuns: existingRunsContainingDate,
+                wasNoOp: true
+            };
+        }
+        
+        // Use transaction to avoid EXCLUDE constraint violations during merge
+        const client = await pool.connect();
+        let mergedRun;
+        
+        try {
+            await client.query('BEGIN');
+            
+            // Delete the second run first to avoid overlap constraint violations
+            await client.query('DELETE FROM runs WHERE id = $1', [afterRun.id]);
+            
+            // Update the first run with properly computed span and day count
+            const mergeQuery = `
+                UPDATE runs 
+                SET span = daterange(
+                        LEAST(lower($1::daterange), lower($2::daterange)),
+                        GREATEST(upper($1::daterange), upper($2::daterange)), 
+                        '[)'
+                    ),
+                    day_count = (GREATEST(upper($1::daterange), upper($2::daterange)) - LEAST(lower($1::daterange), lower($2::daterange))),
+                    active = ($3::boolean OR $4::boolean),
+                    last_extended_at = NOW(),
+                    updated_at = NOW()
+                WHERE id = $5
+                RETURNING *;
+            `;
+            
+            const mergeResult = await client.query(mergeQuery, [
+                beforeRun.span, 
+                afterRun.span, 
+                beforeRun.active, 
+                afterRun.active, 
+                beforeRun.id
+            ]);
+            
+            if (mergeResult.rows.length === 0) {
+                throw new Error('Failed to merge runs - update returned no rows');
+            }
+            
+            mergedRun = mergeResult.rows[0];
+            await client.query('COMMIT');
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+        
+        console.log(`[RUNS] Successfully merged runs: new day_count = ${mergedRun.dayCount}, span = ${mergedRun.span}`);
+
+        return {
+            success: true,
+            message: `Merged runs by filling gap at ${date}`,
+            affectedRuns: [mergedRun],
+            wasNoOp: false
+        };
     }
 }
 exports.PostgresStorage = PostgresStorage;
