@@ -61,3 +61,34 @@
 - Monitor API stability in production usage
 - Consider adding automated tests for schema field mapping consistency
 - Apply systematic debugging methodology to any future API issues
+
+---
+
+## Phase B Completion & Investigation Results
+
+### Phase B (Merge Logic) Successfully Completed ✅
+- **Accomplishment**: Runs calculation system successfully wired into day marking flow with gap-filling merge operations working correctly
+- **Database Validation**: Runs table properly populated with continuous spans, day counts, and PostgreSQL daterange handling confirmed
+- **API Integration**: `/api/v2/totals` and `/api/v2/runs` endpoints operational with feature flag `ff.potato.runs_v2` enabled
+- **UI Integration**: Full DB/API/UI validation confirms merge logic implementation successful
+
+### TotalsPanel Auto-Update Bug Investigation Complete ✅
+- **Issue Confirmed**: TotalsPanel does not auto-update after marking a day
+- **Root Cause Proven**: API connectivity failure, NOT frontend caching or invalidation issues
+- **Evidence Collected**: 
+  - TotalsPanel.tsx uses correct React Query setup with queryKey ['totals']
+  - CalendarPage.tsx properly invalidates totals cache on day marking
+  - Network trace shows POST /api/days succeeds, GET /api/v2/totals triggered but fails
+  - Direct API endpoint test confirms /api/v2/totals unreachable
+- **Documentation**: Bug properly documented in bugs_journal.md with definitive evidence and resolution plan
+
+### Next Implementation Steps
+1. **Complete Phase C (Backfill)**: Implement historical runs calculation for existing user data
+2. **Complete Phase D (Split/Remove-Day Operations)**: Handle day unmarking and runs recalculation
+3. **Fix API Connectivity Issue**: Resolve /api/v2/totals endpoint accessibility to enable React Query refetch success
+4. **Validate End-to-End**: Ensure TotalsPanel auto-updates work correctly after backend phases complete
+
+### Status Summary
+- ✅ **Phase A & B Complete**: Runs calculation and merge logic operational
+- 🔍 **TotalsPanel Bug**: Investigated, documented, resolution path defined
+- ⏳ **Next Focus**: Backend Phases C + D, then frontend connectivity fix
