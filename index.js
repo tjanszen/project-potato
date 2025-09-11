@@ -1,31 +1,6 @@
 // CRITICAL: Load environment variables FIRST before any modules that read process.env
 require('dotenv').config();
 
-// Global error handlers to prevent silent crashes
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
-  console.error('Stack trace:', reason?.stack);
-  // Don't exit immediately - let the process gracefully handle the error
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('🚨 Uncaught Exception:', error);
-  console.error('Stack trace:', error.stack);
-  // Exit gracefully after logging
-  process.exit(1);
-});
-
-// Process signal handlers for graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('📡 SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('📡 SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
 // Simple combined server for Project Potato Phase 1B testing
 const express = require('express');
 const path = require('path');
@@ -38,71 +13,35 @@ const { body, validationResult } = require('express-validator');
 const morgan = require('morgan');
 const crypto = require('crypto');
 
-// Module imports - will be loaded conditionally in bootstrap
+// Add error handling for imports
 let featureFlagService, storage, insertUserSchema, totalsAggregation, totalsInvalidation;
-let databaseAvailable = false;
-
-// Async bootstrap function to conditionally load modules
-async function bootstrap() {
-  console.log('🚀 Starting application bootstrap...');
+try {
+  console.log('Loading feature flags...');
+  ({ featureFlagService } = require('./server/feature-flags.js'));
+  console.log('✅ Feature flags loaded');
   
-  // Always load feature flags (no database dependency)
-  try {
-    console.log('Loading feature flags...');
-    ({ featureFlagService } = require('./server/feature-flags.js'));
-    console.log('✅ Feature flags loaded');
-  } catch (error) {
-    console.error('❌ Feature flags failed to load:', error);
-    process.exit(1);
-  }
+  console.log('Loading storage...');
+  ({ storage } = require('./server/storage.js'));
+  console.log('✅ Storage loaded');
   
-  // Test database connectivity before loading database-dependent modules
-  console.log('Testing database connectivity...');
-  const { Pool } = require('pg');
+  console.log('Loading schema...');
+  ({ insertUserSchema } = require('./shared/schema.js'));
+  console.log('✅ Schema loaded');
   
-  if (!process.env.DATABASE_URL) {
-    console.warn('⚠️  DATABASE_URL not found - database features will be disabled');
-    databaseAvailable = false;
-    return;
-  }
+  console.log('Loading totals aggregation...');
+  totalsAggregation = require('./server/totals-aggregation.js');
+  console.log('✅ Totals aggregation loaded');
   
-  try {
-    const testPool = new Pool({ connectionString: process.env.DATABASE_URL });
-    await testPool.query('SELECT 1');
-    await testPool.end();
-    
-    console.log('✅ Database connectivity confirmed');
-    databaseAvailable = true;
-    
-    // Load database-dependent modules only if database is available
-    try {
-      console.log('Loading schema...');
-      ({ insertUserSchema } = require('./shared/schema.js'));
-      console.log('✅ Schema loaded');
-      
-      console.log('Loading storage...');
-      ({ storage } = require('./server/storage.js'));
-      console.log('✅ Storage loaded');
-      
-      console.log('Loading totals aggregation...');
-      totalsAggregation = require('./server/totals-aggregation.js');
-      console.log('✅ Totals aggregation loaded');
-      
-      console.log('Loading totals invalidation...');
-      totalsInvalidation = require('./server/totals-invalidation.js');
-      console.log('✅ Totals invalidation loaded');
-      
-    } catch (moduleError) {
-      console.error('❌ Database module loading failed:', moduleError);
-      databaseAvailable = false;
-    }
-    
-  } catch (dbError) {
-    console.warn('⚠️  Database connection failed - database features will be disabled');
-    console.warn('Database error:', dbError.message);
-    databaseAvailable = false;
-  }
+  console.log('Loading totals invalidation...');
+  totalsInvalidation = require('./server/totals-invalidation.js');
+  console.log('✅ Totals invalidation loaded');
+} catch (error) {
+  console.error('❌ Import error:', error);
+  process.exit(1);
 }
+
+// Load environment
+require('dotenv').config();
 
 // Production logging configuration
 const isProduction = process.env.NODE_ENV === 'production';
@@ -500,27 +439,8 @@ const requireFeatureFlag = (flagName) => {
   };
 };
 
-// Database availability middleware
-const requireDatabase = (req, res, next) => {
-  if (!databaseAvailable) {
-    return res.status(503).json({ 
-      error: 'Database unavailable', 
-      message: 'This feature requires database connectivity which is currently unavailable.' 
-    });
-  }
-  next();
-};
-
-// Authentication middleware
-const requireAuthentication = (req, res, next) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
-};
-
-// Auth routes (gated behind feature flag and database availability)
-app.use('/api/auth', requireFeatureFlag('ff.potato.no_drink_v1'), requireDatabase);
+// Auth routes (gated behind feature flag)
+app.use('/api/auth', requireFeatureFlag('ff.potato.no_drink_v1'));
 
 app.post('/api/auth/signup', authLimiter, [
   body('email').isEmail().normalizeEmail(),
@@ -672,8 +592,17 @@ app.post('/api/auth/logout', async (req, res) => {
   }
 });
 
-// User profile endpoint (gated behind feature flag, database, and authentication)
-app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireDatabase, requireAuthentication, async (req, res) => {
+// Authentication middleware
+const requireAuthentication = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+};
+
+
+// User profile endpoint (gated behind feature flag and authentication)
+app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
   try {
     const user = await storage.getUserById(req.session.userId);
     if (!user) {
@@ -693,8 +622,8 @@ app.get('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'), requireDatabase,
   }
 });
 
-// Calendar endpoint (Phase 2A - gated behind feature flag, database, and authentication)
-app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireDatabase, requireAuthentication, async (req, res) => {
+// Calendar endpoint (Phase 2A - gated behind feature flag and authentication)
+app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthentication, async (req, res) => {
   try {
     const { month } = req.query;
     
@@ -1136,41 +1065,22 @@ app.use((req, res, next) => {
   });
 });
 
-// Error handling removed - using global handlers at top of file
+// Error handling
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught exception:', err);
+  process.exit(1);
+});
 
-// Async server startup with bootstrap
-async function startServer() {
-  try {
-    // Run bootstrap before starting server
-    await bootstrap();
-    
-    // Start server after bootstrap completes
-    const server = app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server listening on port ${PORT}`);
-      console.log(`✅ Express server initialized`);
-      console.log(`📊 Database available: ${databaseAvailable}`);
-      console.log(`🎯 Feature flags loaded: ${!!featureFlagService}`);
-      console.log('🟢 Application ready for requests');
-    });
-    
-    server.on('error', (err) => {
-      console.error('❌ Server error:', err);
-    });
-    
-    return server;
-  } catch (error) {
-    console.error('❌ Server startup failed:', error);
-    process.exit(1);
-  }
-}
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
-// Start the application
-startServer();
-
-// Export for testing if needed
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { app, startServer };
-}
+// Start server
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server listening on port ${PORT}`);
+  console.log('Express server initialized');
+});
 
 server.on('error', (err) => {
   console.error('❌ Server error:', err);
