@@ -333,6 +333,27 @@ Follow-up:
 
 ---
 
+### [2025-09-11] TotalsPanel Auto-Update Fails Due to API Connectivity
+**Description**: TotalsPanel does not auto-update after marking a day because the re-fetch of /api/v2/totals fails. Frontend logic (React Query + cache invalidation) works correctly, but API connectivity prevents fresh data from loading.
+
+**Root Cause**: API connectivity failure, not frontend caching or invalidation.
+
+**Impact**: Totals panel displays stale data until page reload; users cannot see updated progress in real time.
+
+**Status**: Confirmed bug, pending backend connectivity resolution. Fix deferred until backend implementation plan (Phase C + D) is complete.
+
+**Evidence**: 
+- TotalsPanel.tsx uses useQuery with queryKey ['totals'], correct setup
+- CalendarPage.tsx invalidates totals cache on markDay 
+- Network trace shows POST /api/days succeeds, GET /api/v2/totals triggered but fails
+- Direct curl to /api/v2/totals fails (endpoint unreachable)
+
+**Next Step**: Complete backend Phases C + D, then fix connectivity issue to allow React Query refetch to succeed.
+
+**Rollback**: None needed (bug is read-only display issue, no data corruption).
+
+---
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  
