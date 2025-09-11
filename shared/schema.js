@@ -16,12 +16,12 @@ exports.users = (0, pg_core_1.pgTable)('users', {
 // Day marks table (deduped current state)
 exports.dayMarks = (0, pg_core_1.pgTable)('day_marks', {
     userId: (0, pg_core_1.uuid)('user_id').notNull().references(() => exports.users.id, { onDelete: 'cascade' }),
-    date: (0, pg_core_1.date)('date').notNull(),
+    localDate: (0, pg_core_1.date)('local_date').notNull(),
     value: (0, pg_core_1.boolean)('value').notNull(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
 }, (table) => ({
-    pk: (0, pg_core_1.primaryKey)({ columns: [table.userId, table.date] }),
-    dateCheck: (0, pg_core_1.check)('date_check', (0, drizzle_orm_1.sql) `date >= DATE '2025-01-01'`),
+    pk: (0, pg_core_1.primaryKey)({ columns: [table.userId, table.localDate] }),
+    dateCheck: (0, pg_core_1.check)('date_check', (0, drizzle_orm_1.sql) `local_date >= DATE '2025-01-01'`),
     valueCheck: (0, pg_core_1.check)('value_check', (0, drizzle_orm_1.sql) `value = TRUE`), // v1 only stores TRUE
 }));
 // Click events table (append-only event log)
