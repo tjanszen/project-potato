@@ -662,7 +662,9 @@ app.get('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'), requireAut
     }
     
     // Fetch day marks for the user and month
+    console.log("Calendar request session:", req.session);
     const dayMarks = await storage.getDayMarksForMonth(req.session.userId, month);
+    console.log("Day marks fetched:", JSON.stringify(dayMarks, null, 2));
     
     // DEBUG: Log the exact structure of returned data
     console.log('DEBUG: dayMarks data:', JSON.stringify(dayMarks, null, 2));
