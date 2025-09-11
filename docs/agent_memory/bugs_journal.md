@@ -282,6 +282,57 @@ Follow-up:
 
 ---
 
+## 2025-09-11 — Broken Wiring: Runs Calculation Not Invoked
+
+### Bug
+- Runs table remains empty even though day_marks exist
+- Dashboard totals panel displays empty state ("Start Your Journey") instead of actual statistics
+- `/api/v2/totals` always returns `{"total_days":0,"longest_run":0,"current_run":0}`
+
+### Context
+- Users can mark days successfully (day_marks table populated)
+- Phase 7C-1 (Dashboard MVP) implemented but shows empty state due to missing runs data
+- Runs calculation logic exists but is not executed in runtime
+
+### Findings
+**Root Cause: Broken Wiring Between Day Marking and Runs Calculation**
+
+1. **Phase 6B-1 Incomplete**
+   - v2.md defines Phase 6B-1: "Implement core idempotent run extend/merge/split operations"
+   - No completion marker found (❌ NOT COMPLETE)
+   - Responsible for connecting day marking to runs calculation
+
+2. **Runtime Import Path Issue**
+   - `index.js` imports `server/storage.js` (JavaScript)
+   - `server/storage.js` contains only basic day_marks operations
+   - Runs logic exists in `server/storage.ts` (TypeScript) but never executed
+
+3. **Missing Runs Method Invocations**
+   - Day marking flow: `storage.markDay()` → inserts to day_marks only
+   - No calls to `performRunExtend`, `performRunMerge`, or `rebuildUserRuns`
+   - Call stack search found zero invocations of runs methods
+
+4. **Database Evidence**
+   - Day marking creates rows in `day_marks` table ✅
+   - `runs` table remains empty (COUNT = 0) ❌
+   - Totals calculation queries empty runs table → returns zeros
+
+### Root Cause
+**Broken wiring:** Runs calculation logic exists in `server/storage.ts` but is never integrated into the runtime day marking flow (`server/storage.js`). The logic was designed and partially implemented but never connected.
+
+### Resolution
+**Next Step:** Wire runs calculation into runtime day_marks flow to populate runs table when marking days. Ensure correct idempotent extend/merge/split behavior per Phase 6B-1 requirements.
+
+### Impact
+- **Blocking:** Phase 7C-1 cannot meet exit criteria (totals always show empty state)
+- **User Impact:** All users affected - no runs/totals data displayed in dashboard
+- **API Impact:** `/api/v2/totals` non-functional for actual statistics
+
+### Status
+**Confirmed bug (blocking)** - Systematic investigation with hard evidence collected
+
+---
+
 ### {{YYYY-MM-DD}} <Short Title>
 **Symptom:**  
 **Root Cause:**  
