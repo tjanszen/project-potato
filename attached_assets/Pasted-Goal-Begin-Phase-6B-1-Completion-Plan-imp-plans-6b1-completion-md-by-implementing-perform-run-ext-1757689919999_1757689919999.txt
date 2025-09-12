@@ -1,0 +1,51 @@
+Goal: Begin Phase 6B-1 Completion Plan (imp_plans/6b1_completion.md) by implementing perform_run_extend SQL function
+
+Context:
+- Phase 6B-1 ("Idempotent Core Operations") was incorrectly marked complete in v2.md.
+- Audit on 2025-09-12 revealed missing SQL functions: perform_run_extend, perform_run_merge, perform_run_split.
+- A corrective plan was created in imp_plans/6b1_completion.md with 4 sub-phases:
+  - 6B-1a: Implement SQL functions (extend, merge, split)
+  - 6B-1b: Wire into markDay()
+  - 6B-1c: Operation validation
+  - 6B-1d: Documentation & closure
+- This task covers Phase 6B-1a: implement perform_run_extend.
+
+Do:
+- Create SQL function perform_run_extend(user_id UUID, local_date DATE)
+- Behavior:
+  - If local_date already marked → no-op
+  - If local_date extends an existing run (day after run end_date) → update run span and increment day_count
+  - If no run exists to extend → insert a new run starting/ending on local_date
+- Ensure function is idempotent: duplicate calls with same user_id/local_date must not create duplicate runs
+- Store function in db/functions/runs.sql and load via migration
+- Gate runtime call behind feature flag: ff.potato.runs_v2 = ON
+
+Proof:
+- Insert first day for test-user:
+  SELECT perform_run_extend('test-user','2025-09-10');
+  → runs table has 1 row spanning 2025-09-10, day_count=1
+
+- Extend consecutive day:
+  SELECT perform_run_extend('test-user','2025-09-11');
+  → runs table has 1 row spanning 2025-09-10 to 2025-09-11, day_count=2
+
+- Duplicate insert:
+  SELECT perform_run_extend('test-user','2025-09-11');
+  → runs table unchanged (still 1 row, day_count=2)
+
+- Non-consecutive insert:
+  SELECT perform_run_extend('test-user','2025-09-13');
+  → runs table has 2 runs: [2025-09-10–11] and [2025-09-13]
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing functions, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming

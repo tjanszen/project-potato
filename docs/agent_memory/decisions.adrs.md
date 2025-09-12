@@ -131,3 +131,33 @@ Future phases can use the simplified cutover model when user base is small, prov
 **Alternatives Considered:** Migrate runtime to TypeScript (rejected: broader changes, compilation complexity)  
 **Consequences:** Fixes blocking issue for Phase 7C-1 dashboard but requires porting TypeScript logic to JavaScript and backfilling existing user data  
 **Links:** bugs_journal.md [2025-09-11 Broken Wiring], imp_plans/2025-09-11-runs_calc_fix.md, server/storage.js, server/storage.ts
+
+## ADR-2025-09-12: Phase 6B-1 Status Correction
+
+### Context
+Phase 6B-1 (“Idempotent Core Operations”) was originally marked ✅ COMPLETE in `imp_plans/v2.md`.  
+An audit on 2025-09-12 revealed that this status was inaccurate:
+
+- Required SQL functions (`perform_run_extend`, `perform_run_merge`, `perform_run_split`) do not exist.
+- Partial JavaScript-layer helpers exist (`extendRunWithDate`, partial `performRunMerge`).
+- Split (day removal) is entirely unimplemented.
+- As a result, idempotency, merge, and split cannot be validated using the specified test criteria.
+
+### Decision
+Phase 6B-1 is officially marked ❌ INCOMPLETE.  
+A separate implementation plan (`imp_plans/6b1_completion.md`) has been created to finish the missing work:
+- Implement SQL-level idempotent run operations.
+- Wire them into `markDay()`.
+- Validate with explicit SQL tests and invariants.
+
+### Consequences
+- `imp_plans/v2.md` must reflect 6B-1 as ❌ incomplete until completion plan is executed.
+- Totals/dashboard features (Phase 7) can proceed, but:
+  - Past-day marking requires full rebuilds for accuracy.
+  - Gap fill (merge) does not occur automatically.
+  - Unmarking/removal is unsupported.
+- Future Phases (especially Phase 8: property-based testing) are blocked until 6B-1 is truly complete.
+- A short-term recovery (auto-rebuild for test users) mitigates UI issues but does not replace 6B-1 functionality.
+
+### Status
+Accepted — 2025-09-12
