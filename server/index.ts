@@ -88,6 +88,90 @@ app.get('/api/admin/toggle-flag/:flagName', (req, res) => {
   });
 });
 
+// Admin endpoint for Phase C: Backfill runs for existing day_marks
+app.post('/api/admin/backfill-runs', async (req, res) => {
+  try {
+    // Check if runs v2 feature flag is enabled
+    if (!featureFlagService.isEnabled('ff.potato.runs_v2')) {
+      return res.status(403).json({ 
+        error: 'Feature not available',
+        flag: 'ff.potato.runs_v2',
+        enabled: false,
+        message: 'Runs V2 feature flag must be enabled to run backfill'
+      });
+    }
+    
+    const { dryRun = false, batchSize = 10 } = req.body;
+    
+    console.log(`[ADMIN] Backfill runs requested: dryRun=${dryRun}, batchSize=${batchSize}`);
+    
+    // Execute backfill operation (using type assertion since runtime uses JS implementation)
+    const result = await (storage as any).backfillAllUserRuns({
+      dryRun,
+      batchSize,
+      skipBackup: false
+    });
+    
+    res.json({
+      success: true,
+      operation: 'backfill-runs',
+      result: result,
+      message: dryRun ? 'Dry run completed - no changes made' : `Backfill completed: ${result.completedUsers}/${result.totalUsers} users processed`
+    });
+    
+  } catch (error) {
+    console.error('[ADMIN] Backfill runs failed:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Backfill operation failed', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET version of backfill for easier browser testing  
+app.get('/api/admin/backfill-runs', async (req, res) => {
+  try {
+    // Check if runs v2 feature flag is enabled
+    if (!featureFlagService.isEnabled('ff.potato.runs_v2')) {
+      return res.status(403).json({ 
+        error: 'Feature not available',
+        flag: 'ff.potato.runs_v2',
+        enabled: false,
+        message: 'Runs V2 feature flag must be enabled to run backfill'
+      });
+    }
+    
+    const { dryRun = 'true', batchSize = '10' } = req.query;
+    const isDryRun = dryRun === 'true';
+    const batchSizeNum = parseInt(batchSize as string) || 10;
+    
+    console.log(`[ADMIN] Backfill runs requested (GET): dryRun=${isDryRun}, batchSize=${batchSizeNum}`);
+    
+    // Execute backfill operation (using type assertion since runtime uses JS implementation)
+    const result = await (storage as any).backfillAllUserRuns({
+      dryRun: isDryRun,
+      batchSize: batchSizeNum,
+      skipBackup: false
+    });
+    
+    res.json({
+      success: true,
+      operation: 'backfill-runs',
+      result: result,
+      message: isDryRun ? 'Dry run completed - no changes made' : `Backfill completed: ${result.completedUsers}/${result.totalUsers} users processed`
+    });
+    
+  } catch (error) {
+    console.error('[ADMIN] Backfill runs failed:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Backfill operation failed', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Feature flag gating middleware
 const requireFeatureFlag = (flagName: string) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -293,7 +377,7 @@ app.get('/api/calendar', requireAuthentication, async (req, res) => {
     const dayMarks = await storage.getDayMarksForMonth(req.session.userId!, month);
     
     // Format response data
-    const markedDates = dayMarks.map(mark => mark.date);
+    const markedDates = dayMarks.map(mark => mark.localDate);
     
     res.json({
       month: month,

@@ -141,6 +141,7 @@ export interface IStorage {
   restoreUserRuns(userId: string, backup: RunBackup): Promise<void>;
   bulkRebuildUsers(userIds: string[], config?: BulkRebuildConfig): Promise<BulkRebuildResult>;
   getRebuildProgress(operationId: string): Promise<RebuildProgress>;
+  backfillAllUserRuns?(config?: { batchSize?: number; dryRun?: boolean; skipBackup?: boolean }): Promise<BulkRebuildResult>;
 
   // Phase 6D: Shadow Read & Diff operations
   shadowCalculateUserStats(userId: string): Promise<ShadowCalculationResult>;

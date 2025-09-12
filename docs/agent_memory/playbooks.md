@@ -367,6 +367,37 @@ Proof:
 **Why:**  
 Prevents wasted compute cycles, reduces frustration, and ensures critical issues receive appropriate human oversight before continuing.
 
+### Playbook: Scope Deviation Protocol
+
+**Purpose:**  
+Prevent unapproved scope expansion and ensure human review when the agent encounters tasks beyond the agreed implementation plan.  
+
+**Agent Prompt:**  
+Goal: Stop execution and seek approval when proposed work deviates from the current phase scope.  
+
+**When to Apply:**  
+- Attempting to add or modify endpoints not in current phase  
+- Schema or migration changes outside defined tasks  
+- Multi-minute refactoring not scoped for this phase  
+- Introducing new observability, logging, or testing features unplanned  
+- Any work that expands the agreed scope beyond the explicit implementation plan  
+
+**Do:**  
+- Stop execution immediately — do not continue with deviation work  
+- Document findings — summarize the proposed deviation vs. agreed scope  
+- Assess impact — outline pros/cons of addressing now vs. deferring  
+- Recommend options — provide tradeoffs for operator decision  
+- Wait for user approval — do not resume until explicit guidance is given  
+
+**Proof:**  
+- Clear summary of the deviation and why it’s out-of-scope  
+- Pros/cons analysis provided in concise form  
+- Confirmation that execution has paused pending operator decision  
+
+**Why:**  
+Prevents wasted compute cycles, avoids feature creep, and ensures all scope expansions are explicitly approved by the operator with full visibility of tradeoffs.  
+
+
 ### Playbook: Working with PostgreSQL Daterange Constraints
 
 **Purpose:**  

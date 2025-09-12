@@ -214,7 +214,7 @@ Follow-up:
 - `PG*` and/or `NEON_*` variables override `DATABASE_URL`, forcing connections to the wrong DB instance (`muddy-base`).
 - This breaks both development and production deployments.
 
-**Status:**
+**Status:** RESOLVED ✅
 - ❌ Reserved VM deployment: **Broken**
 - ❌ Development environment: **Broken**
 - Schema fix (`date → local_date`): ✅ Completed
@@ -238,7 +238,7 @@ Follow-up:
 
 ---
 
-## 2025-09-11 — Calendar & Mark Day Schema + Logic Bugs
+## 2025-09-11 — Calendar & Mark Day Schema + Logic Bugs: RESOLVED ✅
 
 ### Bug
 - Calendar API (`/api/calendar`) failed with HTTP 500.
@@ -282,7 +282,7 @@ Follow-up:
 
 ---
 
-## 2025-09-11 — Broken Wiring: Runs Calculation Not Invoked
+## 2025-09-11 — Broken Wiring: Runs Calculation Not Invoked: RESOLVED ✅
 
 ### Bug
 - Runs table remains empty even though day_marks exist

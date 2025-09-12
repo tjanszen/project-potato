@@ -362,6 +362,332 @@ class PostgresStorage {
             wasNoOp: false
         };
     }
+    
+    /**
+     * Phase C: Backfill/Rebuild operations - Port from storage.ts
+     */
+    
+    /**
+     * Create backup of user's runs before rebuild
+     * @param {string} userId - User ID
+     * @returns {Promise<Object>} RunBackup object with runs and metadata
+     */
+    async backupUserRuns(userId) {
+        const userRuns = await exports.db.select().from(runs).where((0, drizzle_orm_1.eq)(runs.userId, userId));
+        const activeRun = userRuns.find(run => run.active);
+        const totalDays = userRuns.reduce((sum, run) => sum + run.dayCount, 0);
+
+        return {
+            userId,
+            timestamp: new Date(),
+            runs: userRuns,
+            metadata: {
+                totalRuns: userRuns.length,
+                totalDays,
+                activeRun: !!activeRun,
+                backupReason: 'Pre-rebuild backup'
+            }
+        };
+    }
+    
+    /**
+     * Group consecutive dates into runs
+     * @param {string[]} dates - Array of date strings in YYYY-MM-DD format
+     * @returns {Array<Object>} Array of run objects with startDate, endDate, dayCount
+     */
+    groupConsecutiveDates(dates) {
+        if (dates.length === 0) return [];
+
+        const runs = [];
+        let currentRun = {
+            startDate: dates[0],
+            endDate: dates[0],
+            dayCount: 1
+        };
+
+        for (let i = 1; i < dates.length; i++) {
+            const currentDate = new Date(dates[i]);
+            const prevDate = new Date(dates[i - 1]);
+            const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+
+            if (dayDiff === 1) {
+                // Consecutive day - extend current run
+                currentRun.endDate = dates[i];
+                currentRun.dayCount++;
+            } else {
+                // Gap found - finish current run and start new one
+                runs.push({ ...currentRun });
+                currentRun = {
+                    startDate: dates[i],
+                    endDate: dates[i],
+                    dayCount: 1
+                };
+            }
+        }
+
+        // Add the last run
+        runs.push(currentRun);
+        return runs;
+    }
+    
+    /**
+     * Rebuild user runs from their day_marks data (deterministic reconstruction)
+     * @param {string} userId - User ID
+     * @param {string} fromDate - Optional start date filter (YYYY-MM-DD)
+     * @param {string} toDate - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<Object>} RebuildResult with success, counts, and metrics
+     */
+    async rebuildUserRuns(userId, fromDate = null, toDate = null) {
+        const operationId = `rebuild-${userId}-${Date.now()}`;
+        const startTime = performance.now();
+        
+        try {
+            console.log(`[REBUILD] Starting rebuild for user ${userId}, operation ${operationId}`);
+            
+            // Step 1: Backup existing runs before rebuild
+            const backup = await this.backupUserRuns(userId);
+            console.log(`[REBUILD] Backed up ${backup.metadata.totalRuns} existing runs`);
+            
+            // Step 2: Get user's day marks for the specified date range
+            let dayMarksQuery = `
+                SELECT local_date as date
+                FROM day_marks
+                WHERE user_id = $1
+                AND value = true
+            `;
+            const queryParams = [userId];
+            
+            if (fromDate) {
+                dayMarksQuery += ` AND local_date >= $${queryParams.length + 1}`;
+                queryParams.push(fromDate);
+            }
+            if (toDate) {
+                dayMarksQuery += ` AND local_date <= $${queryParams.length + 1}`;
+                queryParams.push(toDate);
+            }
+            
+            dayMarksQuery += ` ORDER BY local_date`;
+            
+            const dayMarksResult = await pool.query(dayMarksQuery, queryParams);
+            const dayMarks = dayMarksResult.rows.map(row => row.date);
+            console.log(`[REBUILD] Found ${dayMarks.length} marked days to process`);
+
+            // Step 3: Delete existing runs in the affected date range
+            let deleteQuery = `DELETE FROM runs WHERE user_id = $1`;
+            const deleteParams = [userId];
+            
+            if (fromDate) {
+                deleteQuery += ` AND lower(span) >= $${deleteParams.length + 1}`;
+                deleteParams.push(fromDate);
+            }
+            if (toDate) {
+                deleteQuery += ` AND upper(span) <= $${deleteParams.length + 1}`;
+                deleteParams.push(toDate);
+            }
+            
+            const deleteResult = await pool.query(deleteQuery, deleteParams);
+            const runsDeleted = deleteResult.rowCount || 0;
+            console.log(`[REBUILD] Deleted ${runsDeleted} existing runs`);
+
+            // Step 4: Group consecutive dates into runs
+            const processedRuns = this.groupConsecutiveDates(dayMarks);
+            console.log(`[REBUILD] Grouped dates into ${processedRuns.length} runs`);
+
+            // Step 5: Insert new runs
+            let runsCreated = 0;
+            const today = new Date().toISOString().split('T')[0];
+
+            for (const run of processedRuns) {
+                const isActive = run.endDate === today;
+                
+                const insertQuery = `
+                    INSERT INTO runs (user_id, span, day_count, active, last_extended_at, created_at, updated_at)
+                    VALUES ($1, daterange($2::date, ($3::date + interval '1 day')::date, '[)'), $4, $5, NOW(), NOW(), NOW())
+                `;
+                
+                await pool.query(insertQuery, [
+                    userId,
+                    run.startDate,
+                    run.endDate,
+                    run.dayCount,
+                    isActive
+                ]);
+                
+                runsCreated++;
+            }
+            
+            console.log(`[REBUILD] Created ${runsCreated} new runs`);
+
+            const endTime = performance.now();
+            const durationMs = Math.round((endTime - startTime) * 100) / 100;
+
+            // Step 6: Validate invariants (simplified for Phase C)
+            const overlapCheckQuery = `
+                SELECT COUNT(*) as overlap_count FROM runs a 
+                JOIN runs b ON a.user_id = b.user_id AND a.id != b.id AND a.span && b.span
+                WHERE a.user_id = $1
+            `;
+            const overlapResult = await pool.query(overlapCheckQuery, [userId]);
+            const overlappingRuns = parseInt(overlapResult.rows[0].overlap_count);
+            
+            const multipleActiveQuery = `
+                SELECT COUNT(*) as active_count FROM runs 
+                WHERE user_id = $1 AND active = true
+            `;
+            const activeResult = await pool.query(multipleActiveQuery, [userId]);
+            const activeCount = parseInt(activeResult.rows[0].active_count);
+            const multipleActiveRuns = Math.max(0, activeCount - 1); // Allow 1 active run
+
+            const invariantViolations = overlappingRuns + multipleActiveRuns;
+
+            const result = {
+                success: invariantViolations === 0,
+                userId,
+                operationId,
+                runsDeleted,
+                runsCreated,
+                totalDaysProcessed: dayMarks.length,
+                durationMs,
+                fromDate,
+                toDate,
+                invariantViolations,
+                backup
+            };
+            
+            console.log(`[REBUILD] Completed rebuild: ${JSON.stringify(result)}`);
+            return result;
+            
+        } catch (error) {
+            console.error(`[REBUILD] Failed for user ${userId}:`, error);
+            return {
+                success: false,
+                userId,
+                operationId,
+                runsDeleted: 0,
+                runsCreated: 0,
+                totalDaysProcessed: 0,
+                durationMs: performance.now() - startTime,
+                fromDate,
+                toDate,
+                invariantViolations: -1,
+                error: error.message
+            };
+        }
+    }
+    
+    /**
+     * Admin backfill function: rebuild runs for all users with day_marks
+     * @param {Object} config - Configuration options
+     * @returns {Promise<Object>} BulkRebuildResult with overall statistics
+     */
+    async backfillAllUserRuns(config = {}) {
+        const {
+            batchSize = 10,
+            dryRun = false,
+            skipBackup = false
+        } = config;
+        
+        const operationId = `backfill-all-${Date.now()}`;
+        const startTime = performance.now();
+        
+        console.log(`[BACKFILL] Starting bulk backfill operation ${operationId}, dryRun=${dryRun}`);
+        
+        try {
+            // Get all users with day_marks
+            const usersQuery = `
+                SELECT DISTINCT user_id 
+                FROM day_marks 
+                WHERE value = true
+                ORDER BY user_id
+            `;
+            const usersResult = await pool.query(usersQuery);
+            const userIds = usersResult.rows.map(row => row.user_id);
+            
+            console.log(`[BACKFILL] Found ${userIds.length} users with day_marks to process`);
+            
+            if (dryRun) {
+                return {
+                    operationId,
+                    totalUsers: userIds.length,
+                    completedUsers: 0,
+                    failedUsers: 0,
+                    skippedUsers: userIds.length,
+                    averageDurationMs: 0,
+                    totalDurationMs: 0,
+                    invariantViolations: 0,
+                    errors: [],
+                    dryRun: true,
+                    usersToProcess: userIds
+                };
+            }
+            
+            const results = {
+                operationId,
+                totalUsers: userIds.length,
+                completedUsers: 0,
+                failedUsers: 0,
+                skippedUsers: 0,
+                averageDurationMs: 0,
+                totalDurationMs: 0,
+                invariantViolations: 0,
+                errors: []
+            };
+            
+            // Process users in batches
+            for (let i = 0; i < userIds.length; i += batchSize) {
+                const batch = userIds.slice(i, i + batchSize);
+                console.log(`[BACKFILL] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(userIds.length/batchSize)}: ${batch.length} users`);
+                
+                // Process batch sequentially to avoid overwhelming the database
+                for (const userId of batch) {
+                    try {
+                        const rebuildResult = await this.rebuildUserRuns(userId);
+                        
+                        if (rebuildResult.success) {
+                            results.completedUsers++;
+                            results.invariantViolations += rebuildResult.invariantViolations;
+                            console.log(`[BACKFILL] ✅ User ${userId}: ${rebuildResult.runsCreated} runs created from ${rebuildResult.totalDaysProcessed} days`);
+                        } else {
+                            results.failedUsers++;
+                            results.errors.push({
+                                userId,
+                                error: rebuildResult.error || 'Unknown error',
+                                timestamp: new Date()
+                            });
+                            console.log(`[BACKFILL] ❌ User ${userId}: ${rebuildResult.error}`);
+                        }
+                        
+                    } catch (error) {
+                        results.failedUsers++;
+                        results.errors.push({
+                            userId,
+                            error: error.message,
+                            timestamp: new Date()
+                        });
+                        console.error(`[BACKFILL] ❌ User ${userId} failed:`, error);
+                    }
+                }
+                
+                // Small delay between batches to avoid overwhelming the database
+                if (i + batchSize < userIds.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            const endTime = performance.now();
+            results.totalDurationMs = Math.round((endTime - startTime) * 100) / 100;
+            results.averageDurationMs = results.completedUsers > 0 ? results.totalDurationMs / results.completedUsers : 0;
+            
+            console.log(`[BACKFILL] Completed: ${results.completedUsers}/${results.totalUsers} users processed successfully`);
+            console.log(`[BACKFILL] Errors: ${results.failedUsers}, Invariant violations: ${results.invariantViolations}`);
+            
+            return results;
+            
+        } catch (error) {
+            console.error(`[BACKFILL] Bulk operation failed:`, error);
+            throw error;
+        }
+    }
 }
 exports.PostgresStorage = PostgresStorage;
 // Export singleton instance
