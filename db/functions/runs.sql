@@ -110,17 +110,91 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function: perform_run_merge
--- Purpose: Merges two adjacent or overlapping runs (placeholder for Phase 6B-1a)
--- Note: Implementation deferred to next sub-phase
+-- Purpose: Merges two runs when a connecting day bridges them (gap-fill behavior)
+-- Parameters: user_id (UUID), local_date (DATE)
+-- Returns: VOID
+-- Behavior:
+--   1. If local_date bridges two existing runs (left ends at local_date - 1, right starts at local_date + 1):
+--      → Delete the two original runs
+--      → Create one merged run spanning from left.start_date to right.end_date
+--      → Ensure day_count = span length (upper(span) - lower(span))
+--   2. If local_date does not bridge two runs, function is a no-op
+--   3. Function is idempotent: duplicate calls with same input should not change state
+--
+-- Usage: SELECT perform_run_merge('user-uuid', '2025-09-02');
 CREATE OR REPLACE FUNCTION perform_run_merge(
     p_user_id UUID,
-    p_run1_id UUID,
-    p_run2_id UUID
+    p_local_date DATE
 ) RETURNS VOID AS $$
+DECLARE
+    v_left_run RECORD;
+    v_right_run RECORD;
+    v_merged_span TEXT;
+    v_merged_day_count INTEGER;
+    v_merged_run_id UUID;
 BEGIN
-    -- Placeholder implementation
-    RAISE NOTICE 'perform_run_merge not yet implemented (Phase 6B-1a scope)';
-    RETURN;
+    -- Find left run: ends at local_date - 1 (upper bound is exclusive, so upper = local_date)
+    SELECT id, span, day_count, active, last_extended_at, created_at
+    INTO v_left_run
+    FROM runs 
+    WHERE user_id = p_user_id 
+      AND upper(span) = p_local_date  -- upper() is exclusive, so this means run ends at p_local_date - 1
+    LIMIT 1;
+    
+    -- Find right run: starts at local_date + 1 (lower bound is inclusive, so lower = local_date + 1)
+    SELECT id, span, day_count, active, last_extended_at, created_at
+    INTO v_right_run
+    FROM runs 
+    WHERE user_id = p_user_id 
+      AND lower(span) = (p_local_date + INTERVAL '1 day')::DATE  -- lower() is inclusive, so this means run starts at p_local_date + 1
+    LIMIT 1;
+    
+    -- If both runs exist, we have a bridging scenario - merge them
+    IF v_left_run.id IS NOT NULL AND v_right_run.id IS NOT NULL THEN
+        -- Calculate merged span: from left.start to right.end
+        v_merged_span := '[' || lower(v_left_run.span) || ',' || upper(v_right_run.span) || ')';
+        
+        -- Calculate merged day count: total span length
+        v_merged_day_count := (upper(v_right_run.span) - lower(v_left_run.span));
+        
+        -- Generate new UUID for merged run
+        v_merged_run_id := gen_random_uuid();
+        
+        -- Use transaction to ensure atomicity
+        BEGIN
+            -- Delete the two original runs
+            DELETE FROM runs WHERE id = v_left_run.id;
+            DELETE FROM runs WHERE id = v_right_run.id;
+            
+            -- Create the merged run
+            -- Use the earlier created_at and the later last_extended_at for audit trail
+            INSERT INTO runs (id, user_id, span, day_count, active, last_extended_at, created_at, updated_at)
+            VALUES (
+                v_merged_run_id,
+                p_user_id,
+                v_merged_span::daterange,
+                v_merged_day_count,
+                CASE WHEN v_left_run.active OR v_right_run.active THEN true ELSE false END,  -- Preserve active status if either was active
+                GREATEST(v_left_run.last_extended_at, v_right_run.last_extended_at),  -- Use the latest extension time
+                LEAST(v_left_run.created_at, v_right_run.created_at),  -- Use the earliest creation time
+                NOW()  -- Updated now since we're creating a merged run
+            );
+            
+        EXCEPTION WHEN OTHERS THEN
+            -- If anything fails, rollback and re-raise
+            RAISE;
+        END;
+        
+        -- Ensure only one active run per user if the merged run is active
+        IF (v_left_run.active OR v_right_run.active) THEN
+            UPDATE runs SET active = false WHERE user_id = p_user_id AND id != v_merged_run_id;
+        END IF;
+        
+    -- If not bridging two runs, this is a no-op (idempotent behavior)
+    ELSE
+        RETURN;
+    END IF;
+    
 END;
 $$ LANGUAGE plpgsql;
 
