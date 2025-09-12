@@ -18,6 +18,11 @@ const featureFlags = {
         enabled: false, // Default OFF as required - overridden by environment variable
         description: 'V2 feature flag for totals aggregation and API functionality',
     },
+    'ff.potato.dev_rate_limit': {
+        name: 'ff.potato.dev_rate_limit',
+        enabled: false, // Default OFF as required - overridden by environment variable
+        description: 'Dev-friendly rate limiting with higher limits for testing',
+    },
 };
 class FeatureFlagService {
     constructor() {
@@ -28,9 +33,11 @@ class FeatureFlagService {
         const flagValue = process.env.FF_POTATO_NO_DRINK_V1;
         const runsV2FlagValue = process.env.FF_POTATO_RUNS_V2;
         const totalsV2FlagValue = process.env.FF_POTATO_TOTALS_V2;
+        const devRateLimitFlagValue = process.env.FF_POTATO_DEV_RATE_LIMIT;
         console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${flagValue || 'undefined'}`);
         console.log(`[Feature Flag] FF_POTATO_RUNS_V2 = ${runsV2FlagValue || 'undefined'}`);
         console.log(`[Feature Flag] FF_POTATO_TOTALS_V2 = ${totalsV2FlagValue || 'undefined'}`);
+        console.log(`[Feature Flag] FF_POTATO_DEV_RATE_LIMIT = ${devRateLimitFlagValue || 'undefined'}`);
     }
     // Get a specific feature flag
     getFlag(flagName) {
@@ -52,6 +59,12 @@ class FeatureFlagService {
         // For ff.potato.totals_v2, read from environment variable
         if (flagName === 'ff.potato.totals_v2') {
             const envValue = process.env.FF_POTATO_TOTALS_V2;
+            const enabled = envValue === 'true'; // Only 'true' string enables it
+            return Object.assign(Object.assign({}, baseFlag), { enabled });
+        }
+        // For ff.potato.dev_rate_limit, read from environment variable
+        if (flagName === 'ff.potato.dev_rate_limit') {
+            const envValue = process.env.FF_POTATO_DEV_RATE_LIMIT;
             const enabled = envValue === 'true'; // Only 'true' string enables it
             return Object.assign(Object.assign({}, baseFlag), { enabled });
         }
