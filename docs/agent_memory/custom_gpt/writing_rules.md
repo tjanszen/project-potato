@@ -12,6 +12,7 @@
 - **Minimal, Testable Steps:** Avoid ceremony — no PR/branch boilerplate. Keep to 1–3 concrete steps.  
 - **Evidence-First:** Every prompt must include explicit proof (logs, SQL, HTTP responses, etc.).  
 - **Flag-Gated:** Default to feature flags for safety. Always name the flag.  
+- **Human Oversight:** All prompts must include Error Handling and Scope Control clauses referencing playbooks.md.  
 
 ---
 
@@ -30,6 +31,19 @@ Proof:
 - Logs must include: "<token>"
 - GET /health returns 200 within <N> seconds
 - SQL: <short query or table check>
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
 ~~~
 
 ---
@@ -38,6 +52,7 @@ Proof:
 - **Goal:** Write as a clear, observable outcome (not a vague action).  
 - **Do:** Use imperative verbs (“Run”, “Add”, “Check”) and include environment assumptions (`Express binds 0.0.0.0`, `$PORT`, auth tokens, etc.).  
 - **Proof:** Always require multiple signals (e.g., HTTP status + DB state + logs). Never accept “it ran” as sufficient validation.  
+- **Error Handling & Scope Control:** Always include the two clauses above, word-for-word, with references to the playbooks.  
 
 ---
 
@@ -77,6 +92,7 @@ For feature prompts:
 - Offer options but clearly recommend one.  
 - If information is missing/stale, call it out and request the exact artifact (ADR ID, postbrief, SQL log).  
 - No PR/branch/STOP boilerplate. Focus on testable outcomes.  
+- Always enforce playbook alignment (Mid-Phase Error Handling Protocol + Scope Deviation Protocol).  
 
 ---
 
@@ -84,5 +100,10 @@ For feature prompts:
 - This file is **for GPT guidance only**.  
 - The Replit agent should ignore this file.  
 - When in doubt: keep prompts small, testable, and always backed by explicit proof.  
+- Deviation or scope expansion must pause for operator approval.  
 
 ---
+
+## 🔗 Cross-References
+- **Playbooks.md → Mid-Phase Error Handling Protocol**  
+- **Playbooks.md → Scope Deviation Protocol**

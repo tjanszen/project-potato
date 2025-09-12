@@ -502,14 +502,13 @@ class PostgresStorage {
                 
                 const insertQuery = `
                     INSERT INTO runs (user_id, span, day_count, active, last_extended_at, created_at, updated_at)
-                    VALUES ($1, daterange($2::date, ($3::date + interval '1 day')::date, '[)'), $4, $5, NOW(), NOW(), NOW())
+                    VALUES ($1, daterange($2::date, ($3::date + interval '1 day')::date, '[)'), (upper(daterange($2::date, ($3::date + interval '1 day')::date, '[)')) - lower(daterange($2::date, ($3::date + interval '1 day')::date, '[)'))), $4, NOW(), NOW(), NOW())
                 `;
                 
                 await pool.query(insertQuery, [
                     userId,
                     run.startDate,
                     run.endDate,
-                    run.dayCount,
                     isActive
                 ]);
                 
