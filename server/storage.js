@@ -83,16 +83,23 @@ class PostgresStorage {
         })
             .returning();
         
-        // NEW: Auto-trigger perform_run_extend after marking to keep runs updated
+        // NEW: Auto-trigger run operations after marking to keep runs updated (V2)
         const { featureFlagService } = require('./feature-flags.js');
         if (featureFlagService.isEnabled('ff.potato.runs_v2')) {
             try {
-                console.log(`[RUNS] perform_run_extend called for ${dayMark.userId} ${dayMark.localDate}`);
+                // PHASE 6B-1a: Call perform_run_merge BEFORE perform_run_extend
+                // This handles gap-fill scenarios where marking a day bridges two existing runs
+                console.log(`[DEBUG] Preview merge invoked for ${dayMark.userId} ${dayMark.localDate}`);
+                await pool.query('SELECT perform_run_merge($1, $2)', [dayMark.userId, dayMark.localDate]);
+                console.log(`[RUNS] Successfully merged runs for user ${dayMark.userId} date ${dayMark.localDate}`);
+                
+                // Then call perform_run_extend to handle extension/creation
+                console.log(`[DEBUG] Preview extend invoked for ${dayMark.userId} ${dayMark.localDate}`);
                 await pool.query('SELECT perform_run_extend($1, $2)', [dayMark.userId, dayMark.localDate]);
                 console.log(`[RUNS] Successfully extended runs for user ${dayMark.userId} date ${dayMark.localDate}`);
             } catch (runsError) {
-                console.warn(`[RUNS] perform_run_extend failed for user ${dayMark.userId} date ${dayMark.localDate}:`, runsError.message);
-                // Don't fail day marking - run extension failure is non-critical
+                console.warn(`[RUNS] Run operations failed for user ${dayMark.userId} date ${dayMark.localDate}:`, runsError.message);
+                // Don't fail day marking - run operation failure is non-critical
             }
         }
         

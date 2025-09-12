@@ -1,0 +1,49 @@
+Goal: Confirm markDay() integration and feature flag status in .dev Preview environment
+
+Context:
+- SQL perform_run_merge confirmed working correctly (day_count=4).
+- Bug reproduced in .dev Preview: gap-fill run produced 3 days instead of 4.
+- Hypothesis: markDay() in Preview is not calling perform_run_merge, or ff.potato.runs_v2 is OFF.
+
+Do:
+- Inspect storage.js markDay() in Preview build:
+  - Confirm perform_run_merge(user_id, local_date) is called
+  - Confirm it is invoked before perform_run_extend
+  - Confirm ff.potato.runs_v2 gating logic is present
+- Check current flag state in Preview environment:
+  - Query featureFlagService for ff.potato.runs_v2
+- Add temporary debug logs:
+  - "[DEBUG] Preview merge invoked for <user_id> <date>"
+  - "[DEBUG] Preview extend invoked for <user_id> <date>"
+- Run test flow for test user (sdfsdfsdfsdfsdf@me.com) in .dev Preview:
+  - Mark 9/9, 9/10, 9/12, then 9/11
+- Capture logs and runs table state
+
+Proof:
+- If merge missing in markDay: wiring bug
+- If merge present but flag OFF: feature flag config bug
+- If merge + flag correct but totals still wrong: UI totals calculation bug
+- Logs must show merge invoked before extend for gap-fill case
+- Runs table must contain span [2025-09-09, 2025-09-13) with day_count=4
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing markDay implementation, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema refactors, frontend rewrites):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Server Persistence (Replit Environments):
+- ❌ Do not attempt: One-shot shell commands combining server startup, login, API test, log capture, and cleanup.  
+- ✅ Do instead:  
+  - Run the server in foreground for investigation (`DEBUG=* node index.js`).  
+  - Use Reserved VM Deployments/Workflows for persistent execution.  
+  - Capture logs directly via foreground mode.  
+- Reason: Replit environments kill background processes. One-shot chaining does not solve this; it only masks failures and produces misleading logs.  
+- Lesson: Always run servers via foreground mode or Reserved VM. Never attempt chained background execution for API tests.
