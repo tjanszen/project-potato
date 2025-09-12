@@ -83,14 +83,17 @@ class PostgresStorage {
         })
             .returning();
         
-        // NEW: Wire runs calculation into day marking flow (Phase A)
-        try {
-            console.log(`[RUNS] Triggering runs calculation for user ${dayMark.userId}, date ${dayMark.localDate}`);
-            await this.performRunExtend(dayMark.userId, dayMark.localDate);
-            console.log(`[RUNS] Successfully processed runs calculation for ${dayMark.localDate}`);
-        } catch (runsError) {
-            console.warn(`[RUNS] Runs calculation failed for user ${dayMark.userId}, date ${dayMark.localDate}:`, runsError.message);
-            // Don't fail day marking - runs calculation failure is non-critical
+        // NEW: Auto-trigger rebuildUserRuns after marking to keep runs/totals in sync
+        const { featureFlagService } = require('./feature-flags.js');
+        if (featureFlagService.isEnabled('ff.potato.runs_v2')) {
+            try {
+                console.log(`[RUNS] Triggered rebuildUserRuns for ${dayMark.userId}`);
+                await this.rebuildUserRuns(dayMark.userId);
+                console.log(`[RUNS] Successfully rebuilt runs for user ${dayMark.userId}`);
+            } catch (runsError) {
+                console.warn(`[RUNS] rebuildUserRuns failed for user ${dayMark.userId}:`, runsError.message);
+                // Don't fail day marking - runs rebuild failure is non-critical
+            }
         }
         
         return mark;
