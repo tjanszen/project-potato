@@ -1,0 +1,62 @@
+Goal: Implement and fix perform_run_merge(user_id, local_date) for Phase 6B-1a of imp_plans/6b1_completion.md
+
+Context:
+- Phase 6B-1 Completion Plan requires three SQL functions: extend, merge, split.
+- perform_run_extend ✅ implemented and wired into markDay().
+- perform_run_merge currently exists only as a non-callable stub.
+- Gap-fill behavior (merging two runs when the connecting day is marked) is failing in production because merge logic is missing.
+- Server Persistence (Replit note):
+  ❌ Do not attempt: One-shot shell commands combining server startup, login, API test, log capture, and cleanup.
+  ✅ Do instead:
+    - Run the server in foreground for investigation (DEBUG=* node index.js).
+    - Use Reserved VM Deployments/Workflows for persistent execution.
+    - Capture logs directly via foreground mode.
+  Reason: Replit environments kill background processes. One-shot chaining does not solve this; it only masks failures and produces misleading logs.
+  Lesson: Always run servers via foreground mode or Reserved VM. Never attempt chained background execution for API tests.
+
+Do:
+- Implement SQL function perform_run_merge(user_id UUID, local_date DATE)
+- Behavior:
+  - If local_date bridges two existing runs (left span ends at local_date - 1, right span starts at local_date + 1):
+    → Delete the two original runs
+    → Create one merged run spanning from left.start_date to right.end_date
+    → Ensure day_count = span length (upper(span) - lower(span))
+  - If local_date does not bridge two runs, function is a no-op
+  - Function must be idempotent: duplicate calls with same input should not change state
+- Store implementation in db/functions/runs.sql (same file as perform_run_extend)
+- Ensure correct transaction handling to prevent overlaps
+
+Proof:
+- Setup:
+  INSERT INTO day_marks(user_id, local_date, value) VALUES ('merge-test','2025-09-01',true);
+  INSERT INTO day_marks(user_id, local_date, value) VALUES ('merge-test','2025-09-03',true);
+
+- Call:
+  SELECT perform_run_merge('merge-test','2025-09-02');
+
+- Verify:
+  SELECT * FROM runs WHERE user_id='merge-test';
+  → One run exists spanning 2025-09-01 to 2025-09-03, day_count=3
+
+- Idempotency:
+  SELECT perform_run_merge('merge-test','2025-09-02');
+  → State unchanged (still one run, day_count=3)
+
+- Invariant checks:
+  SELECT COUNT(*) FROM runs a JOIN runs b
+    ON a.user_id=b.user_id AND a.id!=b.id AND a.span && b.span
+  WHERE a.user_id='merge-test';
+  → returns 0 (no overlaps)
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing functions, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
