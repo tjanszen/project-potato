@@ -34,16 +34,25 @@ Proof:
 
 Error Handling (per Mid-Phase Error Handling Protocol):
 - If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
-  → STOP immediately  
-  → Summarize findings + recommend next steps  
+  → STOP immediately
+  → Summarize findings + recommend next steps
   → WAIT for operator approval before resuming  
 
 Scope Control (per Scope Deviation Protocol):
 - If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
-  → STOP immediately  
-  → Summarize deviation vs. agreed scope  
-  → Provide pros/cons of addressing now vs. deferring  
-  → WAIT for explicit operator approval before resuming  
+  → STOP immediately
+  → Summarize deviation vs. agreed scope
+  → Provide pros/cons of addressing now vs. deferring
+  → WAIT for explicit operator approval before resuming
+
+Server Persistence (Replit Environments):
+- ❌ Do not attempt: One-shot shell commands combining server startup, login, API test, log capture, and cleanup.  
+- ✅ Do instead:  
+  - Run the server in foreground for investigation (`DEBUG=* node index.js`).  
+  - Use Reserved VM Deployments/Workflows for persistent execution.  
+  - Capture logs directly via foreground mode.  
+- Reason: Replit environments kill background processes. One-shot chaining does not solve this; it only masks failures and produces misleading logs.  
+- Lesson: Always run servers via foreground mode or Reserved VM. Never attempt chained background execution for API tests.
 ~~~
 
 ---
