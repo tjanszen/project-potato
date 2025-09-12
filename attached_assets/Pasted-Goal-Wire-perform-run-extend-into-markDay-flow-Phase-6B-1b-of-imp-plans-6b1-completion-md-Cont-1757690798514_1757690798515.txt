@@ -1,0 +1,39 @@
+Goal: Wire perform_run_extend into markDay() flow (Phase 6B-1b of imp_plans/6b1_completion.md)
+
+Context:
+- Phase 6B-1a implemented perform_run_extend(user_id, local_date) as a SQL function.
+- This function has been validated as idempotent and correct for extending runs.
+- Phase 6B-1b requires wiring this function into the markDay() flow so runs are updated automatically when users mark days.
+
+Do:
+- In storage.js, update markDay() to call perform_run_extend(user_id, local_date) after inserting into day_marks
+- Wrap call in try/catch to ensure marking always succeeds even if run extension fails
+- Gate runtime call behind feature flag: ff.potato.runs_v2 = ON
+- Add logging: "perform_run_extend called for <user_id> <local_date>"
+
+Proof:
+- Mark first day:
+  INSERT INTO day_marks(user_id, local_date, value) VALUES ('test-user','2025-09-10',true);
+  → verify runs table now has 1 row for 2025-09-10
+- Mark consecutive day:
+  INSERT INTO day_marks(user_id, local_date, value) VALUES ('test-user','2025-09-11',true);
+  → verify same run extended to cover 2025-09-10–11
+- Mark duplicate day:
+  → runs table unchanged
+- Mark non-consecutive day:
+  INSERT INTO day_marks(user_id, local_date, value) VALUES ('test-user','2025-09-13',true);
+  → verify new separate run created
+- Check totals endpoint (/api/v2/totals) reflects updated run_days without requiring a rebuild
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing functions, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
