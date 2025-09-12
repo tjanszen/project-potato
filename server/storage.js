@@ -83,16 +83,16 @@ class PostgresStorage {
         })
             .returning();
         
-        // NEW: Auto-trigger rebuildUserRuns after marking to keep runs/totals in sync
+        // NEW: Auto-trigger perform_run_extend after marking to keep runs updated
         const { featureFlagService } = require('./feature-flags.js');
         if (featureFlagService.isEnabled('ff.potato.runs_v2')) {
             try {
-                console.log(`[RUNS] Triggered rebuildUserRuns for ${dayMark.userId}`);
-                await this.rebuildUserRuns(dayMark.userId);
-                console.log(`[RUNS] Successfully rebuilt runs for user ${dayMark.userId}`);
+                console.log(`[RUNS] perform_run_extend called for ${dayMark.userId} ${dayMark.localDate}`);
+                await pool.query('SELECT perform_run_extend($1, $2)', [dayMark.userId, dayMark.localDate]);
+                console.log(`[RUNS] Successfully extended runs for user ${dayMark.userId} date ${dayMark.localDate}`);
             } catch (runsError) {
-                console.warn(`[RUNS] rebuildUserRuns failed for user ${dayMark.userId}:`, runsError.message);
-                // Don't fail day marking - runs rebuild failure is non-critical
+                console.warn(`[RUNS] perform_run_extend failed for user ${dayMark.userId} date ${dayMark.localDate}:`, runsError.message);
+                // Don't fail day marking - run extension failure is non-critical
             }
         }
         
