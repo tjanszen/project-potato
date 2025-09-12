@@ -1,0 +1,44 @@
+Goal: Audit Phase 6B-1 Idempotent Core Operations and prove which parts are incomplete
+
+Do:
+- Run test queries to validate idempotent run extend:
+  SELECT perform_run_extend('test-user', '2025-06-15');
+  SELECT perform_run_extend('test-user', '2025-06-15'); -- Should be no-op
+  SELECT * FROM runs WHERE user_id='test-user' ORDER BY start_date;
+
+- Run test queries to validate run merge (gap filling):
+  INSERT INTO day_marks VALUES ('test-user','2025-06-10',true);
+  INSERT INTO day_marks VALUES ('test-user','2025-06-12',true);
+  SELECT perform_run_merge('test-user','2025-06-11');
+  SELECT * FROM runs WHERE user_id='test-user';
+
+- Run test queries to validate run split (day removal):
+  INSERT INTO day_marks VALUES ('test-user','2025-06-20',true);
+  INSERT INTO day_marks VALUES ('test-user','2025-06-21',true);
+  INSERT INTO day_marks VALUES ('test-user','2025-06-22',true);
+  DELETE FROM day_marks WHERE user_id='test-user' AND local_date='2025-06-21';
+  SELECT * FROM runs WHERE user_id='test-user'; -- Should show split into 2 runs
+
+- Record outputs and confirm:
+  - Does extend behave idempotently?
+  - Does merge create correct consolidated runs?
+  - Does split exist and work, or is it missing?
+
+Proof:
+- Extend test: duplicate insert produces identical runs (no duplicates)
+- Merge test: gap fill merges into a single run with correct day_count
+- Split test: run splits correctly when middle day removed
+- If any function not found or behavior missing → mark as incomplete
+
+Error Handling (per Mid-Phase Error Handling Protocol):
+- If critical issues occur (missing functions, >3 errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (per Scope Deviation Protocol):
+- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
