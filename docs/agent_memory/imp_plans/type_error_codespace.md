@@ -65,16 +65,82 @@ import React, { existingImports } from 'react'
 - Inspect `vite.config.ts` to confirm JSX transform setup.
 - Record whether explicit imports should be optional; if mismatch, flag for future cleanup.
 
-### Phase 2: Component Fixes
-- Update `client/src/components/DayDrawer.tsx` with explicit `React` import.
-- Update `client/src/components/CalendarGrid.tsx` with explicit `React` import.
-- Update `client/src/components/ErrorBoundary.tsx` with explicit `React` import.
-- Update any other files flagged in Phase 0.
+### Phase 2: Component Consistency Audit
+
+  **Context:**  
+  Phase 0 identified that nearly all component files (19 total) were missing React imports. Phase 1 applied fixes across all affected files, including components.  
+
+  **Goal:**  
+  Ensure all components now have explicit `import React` at the top, and that no component file has been missed or regressed.  
+
+  **Steps:**  
+  1. Re-scan `client/src/components/**/*.tsx` for JSX or React hooks without `import React`.  
+  2. Confirm DayDrawer.tsx, CalendarGrid.tsx, ErrorBoundary.tsx, and all other flagged components were correctly updated in Phase 1.  
+  3. If new components have been added since Phase 0, include them in this audit.  
+
+  **Verification Criteria:**  
+  - Every `.tsx` file under `client/src/components/` that uses JSX or hooks begins with `import React`.  
+  - No ❌ results from the re-scan.  
+
+  **Blast Radius:**  
+  - Low — purely verification of prior changes.  
+  - Rollback not required; if any file is missed, fix directly.
+
 
 ### Phase 2.5: Dependency Hygiene
 - Confirm React is installed only under `client/package.json`.
 - Check `node_modules` layout for duplicate React installs.
 - If duplicates found, consolidate into `client/`.
+
+    ### Phase 2.5.1: React Dependency Consolidation
+
+    **Context:**  
+    Phase 2.5 revealed duplicate React declarations across `root/package.json` and `client/package.json`. While only one physical install exists (hoisted to the root), this creates architectural mismatches and risks future conflicts.  
+
+    **Goal:**  
+    Consolidate React dependencies so they live **only** in `client/package.json`, ensuring clean separation between server and client dependencies.  
+
+    **Steps:**  
+    1. Remove `"react"` and `"react-dom"` from the root `package.json` dependencies.  
+    2. Run `npm install` in the `client/` directory to ensure React and ReactDOM are installed locally there.  
+    3. Verify that the server (root) does not attempt to import React.  
+
+    **Verification Criteria:**  
+    - `root/package.json` contains no references to React or ReactDOM.  
+    - `client/package.json` contains React + ReactDOM.  
+    - `client/node_modules/` contains React + ReactDOM.  
+    - App builds and runs successfully in both Replit and Codespaces.  
+
+    **Blast Radius:**  
+    - Medium: Removing root-level React may break build or dev scripts if they incorrectly rely on root-level React.  
+    - Rollback Path: Restore `"react"` and `"react-dom"` in root/package.json and rerun `npm install`.
+
+
+### Phase 2.75: JSX Transform Cleanup
+
+  **Context:**  
+  Phase 1.5 revealed that `client/vite.config.ts` uses the automatic JSX runtime (`jsx: 'react-jsx'` via @vitejs/plugin-react). In this configuration, explicit `import React` statements should be optional. However, Codespaces requires explicit imports due to environment-specific differences in module resolution.  
+
+  **Goal:**  
+  Align the build configuration and runtime so Codespaces and Replit both respect automatic JSX transform settings. Remove reliance on redundant explicit imports if possible.
+
+  **Steps:**  
+  1. Inspect `tsconfig.json` to confirm `jsx` setting (`react-jsx` vs. `react`).  
+  2. Adjust Vite plugin/react settings explicitly if needed (`jsxRuntime: 'automatic'`).  
+  3. Test whether Codespaces respects the automatic runtime.  
+  4. Decide:  
+     - Keep explicit imports across all files (safe, cross-env).  
+     - Or rely on automatic runtime once Codespaces respects it.  
+
+  **Verification Criteria:**  
+  - Codespaces and Replit both run the app without requiring explicit `import React`.  
+  - No JSX or hook runtime errors on startup.  
+  - If automatic transform cannot be fixed, document decision to keep explicit imports as the permanent safe baseline.
+
+  **Blast Radius:**  
+  - Medium — affects build tooling and runtime expectations.  
+  - Rollback path: revert to explicit imports in all files (current known-good state).
+
 
 ### Phase 3: Verification
 - Run the app in Codespaces and Replit.
