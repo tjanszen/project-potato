@@ -1,3 +1,4 @@
+import React from 'react'
 import { Router } from 'wouter'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from './components/ErrorBoundary'

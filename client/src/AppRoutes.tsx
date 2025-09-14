@@ -1,3 +1,4 @@
+import React from 'react'
 import { Route, Switch } from 'wouter'
 import { AuthGuard } from './components/AuthGuard'
 import { AuthPage } from './pages/AuthPage'
