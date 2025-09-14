@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import './CalendarGrid.css'
 import DayCell from './DayCell'
 import { apiClient } from '../lib/api'

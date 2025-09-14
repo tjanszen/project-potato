@@ -1,3 +1,4 @@
+import React from 'react'
 import Toast, { ToastMessage } from './Toast'
 
 interface ToastContainerProps {

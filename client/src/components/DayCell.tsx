@@ -1,3 +1,5 @@
+import React from 'react'
+
 interface DayCellProps {
   date: number | null
   month: number // 0-based (0 = January)
