@@ -1,5 +1,5 @@
 // API client configuration for authentication and CORS
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000' : ''
+const API_BASE_URL = ''
 
 export interface ApiResponse<T> {
   data?: T

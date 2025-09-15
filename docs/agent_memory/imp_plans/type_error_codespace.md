@@ -19,7 +19,7 @@ When running the app in GitHub Codespaces, a `TypeError: Cannot read properties 
 - Detect any file using JSX or hooks without `import React from 'react'`.
 - Output list of affected files.
 
-### Phase 1: Core Fixes 
+### Phase 1: Core Fixes
 Phase 0 revealed that 19 of 21 files under `client/src/` use JSX or React hooks without importing React. This phase standardizes all affected files.
 
 **Files to Fix (❌ Missing React Import):**
@@ -48,18 +48,15 @@ Phase 0 revealed that 19 of 21 files under `client/src/` use JSX or React hooks 
 - client/src/contexts/ToastContext.tsx  
 
 **Required Change Pattern:**  
-At the top of each ❌ file, update imports to explicitly include React in the form:  
+At the top of each ❌ file, update imports to explicitly include React.  
 
-```ts
-import React, { existingImports } from 'react'
+Example:  
 
-**Example**
-  // Before
-  import { useState, useEffect, useRef } from 'react'
+    // Before
+    import { useState, useEffect, useRef } from 'react'
 
-  // After
-  import React, { useState, useEffect, useRef } from 'react'
-
+    // After
+    import React, { useState, useEffect, useRef } from 'react'
 
 ### Phase 1.5: Vite Config Check
 - Inspect `vite.config.ts` to confirm JSX transform setup.
@@ -67,80 +64,99 @@ import React, { existingImports } from 'react'
 
 ### Phase 2: Component Consistency Audit
 
-  **Context:**  
-  Phase 0 identified that nearly all component files (19 total) were missing React imports. Phase 1 applied fixes across all affected files, including components.  
+**Context:**  
+Phase 0 identified that nearly all component files (19 total) were missing React imports. Phase 1 applied fixes across all affected files, including components.  
 
-  **Goal:**  
-  Ensure all components now have explicit `import React` at the top, and that no component file has been missed or regressed.  
+**Goal:**  
+Ensure all components now have explicit `import React` at the top, and that no component file has been missed or regressed.  
 
-  **Steps:**  
-  1. Re-scan `client/src/components/**/*.tsx` for JSX or React hooks without `import React`.  
-  2. Confirm DayDrawer.tsx, CalendarGrid.tsx, ErrorBoundary.tsx, and all other flagged components were correctly updated in Phase 1.  
-  3. If new components have been added since Phase 0, include them in this audit.  
+**Steps:**  
+1. Re-scan `client/src/components/**/*.tsx` for JSX or React hooks without `import React`.  
+2. Confirm DayDrawer.tsx, CalendarGrid.tsx, ErrorBoundary.tsx, and all other flagged components were correctly updated in Phase 1.  
+3. If new components have been added since Phase 0, include them in this audit.  
 
-  **Verification Criteria:**  
-  - Every `.tsx` file under `client/src/components/` that uses JSX or hooks begins with `import React`.  
-  - No ❌ results from the re-scan.  
+**Verification Criteria:**  
+- Every `.tsx` file under `client/src/components/` that uses JSX or hooks begins with `import React`.  
+- No ❌ results from the re-scan.  
 
-  **Blast Radius:**  
-  - Low — purely verification of prior changes.  
-  - Rollback not required; if any file is missed, fix directly.
-
+**Blast Radius:**  
+- Low — purely verification of prior changes.  
+- Rollback not required; if any file is missed, fix directly.
 
 ### Phase 2.5: Dependency Hygiene
 - Confirm React is installed only under `client/package.json`.
 - Check `node_modules` layout for duplicate React installs.
 - If duplicates found, consolidate into `client/`.
 
-    ### Phase 2.5.1: React Dependency Consolidation
+#### Phase 2.5.1: React Dependency Consolidation
 
-    **Context:**  
-    Phase 2.5 revealed duplicate React declarations across `root/package.json` and `client/package.json`. While only one physical install exists (hoisted to the root), this creates architectural mismatches and risks future conflicts.  
+**Context:**  
+Phase 2.5 revealed duplicate React declarations across `root/package.json` and `client/package.json`. While only one physical install exists (hoisted to the root), this creates architectural mismatches and risks future conflicts.  
 
-    **Goal:**  
-    Consolidate React dependencies so they live **only** in `client/package.json`, ensuring clean separation between server and client dependencies.  
+**Goal:**  
+Consolidate React dependencies so they live **only** in `client/package.json`, ensuring clean separation between server and client dependencies.  
 
-    **Steps:**  
-    1. Remove `"react"` and `"react-dom"` from the root `package.json` dependencies.  
-    2. Run `npm install` in the `client/` directory to ensure React and ReactDOM are installed locally there.  
-    3. Verify that the server (root) does not attempt to import React.  
+**Steps:**  
+1. Remove `"react"` and `"react-dom"` from the root `package.json` dependencies.  
+2. Run `npm install` in the `client/` directory to ensure React and ReactDOM are installed locally there.  
+3. Verify that the server (root) does not attempt to import React.  
 
-    **Verification Criteria:**  
-    - `root/package.json` contains no references to React or ReactDOM.  
-    - `client/package.json` contains React + ReactDOM.  
-    - `client/node_modules/` contains React + ReactDOM.  
-    - App builds and runs successfully in both Replit and Codespaces.  
+**Verification Criteria:**  
+- `root/package.json` contains no references to React or ReactDOM.  
+- `client/package.json` contains React + ReactDOM.  
+- `client/node_modules/` contains React + ReactDOM.  
+- App builds and runs successfully in both Replit and Codespaces.  
 
-    **Blast Radius:**  
-    - Medium: Removing root-level React may break build or dev scripts if they incorrectly rely on root-level React.  
-    - Rollback Path: Restore `"react"` and `"react-dom"` in root/package.json and rerun `npm install`.
-
+**Blast Radius:**  
+- Medium: Removing root-level React may break build or dev scripts if they incorrectly rely on root-level React.  
+- Rollback Path: Restore `"react"` and `"react-dom"` in root/package.json and rerun `npm install`.
 
 ### Phase 2.75: JSX Transform Cleanup
 
-  **Context:**  
-  Phase 1.5 revealed that `client/vite.config.ts` uses the automatic JSX runtime (`jsx: 'react-jsx'` via @vitejs/plugin-react). In this configuration, explicit `import React` statements should be optional. However, Codespaces requires explicit imports due to environment-specific differences in module resolution.  
+**Context:**  
+Phase 1.5 revealed that `client/vite.config.ts` uses the automatic JSX runtime (`jsx: 'react-jsx'` via @vitejs/plugin-react). In this configuration, explicit `import React` statements should be optional. However, Codespaces requires explicit imports due to environment-specific differences in module resolution.  
 
-  **Goal:**  
-  Align the build configuration and runtime so Codespaces and Replit both respect automatic JSX transform settings. Remove reliance on redundant explicit imports if possible.
+**Goal:**  
+Align the build configuration and runtime so Codespaces and Replit both respect automatic JSX transform settings. Remove reliance on redundant explicit imports if possible.
 
-  **Steps:**  
-  1. Inspect `tsconfig.json` to confirm `jsx` setting (`react-jsx` vs. `react`).  
-  2. Adjust Vite plugin/react settings explicitly if needed (`jsxRuntime: 'automatic'`).  
-  3. Test whether Codespaces respects the automatic runtime.  
-  4. Decide:  
-     - Keep explicit imports across all files (safe, cross-env).  
-     - Or rely on automatic runtime once Codespaces respects it.  
+**Steps:**  
+1. Inspect `tsconfig.json` to confirm `jsx` setting (`react-jsx` vs. `react`).  
+2. Adjust Vite plugin/react settings explicitly if needed (`jsxRuntime: 'automatic'`).  
+3. Test whether Codespaces respects the automatic runtime.  
+4. Decide:  
+   - Keep explicit imports across all files (safe, cross-env).  
+   - Or rely on automatic runtime once Codespaces respects it.  
 
-  **Verification Criteria:**  
-  - Codespaces and Replit both run the app without requiring explicit `import React`.  
-  - No JSX or hook runtime errors on startup.  
-  - If automatic transform cannot be fixed, document decision to keep explicit imports as the permanent safe baseline.
+**Verification Criteria:**  
+- Codespaces and Replit both run the app without requiring explicit `import React`.  
+- No JSX or hook runtime errors on startup.  
+- If automatic transform cannot be fixed, document decision to keep explicit imports as the permanent safe baseline.  
 
-  **Blast Radius:**  
-  - Medium — affects build tooling and runtime expectations.  
-  - Rollback path: revert to explicit imports in all files (current known-good state).
+**Blast Radius:**  
+- Medium — affects build tooling and runtime expectations.  
+- Rollback path: revert to explicit imports in all files (current known-good state).
 
+### Phase 2.9: API Base URL Cleanup
+
+**Context:**  
+Phase 2.75 testing revealed that the frontend fails with "Network Error" in Codespaces because `client/src/lib/api.ts` hardcodes `http://localhost:3000`. This works locally but fails in Codespaces because the browser cannot access the container’s localhost.  
+
+**Goal:**  
+Ensure API requests are portable across Replit and Codespaces by using relative URLs (`/api/...`) routed through Vite’s proxy.  
+
+**Steps:**  
+1. Update `client/src/lib/api.ts` so that `API_BASE_URL = ''` (always relative).  
+2. Scan `client/src/**` for any other `localhost:3000` strings and replace with relative paths.  
+3. Restart frontend and verify login/signup works in Codespaces.  
+
+**Verification Criteria:**  
+- No hardcoded `localhost:3000` in frontend code.  
+- API requests resolve via `/api/...` in dev and prod.  
+- Login/signup succeeds in Codespaces.  
+
+**Blast Radius:**  
+- Low — only affects frontend API request base URL.  
+- Rollback path: restore previous `API_BASE_URL`.
 
 ### Phase 3: Verification
 - Run the app in Codespaces and Replit.
@@ -161,69 +177,3 @@ import React, { existingImports } from 'react'
 - Logs free of hook-related errors.
 - `GET /health` returns 200.
 - Manual UI interactions succeed.
-
-## Appendix
-📋 Complete Fix Plan: React Import Standardization
-Here's my detailed plan to fix the useEffect null error by standardizing React imports across all files:
-
-🎯 Root Cause & Strategy
-Problem: Mixed import patterns cause React to be undefined in GitHub Codespaces
-Solution: Standardize to explicit React imports for all files that use hooks or JSX
-Approach: Conservative changes, maintain functionality, ensure cross-environment compatibility
-📁 Files That Need Changes
-1. client/src/contexts/AuthContext.tsx
-Current Import (Line 1):
-
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-Proposed Change:
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-Why: File uses JSX (<AuthContext.Provider>) but doesn't import React explicitly. In Codespaces, this causes hooks to be undefined.
-
-2. client/src/components/DayDrawer.tsx
-Current Import (Line 1):
-
-import { useState, useEffect, useRef } from 'react'
-Proposed Change:
-
-import React, { useState, useEffect, useRef } from 'react'
-Why: File uses JSX extensively and has 5 different useEffect calls. This is likely where the error originates since it's heavily hook-dependent.
-
-3. client/src/App.tsx
-Current Import (Line 1):
-
-import { Router } from 'wouter'
-Proposed Change:
-
-import React from 'react'
-import { Router } from 'wouter'
-Why: File renders JSX but has no React import. This could be causing the initial load failure.
-
-4. client/src/contexts/ToastContext.tsx
-Current Import (Line 1):
-
-import React, { createContext, useContext, useState, useCallback } from 'react'
-No Change Needed ✅ - Already has explicit React import
-
-🔍 Additional Files to Check
-I would also verify these files have proper React imports:
-
-5. client/src/components/CalendarGrid.tsx
-Current:
-
-import { useState, useEffect, useMemo } from 'react'
-Likely Change:
-
-import React, { useState, useEffect, useMemo } from 'react'
-6. client/src/components/DayCell.tsx
-Would need to check - If it uses JSX, add explicit React import
-
-7. client/src/components/ErrorBoundary.tsx
-Current:
-
-import { Component, ErrorInfo, ReactNode } from 'react'
-Likely Change:
-
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-
-
