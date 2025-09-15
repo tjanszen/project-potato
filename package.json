@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "ts-node server/index.ts",
+    "serve": "ts-node-dev --respawn --transpile-only server/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +19,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express-session": "^1.18.2",
-    "@types/node": "^24.3.0",
     "@types/pg": "^8.15.5",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
@@ -35,11 +38,16 @@
     "http-proxy-middleware": "^3.0.5",
     "morgan": "^1.10.1",
     "pg": "^8.16.3",
-    "typescript": "^5.9.2",
     "uuid": "^11.1.0",
     "vite": "^7.1.3",
     "wouter": "^3.7.1",
     "ws": "^8.18.3",
     "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "ts-node-dev": "^2.0.0"
   }
 }

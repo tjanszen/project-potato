@@ -26,19 +26,33 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://upgraded-broccoli-rwrgrgqr6g2xxg9-5173.app.github.dev",
+  credentials: true,
+}));
 app.use(express.json());
+// Trust proxy (needed for Codespaces / GitHub forwarded ports so cookies work)
+app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    httpOnly: true, // Prevent XSS attacks
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    sameSite: 'strict', // CSRF protection
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
+  cookie: {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+  domain: process.env.NODE_ENV === 'production' ? undefined : '.app.github.dev',
+  maxAge: 24 * 60 * 60 * 1000
+}
+
 }));
+
+// Debug log: confirm cookie/session config at runtime
+console.log("SESSION COOKIE CONFIG:", {
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
+  domain: process.env.NODE_ENV === 'production' ? undefined : '.app.github.dev'
+});
 
 // Root endpoint (always available)
 app.get('/', (req, res) => {
@@ -240,11 +254,32 @@ app.post('/api/auth/signup', async (req, res) => {
       passwordHash: hashedPassword
     });
 
-    // Return user without password hash
-    const { passwordHash: _, ...userResponse } = newUser;
-    res.status(201).json({ 
-      message: 'User created successfully',
-      user: userResponse 
+    // Regenerate session and log the new user in immediately
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error (signup):', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      // Store user ID in session
+      req.session.userId = newUser.id;
+
+      // Save session
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error (signup):', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        console.log("Signup session created:", req.session.id);
+
+        // Return user without password hash
+        const { passwordHash: _, ...userResponse } = newUser;
+        res.status(201).json({
+          message: 'User created successfully',
+          user: userResponse
+        });
+      });
     });
 
   } catch (error) {

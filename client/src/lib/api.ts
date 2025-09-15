@@ -1,5 +1,10 @@
 // API client configuration for authentication and CORS
-const API_BASE_URL = ''
+// Use localhost:3000 in dev (Codespaces), empty in prod (Replit proxy handles it)
+const API_BASE_URL =
+  import.meta.env.MODE === 'development'
+    ? 'https://upgraded-broccoli-rwrgrgqr6g2xxg9-3000.app.github.dev'
+    : ''
+
 
 export interface ApiResponse<T> {
   data?: T
