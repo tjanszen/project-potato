@@ -1,85 +1,76 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.featureFlagService = exports.FeatureFlagService = void 0;
+
 // Feature flag registry
 const featureFlags = {
     'ff.potato.no_drink_v1': {
         name: 'ff.potato.no_drink_v1',
-        enabled: false, // Default OFF as required - overridden by environment variable
+        enabled: false,
         description: 'Main feature flag for No Drink tracking functionality',
     },
     'ff.potato.runs_v2': {
         name: 'ff.potato.runs_v2',
-        enabled: false, // Default OFF as required - overridden by environment variable
+        enabled: false,
         description: 'V2 feature flag for runs and totals tracking functionality',
     },
     'ff.potato.totals_v2': {
         name: 'ff.potato.totals_v2',
-        enabled: false, // Default OFF as required - overridden by environment variable
+        enabled: false,
         description: 'V2 feature flag for totals aggregation and API functionality',
     },
     'ff.potato.dev_rate_limit': {
         name: 'ff.potato.dev_rate_limit',
-        enabled: false, // Default OFF as required - overridden by environment variable
+        enabled: false,
         description: 'Dev-friendly rate limiting with higher limits for testing',
     },
 };
+
 class FeatureFlagService {
     constructor() {
+        // Normalize env vars: accept "true", "True", "1"
+        const normalize = (val) => {
+            if (!val) return false;
+            return ['true', '1'].includes(val.toString().toLowerCase());
+        };
+
+        // Hydrate registry from environment variables
+        featureFlags['ff.potato.no_drink_v1'].enabled = normalize(process.env.FF_POTATO_NO_DRINK_V1);
+        featureFlags['ff.potato.runs_v2'].enabled = normalize(process.env.FF_POTATO_RUNS_V2);
+        featureFlags['ff.potato.totals_v2'].enabled = normalize(process.env.FF_POTATO_TOTALS_V2);
+        featureFlags['ff.potato.dev_rate_limit'].enabled = normalize(process.env.FF_POTATO_DEV_RATE_LIMIT);
+
         // Log feature flag status on startup
         this.logFlagStatus();
     }
+
     logFlagStatus() {
-        const flagValue = process.env.FF_POTATO_NO_DRINK_V1;
-        const runsV2FlagValue = process.env.FF_POTATO_RUNS_V2;
-        const totalsV2FlagValue = process.env.FF_POTATO_TOTALS_V2;
-        const devRateLimitFlagValue = process.env.FF_POTATO_DEV_RATE_LIMIT;
-        console.log(`[Feature Flag] FF_POTATO_NO_DRINK_V1 = ${flagValue || 'undefined'}`);
-        console.log(`[Feature Flag] FF_POTATO_RUNS_V2 = ${runsV2FlagValue || 'undefined'}`);
-        console.log(`[Feature Flag] FF_POTATO_TOTALS_V2 = ${totalsV2FlagValue || 'undefined'}`);
-        console.log(`[Feature Flag] FF_POTATO_DEV_RATE_LIMIT = ${devRateLimitFlagValue || 'undefined'}`);
+        for (const [key, flag] of Object.entries(featureFlags)) {
+            console.log(`[Feature Flag] ${key} = ${flag.enabled}`);
+        }
     }
-    // Get a specific feature flag
+
+    // ✅ Always return hydrated flag
     getFlag(flagName) {
         const baseFlag = featureFlags[flagName];
-        if (!baseFlag)
-            return null;
-        // For ff.potato.no_drink_v1, read from environment variable
-        if (flagName === 'ff.potato.no_drink_v1') {
-            const envValue = process.env.FF_POTATO_NO_DRINK_V1;
-            const enabled = envValue === 'true'; // Only 'true' string enables it
-            return Object.assign(Object.assign({}, baseFlag), { enabled });
-        }
-        // For ff.potato.runs_v2, read from environment variable
-        if (flagName === 'ff.potato.runs_v2') {
-            const envValue = process.env.FF_POTATO_RUNS_V2;
-            const enabled = envValue === 'true'; // Only 'true' string enables it
-            return Object.assign(Object.assign({}, baseFlag), { enabled });
-        }
-        // For ff.potato.totals_v2, read from environment variable
-        if (flagName === 'ff.potato.totals_v2') {
-            const envValue = process.env.FF_POTATO_TOTALS_V2;
-            const enabled = envValue === 'true'; // Only 'true' string enables it
-            return Object.assign(Object.assign({}, baseFlag), { enabled });
-        }
-        // For ff.potato.dev_rate_limit, read from environment variable
-        if (flagName === 'ff.potato.dev_rate_limit') {
-            const envValue = process.env.FF_POTATO_DEV_RATE_LIMIT;
-            const enabled = envValue === 'true'; // Only 'true' string enables it
-            return Object.assign(Object.assign({}, baseFlag), { enabled });
-        }
-        return baseFlag;
+        if (!baseFlag) return null;
+        return { ...baseFlag };
     }
-    // Check if a feature is enabled
+
     isEnabled(flagName) {
         const flag = this.getFlag(flagName);
         return flag ? flag.enabled : false;
     }
-    // Get all feature flags
+
     getAllFlags() {
-        return Object.assign({}, featureFlags);
+        return {
+            'ff.potato.no_drink_v1': this.getFlag('ff.potato.no_drink_v1'),
+            'ff.potato.runs_v2': this.getFlag('ff.potato.runs_v2'),
+            'ff.potato.totals_v2': this.getFlag('ff.potato.totals_v2'),
+            'ff.potato.dev_rate_limit': this.getFlag('ff.potato.dev_rate_limit'),
+        };
     }
-    // Toggle a feature flag (for testing/admin purposes)
+
     toggleFlag(flagName) {
         if (featureFlags[flagName]) {
             featureFlags[flagName].enabled = !featureFlags[flagName].enabled;
@@ -87,7 +78,7 @@ class FeatureFlagService {
         }
         return false;
     }
-    // Set a specific flag state
+
     setFlag(flagName, enabled) {
         if (featureFlags[flagName]) {
             featureFlags[flagName].enabled = enabled;
@@ -96,6 +87,6 @@ class FeatureFlagService {
         return false;
     }
 }
+
 exports.FeatureFlagService = FeatureFlagService;
-// Export singleton instance
 exports.featureFlagService = new FeatureFlagService();

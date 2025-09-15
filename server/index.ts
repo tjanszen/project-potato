@@ -1,11 +1,18 @@
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables from server/.env (always from project root)
+config({ path: path.resolve(process.cwd(), 'server/.env') });
+
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
-import { config } from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { featureFlagService } from './feature-flags.js';
 import { storage } from './storage.js';
 import { insertUserSchema } from '../shared/schema.js';
+
+
 
 // Extend express-session types
 declare module 'express-session' {
@@ -14,8 +21,6 @@ declare module 'express-session' {
   }
 }
 
-// Load environment variables
-config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -492,3 +497,10 @@ app.get('/health/runs', async (req, res) => {
 
 // Export the app for use as a module
 export default app;
+
+// Start the server only if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  });
+}
