@@ -85,7 +85,7 @@ export class ApiClient {
   }
 
   async toggleFeatureFlag(flag: string) {
-    return this.request(`/api/feature-flags/${flag}/toggle`, {
+    return this.request(`/api/admin/toggle-flag/${flag}`, {
       method: 'POST',
     })
   }
