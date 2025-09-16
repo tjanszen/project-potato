@@ -128,6 +128,39 @@ Keep onDayMarked?.() for calendar updates
 
 ✅ Deliverable: Drawer auto-closes on success, calendar refresh intact.
 
+**Replit Prompt**
+Goal: Implement Phase 3 of the auto_close_drawer plan — add drawer auto-close on success.  
+
+Do:
+- Modify `client/src/components/DayDrawer.tsx` success block:
+  - After the existing `onDayMarked?.()` call, invoke `onClose()`.
+- Ensure error handling is untouched (error toasts still show).
+- Preserve optimistic calendar updates and refresh logic.
+- Remove any leftover success toast code references if present.
+
+Post-Build Prep:
+- Run a fresh frontend build (`npm run build`) so updated code is available in Preview.
+- Ensure Preview is serving the new bundle.
+- Remind operator: perform a **hard refresh (Cmd+Shift+R / Ctrl+Shift+R)** in the Preview tab to bypass cached JS.
+
+Proof:
+- Test by marking a calendar day in Preview:
+  - ✅ Calendar updates with green dot.
+  - ✅ Drawer closes automatically after success.
+  - ✅ No success toast displayed.
+- DevTools Console log should show:
+  - `[MarkNoDrink] Before API call …`
+  - `[MarkNoDrink] Success - updating calendar & closing drawer`.
+- Sources tab in DevTools should show updated `DayDrawer.js` with `onClose()` invoked in success block.
+
+Error Handling (per protocol):
+- If critical build/runtime errors occur (TS errors, Vite build failure, server crash), STOP and summarize findings before making further changes.
+- Wait for operator approval before resuming.
+
+Scope Control:
+- No database/server logic changes allowed.
+- Only modify frontend UI state handling for drawer behavior.
+
 ---
 
 ## Phase 4: Integration Validation

@@ -26,6 +26,13 @@ Goal: <single outcome>
 Do:
 - <1–3 concrete steps for Replit agent>
 
+Post-Build Prep: (if prompts touch on frontend code)
+- Ensure the updated Vite bundle is served in Preview
+- If using static build: run `npm run build` and reload Preview
+- If using dev server: run `npm run dev` in foreground and expose port 5173
+- Remind operator: "Hard refresh (Cmd+Shift+R / Ctrl+Shift+R) in Preview tab to bypass cache"
+
+
 Proof:
 - Logs must include: "<token>"
 - GET /health returns 200 within <N> seconds

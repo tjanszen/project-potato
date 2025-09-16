@@ -170,10 +170,13 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           setLastUpdated(successResponse.data.updatedAt)
         }
         
-        console.log("[MarkNoDrink] Success - updating calendar");
+        console.log("[MarkNoDrink] Success - updating calendar & closing drawer");
         
         // Trigger calendar refresh - this will clear optimistic updates
         onDayMarked?.()
+        
+        // Auto-close drawer after successful marking
+        onClose()
       }
     } catch (error) {
       // Rollback optimistic update on network error
