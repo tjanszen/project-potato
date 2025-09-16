@@ -151,6 +151,7 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     onOptimisticMark?.(selectedDate)
 
     try {
+      console.log("[MarkNoDrink] Before API call", selectedDate);
       const response = await apiClient.markDay(selectedDate)
       
       if (response.error) {
@@ -169,6 +170,7 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           setLastUpdated(successResponse.data.updatedAt)
         }
         
+        console.log("[MarkNoDrink] Success - updating calendar & showing toast");
         showSuccess(
           'Day Marked Successfully!',
           `${formatSelectedDate(selectedDate)} marked as No Drink`
@@ -180,6 +182,7 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
     } catch (error) {
       // Rollback optimistic update on network error
       onOptimisticUnmark?.(selectedDate)
+      console.log("[MarkNoDrink] Error - showing error toast", error);
       showError(
         'Network Error',
         'Unable to connect to server. Please check your connection and try again.'
