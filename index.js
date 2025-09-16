@@ -217,18 +217,6 @@ app.use(helmet({
 // Rate limiting
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: 15 * 60 // 15 minutes in seconds
-  },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-// Dev-friendly rate limiting (higher limit for testing)
-const devGeneralLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per windowMs
   message: {
     error: 'Too many requests from this IP, please try again later.',
@@ -237,6 +225,8 @@ const devGeneralLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+
+console.log('Updated generalLimiter: 1000 requests per 15min');
 
 // Stricter rate limiting for auth endpoints
 const authLimiter = rateLimit({
@@ -250,18 +240,14 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Apply general rate limiting to all requests except /health (feature flag gated)
+// Apply general rate limiting to all requests except /health
 app.use((req, res, next) => {
   // Skip rate limiting for health endpoint
   if (req.path === '/health') {
     return next();
   }
   
-  if (featureFlagService.isEnabled('ff.potato.dev_rate_limit')) {
-    devGeneralLimiter(req, res, next);
-  } else {
-    generalLimiter(req, res, next);
-  }
+  generalLimiter(req, res, next);
 });
 
 // Correlation ID middleware (must be early in middleware stack)

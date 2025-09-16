@@ -25,7 +25,6 @@ Goal: <single outcome>
 
 Do:
 - <1–3 concrete steps for Replit agent>
-- Gate via feature flag: <FLAG_NAME>=off by default
 
 Proof:
 - Logs must include: "<token>"
