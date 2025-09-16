@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { apiClient } from './lib/api'
+
+interface FeatureFlag {
+  enabled: boolean
+}
 
 const FeatureFlagToggle = () => {
   const [flagStatus, setFlagStatus] = useState<boolean | null>(null)
@@ -8,8 +12,8 @@ const FeatureFlagToggle = () => {
   const checkFlagStatus = async () => {
     try {
       const response = await apiClient.getFeatureFlag('ff.potato.no_drink_v1')
-      if (!response.error) {
-        setFlagStatus(response.data.enabled)
+      if (!response.error && response.data) {
+        setFlagStatus((response.data as FeatureFlag).enabled)
       }
     } catch (error) {
       console.error('Failed to check feature flag:', error)
@@ -20,8 +24,8 @@ const FeatureFlagToggle = () => {
     setLoading(true)
     try {
       const response = await apiClient.toggleFeatureFlag('ff.potato.no_drink_v1')
-      if (!response.error) {
-        setFlagStatus(response.data.enabled)
+      if (!response.error && response.data) {
+        setFlagStatus((response.data as FeatureFlag).enabled)
       }
     } catch (error) {
       console.error('Failed to toggle feature flag:', error)

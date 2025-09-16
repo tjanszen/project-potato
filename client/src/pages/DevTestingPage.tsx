@@ -1,4 +1,3 @@
-import React from 'react'
 import FeatureFlagToggle from '../FeatureFlagToggle'
 import { UserInfo } from '../components/UserInfo'
 import { useAuth } from '../contexts/AuthContext'
