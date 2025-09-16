@@ -33,19 +33,39 @@ app.use(cors({
 app.use(express.json());
 // Trust proxy (needed for Codespaces / GitHub forwarded ports so cookies work)
 app.set('trust proxy', 1);
+// Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'none',
-  domain: process.env.NODE_ENV === 'production' ? undefined : '.app.github.dev',
-  maxAge: 24 * 60 * 60 * 1000
-}
-
+    httpOnly: true,
+    secure: true, // always true on Codespaces (it's HTTPS)
+    sameSite: 'none',
+    maxAge: 24 * 60 * 60 * 1000,
+  },
 }));
+
+
+
+
+// Patch response cookies to add "Partitioned" (for Codespaces)
+app.use((req, res, next) => {
+  const originalSetHeader = res.setHeader;
+  res.setHeader = function (name: string, value: any) {
+    if (name.toLowerCase() === 'set-cookie') {
+      let cookies = Array.isArray(value) ? value : [value];
+      cookies = cookies.map(c =>
+        c.includes('connect.sid') && !c.includes('Partitioned')
+          ? c + '; Partitioned'
+          : c
+      );
+      return originalSetHeader.call(this, name, cookies);
+    }
+    return originalSetHeader.apply(this, arguments as any);
+  };
+  next();
+});
 
 // Debug log: confirm cookie/session config at runtime
 console.log("SESSION COOKIE CONFIG:", {
