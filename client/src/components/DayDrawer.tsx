@@ -28,7 +28,7 @@ interface DayMarkResponse {
 const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, onDayMarked, onOptimisticMark, onOptimisticUnmark }) => {
   const [isMarking, setIsMarking] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
-  const { showSuccess, showError } = useToast()
+  const { showError } = useToast()
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastClickTimeRef = useRef<number>(0)
   const drawerRef = useRef<HTMLDivElement>(null)
@@ -170,11 +170,7 @@ const DayDrawer: React.FC<DayDrawerProps> = ({ selectedDate, isOpen, onClose, on
           setLastUpdated(successResponse.data.updatedAt)
         }
         
-        console.log("[MarkNoDrink] Success - updating calendar & showing toast");
-        showSuccess(
-          'Day Marked Successfully!',
-          `${formatSelectedDate(selectedDate)} marked as No Drink`
-        )
+        console.log("[MarkNoDrink] Success - updating calendar");
         
         // Trigger calendar refresh - this will clear optimistic updates
         onDayMarked?.()
