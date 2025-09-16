@@ -343,22 +343,29 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// User profile endpoint (Phase 1D)
+// User profile endpoint (Phase 1D with debug logging)
 app.get('/api/me', requireAuthentication, async (req, res) => {
+  console.log("🍪 Headers:", req.headers.cookie);
+  console.log("🆔 SessionID:", req.sessionID);
+  console.log("📦 Session object:", req.session);
+
   try {
     const user = await storage.getUserById(req.session.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Return user data without password hash
     const { passwordHash: _, ...userProfile } = user;
+    console.log("✅ Authenticated user:", user.id);
+
     res.json({ user: userProfile });
   } catch (error) {
     console.error('Profile fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Logout endpoint (Phase 4A) - Properly destroy session
 app.post('/api/auth/logout', requireAuthentication, async (req, res) => {
