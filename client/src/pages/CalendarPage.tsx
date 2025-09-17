@@ -50,7 +50,6 @@ export function CalendarPage() {
 
   console.log("[Phase1] Header removed, emoji only");
   console.log("Footer rendered");
-  console.log("Vite allowedHosts set to true (TEMP FIX)");
 
   return (
     <div style={{ 

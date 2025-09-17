@@ -8,8 +8,6 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
-    // TEMP FIX (guideline exception): added allowedHosts:true to enable Preview access
-    allowedHosts: true,
     // Proxy API requests to backend during development
     proxy: {
       '/api': {
