@@ -50,3 +50,51 @@ author = 44564630
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "echo \"Server health check completed\" && curl -s http://localhost:3000/health || echo \"Server not running\""
+
+[[workflows.workflow]]
+name = "Start Frontend"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client && npm run dev"
+
+[[workflows.workflow]]
+name = "Start Backend"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow]]
+name = "Full Stack Dev"
+mode = "parallel"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Backend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Frontend"
+
+[[workflows.workflow]]
+name = "Production Build"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Frontend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Backend"
