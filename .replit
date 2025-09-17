@@ -10,7 +10,7 @@ run = "node index.js"
 build = ["sh", "-c", "npm install"]
 
 [[ports]]
-localPort = 3000
+localPort = 5173
 externalPort = 80
 
 [[ports]]
@@ -30,11 +30,7 @@ localPort = 5000
 externalPort = 5000
 
 [[ports]]
-localPort = 5173
-externalPort = 5173
-
-[[ports]]
-localPort = 5174
+localPort = 3000
 externalPort = 3000
 
 [agent]
