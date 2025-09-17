@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'wouter'
 import { useQueryClient } from '@tanstack/react-query'
 import CalendarGrid from '../components/CalendarGrid'
 import DayDrawer from '../components/DayDrawer'
-import { UserInfo } from '../components/UserInfo'
 import { TotalsPanel } from '../components/TotalsPanel'
 
 export function CalendarPage() {
@@ -50,6 +48,8 @@ export function CalendarPage() {
     handleDayMarked() // Trigger refresh
   }
 
+  console.log("[Phase1] Header removed, emoji only");
+
   return (
     <div style={{ 
       padding: '20px', 
@@ -57,28 +57,12 @@ export function CalendarPage() {
       margin: '0 auto',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '30px'
-      }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#333' }}>
-          🥔 Potato No Drink Tracker
-        </h1>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <UserInfo />
-          <Link 
-            href="/dev" 
-            style={{
-              color: '#666', 
-              textDecoration: 'underline'
-            }}
-          >
-            Dev Tools
-          </Link>
-        </nav>
-      </header>
+      {/* Standalone Potato Emoji */}
+      <div style={{ 
+        fontSize: '28px', 
+        marginBottom: '30px', 
+        textAlign: 'left'
+      }}>🥔</div>
       
       {/* Totals Panel - Phase 7C-1 */}
       <div style={{ marginBottom: '30px' }}>
