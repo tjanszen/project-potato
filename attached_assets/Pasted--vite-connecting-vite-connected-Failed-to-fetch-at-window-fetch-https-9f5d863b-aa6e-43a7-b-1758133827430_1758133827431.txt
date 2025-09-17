@@ -1,0 +1,35 @@
+[vite] connecting...
+[vite] connected.
+Failed to fetch
+at window.fetch (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:218642)
+at Object.apply (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/injected.js:278:39)
+at ApiClient.request (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:19:30)
+at ApiClient.getProfile (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:49:17)
+at checkAuth (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/contexts/AuthContext.tsx:37:40)
+at https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/contexts/AuthContext.tsx:89:5
+at Object.react_stack_bottom_frame (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:17484:20)
+at runWithFiberInDEV (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:1483:72)
+at commitHookEffectListMount (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:8458:122)
+at commitHookPassiveMountEffects (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:8516:60)
+Failed to fetch
+at window.fetch (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:218642)
+at Object.apply (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/injected.js:278:39)
+at ApiClient.request (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:19:30)
+at ApiClient.getProfile (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:49:17)
+at checkAuth (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/contexts/AuthContext.tsx:37:40)
+at https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/contexts/AuthContext.tsx:89:5
+at Object.react_stack_bottom_frame (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:17484:20)
+at runWithFiberInDEV (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:1483:72)
+at commitHookEffectListMount (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:8458:122)
+at commitHookPassiveMountEffects (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:8516:60)
+Failed to fetch
+at window.fetch (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:218642)
+at Object.apply (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/__replco/static/devtools/injected.js:278:39)
+at ApiClient.request (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:19:30)
+at ApiClient.login (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/lib/api.ts:43:17)
+at login (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/contexts/AuthContext.tsx:51:40)
+at handleSubmit (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/src/components/LoginForm.tsx:51:26)
+at executeDispatch (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:11734:11)
+at runWithFiberInDEV (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:1483:72)
+at processDispatchQueue (https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:11770:37)
+at https://9f5d863b-aa6e-43a7-bfe9-2d7dec1c35b0-00-1egghl4fhf1tn.kirk.replit.dev:3000/node_modules/.vite/deps/react-dom_client.js?v=71edc614:12180:11
