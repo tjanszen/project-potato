@@ -24,41 +24,38 @@
 Goal: <single outcome>
 
 Do:
-- <1–3 concrete steps for Replit agent>
+- <1–X concrete steps for Replit agent>
 
 Post-Build Prep: (if prompts touch on frontend code)
-- Ensure the updated Vite bundle is served in Preview
-- If using static build: run `npm run build` and reload Preview
-- If using dev server: run `npm run dev` in foreground and expose port 5173
-- Remind operator: "Hard refresh (Cmd+Shift+R / Ctrl+Shift+R) in Preview tab to bypass cache"
-
+- Preferred: use Replit workflow via restart_workflow("<WorkflowName>")
+  • restart_workflow("Start Frontend") → frontend-only changes
+  • restart_workflow("Start Backend") → backend-only changes
+  • restart_workflow("Full Stack Dev") → combined work
+  • restart_workflow("Health Check") → quick diagnostics
+- Fallback (if workflows unavailable):
+  • If static build: run `npm run build` and reload Preview
+  • If dev server: run `npm run dev` in foreground and expose port 5173
+- Operator reminder: "Hard refresh (Cmd+Shift+R / Ctrl+Shift+R) in Preview tab to bypass cache"
 
 Proof:
-- Logs must include: "<token>"
-- GET /health returns 200 within <N> seconds
-- SQL: <short query or table check>
+- Logs: must include "<token>" (if relevant)
+- GET /health returns 200 within <N> seconds (backend check)
+- Frontend: Visual confirmation in Preview tab that "<UI element>" appears in correct position
+- SQL: <short query or table check> (if data layer touched)
 
-Error Handling (per Mid-Phase Error Handling Protocol):
+Error Handling (Mid-Phase Protocol):
 - If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
   → STOP immediately
   → Summarize findings + recommend next steps
   → WAIT for operator approval before resuming  
 
-Scope Control (per Scope Deviation Protocol):
-- If proposed work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
   → STOP immediately
   → Summarize deviation vs. agreed scope
   → Provide pros/cons of addressing now vs. deferring
   → WAIT for explicit operator approval before resuming
 
-Server Persistence (Replit Environments):
-- ❌ Do not attempt: One-shot shell commands combining server startup, login, API test, log capture, and cleanup.  
-- ✅ Do instead:  
-  - Run the server in foreground for investigation (`DEBUG=* node index.js`).  
-  - Use Reserved VM Deployments/Workflows for persistent execution.  
-  - Capture logs directly via foreground mode.  
-- Reason: Replit environments kill background processes. One-shot chaining does not solve this; it only masks failures and produces misleading logs.  
-- Lesson: Always run servers via foreground mode or Reserved VM. Never attempt chained background execution for API tests.
 ~~~
 
 ---

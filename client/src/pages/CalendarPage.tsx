@@ -49,6 +49,7 @@ export function CalendarPage() {
   }
 
   console.log("[Phase1] Header removed, emoji only");
+  console.log("Footer rendered");
 
   return (
     <div style={{ 
@@ -75,6 +76,12 @@ export function CalendarPage() {
         refreshTrigger={refreshTrigger}
         optimisticMarkedDates={optimisticMarkedDates}
       />
+      
+      {/* Footer - Phase 2 */}
+      <footer className="flex justify-between w-full p-2 border-t">
+        <div>User Controls Here</div>
+        <div>Dev Tools Here</div>
+      </footer>
       
       {/* Day Drawer Component */}
       <DayDrawer 
