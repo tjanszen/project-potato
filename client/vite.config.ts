@@ -8,6 +8,8 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
+    // TEMP FIX: allow all hosts to unblock Preview in Replit (guideline exception)
+    allowedHosts: true,
     // Proxy API requests to backend during development
     proxy: {
       '/api': {
