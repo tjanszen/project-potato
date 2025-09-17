@@ -1,0 +1,36 @@
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotLoading feature flags...
+[Feature Flag] ff.potato.no_drink_v1 = true
+[Feature Flag] ff.potato.runs_v2 = true
+[Feature Flag] ff.potato.totals_v2 = true
+[Feature Flag] ff.potato.dev_rate_limit = false
+✅ Feature flags loaded
+Loading storage...
+✅ Storage loaded
+Loading schema...
+✅ Schema loaded
+Loading totals aggregation...
+✅ Totals aggregation loaded
+Loading totals invalidation...
+✅ Totals invalidation loaded
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+ℹ️ Starting application in development mode {}
+🚀 PORT Configuration:
+  - process.env.PORT: undefined
+  - Using PORT: 3000
+Updated generalLimiter: 1000 requests per 15min
+Server listening on port 3000
+Express server initialized
+ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false (default). This could indicate a misconfiguration which would prevent express-rate-limit from accurately identifying users. See https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/ for more information.
+    at Object.xForwardedForHeader (/home/runner/workspace/node_modules/express-rate-limit/dist/index.cjs:364:13)
+    at wrappedValidations.<computed> [as xForwardedForHeader] (/home/runner/workspace/node_modules/express-rate-limit/dist/index.cjs:606:22)
+    at Object.keyGenerator (/home/runner/workspace/node_modules/express-rate-limit/dist/index.cjs:708:20)
+    at /home/runner/workspace/node_modules/express-rate-limit/dist/index.cjs:766:32
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /home/runner/workspace/node_modules/express-rate-limit/dist/index.cjs:747:5 {
+  code: 'ERR_ERL_UNEXPECTED_X_FORWARDED_FOR',
+  help: 'https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/'
+}
+📡 GET / 304 4ms [5ce293d4-0c9d-48ab-92d8-be148921c38c]
+📡 GET /assets/index-mcAsMlT4.css 304 1ms [0cc9e148-8db6-487e-8ccb-bd73484c3434]
+📡 GET /assets/index-Ey6jQbyf.js 304 1ms [56b2ad11-23a0-4062-acc8-7bf9bb377f1d]
+📡 GET /api/me 401 3ms [c436f798-b08f-43dc-bf55-f6bfb2ad9cd8]

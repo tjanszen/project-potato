@@ -39,3 +39,14 @@ externalPort = 3000
 
 [agent]
 integrations = ["javascript_database==1.0.0"]
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Health Check"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"Server health check completed\" && curl -s http://localhost:3000/health || echo \"Server not running\""
