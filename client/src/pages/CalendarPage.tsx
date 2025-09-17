@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { Link } from 'wouter'
 import CalendarGrid from '../components/CalendarGrid'
 import DayDrawer from '../components/DayDrawer'
 import { TotalsPanel } from '../components/TotalsPanel'
+import { UserInfo } from '../components/UserInfo'
 
 export function CalendarPage() {
   const queryClient = useQueryClient()
@@ -50,6 +52,7 @@ export function CalendarPage() {
 
   console.log("[Phase1] Header removed, emoji only");
   console.log("Footer rendered");
+  console.log("Phase 3 footer controls rendered");
 
   return (
     <div style={{ 
@@ -77,10 +80,16 @@ export function CalendarPage() {
         optimisticMarkedDates={optimisticMarkedDates}
       />
       
-      {/* Footer - Phase 2 */}
-      <footer className="flex justify-between w-full p-2 border-t">
-        <div>User Controls Here</div>
-        <div>Dev Tools Here</div>
+      {/* Footer - Phase 3 */}
+      <footer className="flex justify-between items-center w-full p-2 border-t">
+        <UserInfo />
+        <Link 
+          href="/dev" 
+          data-testid="link-dev-tools"
+          className="text-blue-600 hover:text-blue-800 underline"
+        >
+          Dev Tools
+        </Link>
       </footer>
       
       {/* Day Drawer Component */}
