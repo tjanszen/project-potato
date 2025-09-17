@@ -15,6 +15,8 @@ interface FeatureFlag {
 }
 
 export function TotalsPanel() {
+  console.log("TotalsPanel updated: Longest Run 🔥");
+  
   // Check both required feature flags
   const { 
     data: runsV2Flag, 
@@ -230,7 +232,7 @@ export function TotalsPanel() {
             color: '#856404',
             fontWeight: '500'
           }}>
-            Longest Run
+            Longest Run 🔥
           </div>
           <div style={{ 
             fontSize: '10px', 
