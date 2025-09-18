@@ -26,22 +26,21 @@ Goal: <single outcome>
 Do:
 - <1–X concrete steps for Replit agent>
 
-Post-Build Prep: (if prompts touch on frontend code)
-- Preferred: use Replit workflow via restart_workflow("<WorkflowName>")
-  • restart_workflow("Start Frontend") → frontend-only changes
-  • restart_workflow("Start Backend") → backend-only changes
-  • restart_workflow("Full Stack Dev") → combined work
-  • restart_workflow("Health Check") → quick diagnostics
-- Fallback (if workflows unavailable):
-  • If static build: run `npm run build` and reload Preview
-  • If dev server: run `npm run dev` in foreground and expose port 5173
-- Operator reminder: "Hard refresh (Cmd+Shift+R / Ctrl+Shift+R) in Preview tab to bypass cache"
-
 Proof:
 - Logs: must include "<token>" (if relevant)
 - GET /health returns 200 within <N> seconds (backend check)
 - Frontend: Visual confirmation in Preview tab that "<UI element>" appears in correct position
 - SQL: <short query or table check> (if data layer touched)
+
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+  → Use this for **all testing scenarios** after code modifications
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+  → Use when validating final changes in a built frontend environment
+- Never use individual frontend-only restarts (causes "Failed to fetch" errors)
 
 Error Handling (Mid-Phase Protocol):
 - If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):

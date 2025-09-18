@@ -29,6 +29,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   // Client-side validation
   const validateForm = (): boolean => {
@@ -125,7 +126,8 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
               padding: '12px',
               border: `1px solid ${errors.email ? '#dc3545' : '#ddd'}`,
               borderRadius: '6px',
-              fontSize: '16px'
+              fontSize: '16px',
+              boxSizing: 'border-box'
             }}
           />
           {errors.email && (
@@ -139,20 +141,49 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Password:
           </label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => handleInputChange('password', e.target.value)}
-            placeholder="Enter password (min 6 characters)"
-            data-testid="input-signup-password"
-            style={{
-              width: '100%',
-              padding: '12px',
-              border: `1px solid ${errors.password ? '#dc3545' : '#ddd'}`,
-              borderRadius: '6px',
-              fontSize: '16px'
-            }}
-          />
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            width: '100%',
+            border: `1px solid ${errors.password ? '#dc3545' : '#ddd'}`,
+            borderRadius: '6px',
+            boxSizing: 'border-box'
+          }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => handleInputChange('password', e.target.value)}
+              placeholder="Enter password (min 6 characters)"
+              data-testid="input-signup-password"
+              style={{
+                flex: '1',
+                padding: '12px',
+                border: 'none',
+                outline: 'none',
+                fontSize: '16px',
+                backgroundColor: 'transparent',
+                borderRadius: '6px 0 0 6px'
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              data-testid="button-toggle-password-signup"
+              style={{
+                padding: '12px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#666',
+                fontWeight: 'normal',
+                borderRadius: '0 6px 6px 0',
+                flexShrink: 0
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {errors.password && (
             <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
               {errors.password}
