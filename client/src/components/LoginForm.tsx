@@ -26,6 +26,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   // Client-side validation
   const validateForm = (): boolean => {
@@ -115,20 +116,42 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Password:
           </label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => handleInputChange('password', e.target.value)}
-            placeholder="Enter your password"
-            data-testid="input-login-password"
-            style={{
-              width: '100%',
-              padding: '12px',
-              border: `1px solid ${errors.password ? '#dc3545' : '#ddd'}`,
-              borderRadius: '6px',
-              fontSize: '16px'
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => handleInputChange('password', e.target.value)}
+              placeholder="Enter your password"
+              data-testid="input-login-password"
+              style={{
+                width: '100%',
+                padding: '12px',
+                paddingRight: '50px',
+                border: `1px solid ${errors.password ? '#dc3545' : '#ddd'}`,
+                borderRadius: '6px',
+                fontSize: '16px'
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              data-testid="button-toggle-password"
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#666',
+                fontWeight: 'normal'
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {errors.password && (
             <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
               {errors.password}
