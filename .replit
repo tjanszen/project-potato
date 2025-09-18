@@ -94,3 +94,21 @@ args = "cd client && npm run build"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node index.js"
+
+[[workflows.workflow]]
+name = "Start Backend"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow]]
+name = "Start Frontend"
+mode = "sequential"
+author = 44564630
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd client && npm run dev"
