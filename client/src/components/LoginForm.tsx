@@ -116,7 +116,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Password:
           </label>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
             <input
               type={showPassword ? "text" : "password"}
               value={formData.password}
@@ -126,10 +126,10 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
               style={{
                 width: '100%',
                 padding: '12px',
-                paddingRight: '50px',
                 border: `1px solid ${errors.password ? '#dc3545' : '#ddd'}`,
                 borderRadius: '6px',
-                fontSize: '16px'
+                fontSize: '16px',
+                boxSizing: 'border-box'
               }}
             />
             <button
@@ -138,7 +138,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
               data-testid="button-toggle-password"
               style={{
                 position: 'absolute',
-                right: '12px',
+                right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'none',
@@ -146,7 +146,9 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 cursor: 'pointer',
                 fontSize: '12px',
                 color: '#666',
-                fontWeight: 'normal'
+                fontWeight: 'normal',
+                zIndex: 1,
+                pointerEvents: 'auto'
               }}
             >
               {showPassword ? 'Hide' : 'Show'}
