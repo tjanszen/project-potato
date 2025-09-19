@@ -946,8 +946,17 @@ app.get('/api/v2/totals', requireFeatureFlag('ff.potato.totals_v2'), requireAuth
       console.log(`[Totals] WARNING: V1 current_run=${v1Totals.currentRun}, V3 current_run=${v3Totals.currentRun} for user ${req.session.userId}`);
     }
     
-    // Always use V1 results for API response (no cutover yet)
-    const totals = v1Totals;
+    // Check V3 feature flag to determine which results to return
+    const useV3Results = featureFlagService.isEnabled('ff.potato.totals_v3');
+    let totals;
+    
+    if (useV3Results) {
+      console.log(`[Totals] Returning V3 results (flag enabled) for user ${req.session.userId}`);
+      totals = v3Totals;
+    } else {
+      console.log(`[Totals] Returning V1 results (flag disabled) for user ${req.session.userId}`);
+      totals = v1Totals;
+    }
     
     // Transform to match API contract
     const response = {
