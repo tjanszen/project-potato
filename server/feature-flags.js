@@ -24,6 +24,11 @@ const featureFlags = {
         enabled: false,
         description: 'Dev-friendly rate limiting with higher limits for testing',
     },
+    'ff.potato.totals_v3': {
+        name: 'ff.potato.totals_v3',
+        enabled: false,
+        description: 'V3 feature flag for totals calculation with MAX(end_date) logic',
+    },
 };
 
 class FeatureFlagService {
@@ -39,6 +44,7 @@ class FeatureFlagService {
         featureFlags['ff.potato.runs_v2'].enabled = normalize(process.env.FF_POTATO_RUNS_V2);
         featureFlags['ff.potato.totals_v2'].enabled = normalize(process.env.FF_POTATO_TOTALS_V2);
         featureFlags['ff.potato.dev_rate_limit'].enabled = normalize(process.env.FF_POTATO_DEV_RATE_LIMIT);
+        featureFlags['ff.potato.totals_v3'].enabled = normalize(process.env.FF_POTATO_TOTALS_V3);
 
         // Log feature flag status on startup
         this.logFlagStatus();
@@ -68,6 +74,7 @@ class FeatureFlagService {
             'ff.potato.runs_v2': this.getFlag('ff.potato.runs_v2'),
             'ff.potato.totals_v2': this.getFlag('ff.potato.totals_v2'),
             'ff.potato.dev_rate_limit': this.getFlag('ff.potato.dev_rate_limit'),
+            'ff.potato.totals_v3': this.getFlag('ff.potato.totals_v3'),
         };
     }
 

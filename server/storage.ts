@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { users, dayMarks, clickEvents, runs, type User, type NewUser, type DayMark, type NewDayMark, type ClickEvent, type NewClickEvent, type Run, type NewRun } from '../shared/schema.js';
 import { eq, and, sql, or, gte, lte, lt, gt, desc, asc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { featureFlagService } from './feature-flags.js';
 
 // Database connection
 const pool = new Pool({
@@ -2399,6 +2400,18 @@ export class PostgresStorage implements IStorage {
   }
 
   async getTotalsForUser(userId: string): Promise<{ totalDays: number; currentRunDays: number; longestRunDays: number; totalRuns: number; avgRunLength: number }> {
+    // Phase A1: Check V3 feature flag and log which logic is being used
+    const isV3Enabled = featureFlagService.isEnabled('ff.potato.totals_v3');
+    
+    if (isV3Enabled) {
+      console.log(`[Totals] Using V3 logic (flag enabled) for user ${userId}`);
+      // V3 logic will be implemented in later phases
+      // For now, continue using V1 logic (calculateV2UserStats = current V1)
+    } else {
+      console.log(`[Totals] Using V1 logic (flag disabled) for user ${userId}`);
+    }
+    
+    // Continue using current calculation logic (V1) regardless of flag
     const stats = await this.calculateV2UserStats(userId);
     
     return {
