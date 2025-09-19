@@ -928,20 +928,26 @@ app.get('/api/v2/totals', requireFeatureFlag('ff.potato.totals_v2'), requireAuth
       throw new Error('Database pool not available');
     }
 
-    // Check V3 feature flag for totals calculation path
-    const useV3Logic = featureFlagService.isEnabled('ff.potato.totals_v3');
+    // Run both V1 and V3 calculations for comparison logging
+    console.log('[Totals] Running dual V1 and V3 calculations for comparison');
     
-    let totals;
-    if (useV3Logic) {
-      console.log('[Totals] Using V3 logic (flag enabled)');
-      // For Phase A2.1: Call V3 stub for logging, but still use V1 for response
-      await totalsAggregation.calculateRealTimeTotalsV3(dbPool, req.session.userId);
-      // TODO: Replace with actual V3 logic in future phases
-      totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
-    } else {
-      console.log('[Totals] Using V1 logic (flag disabled)');
-      totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    // Always run V1 calculation
+    const v1Totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    
+    // Always run V3 calculation  
+    const v3Totals = await totalsAggregation.calculateRealTimeTotalsV3(dbPool, req.session.userId);
+    
+    // Log both results for comparison
+    console.log(`[Totals] V1 Results: totalDays=${v1Totals.totalDays}, longestRun=${v1Totals.longestRun}, currentRun=${v1Totals.currentRun}`);
+    console.log(`[Totals] V3 Results: totalDays=${v3Totals.totalDays}, longestRun=${v3Totals.longestRun}, currentRun=${v3Totals.currentRun}`);
+    
+    // Check for differences and log warnings
+    if (v1Totals.currentRun !== v3Totals.currentRun) {
+      console.log(`[Totals] WARNING: V1 current_run=${v1Totals.currentRun}, V3 current_run=${v3Totals.currentRun} for user ${req.session.userId}`);
     }
+    
+    // Always use V1 results for API response (no cutover yet)
+    const totals = v1Totals;
     
     // Transform to match API contract
     const response = {
