@@ -1,4 +1,4 @@
-# Totals v2
+# Totals v3.0
 
 ## 📋 Phase Structure Overview
 Breaking down the Dynamic Current Run calculation into granular, safe sub-phases:
@@ -11,7 +11,7 @@ Breaking down the Dynamic Current Run calculation into granular, safe sub-phases
 
 ## 🎯 Phase A1: Feature Flag Infrastructure
 **Scope:**  
-Add `TOTALS_V2_ENABLED` feature flag infrastructure without changing any calculation logic.
+Add `FF_POTATO_TOTALS_V3` feature flag infrastructure without changing any calculation logic.
 
 **Changes Required:**  
 - Add environment variable checking capability  
@@ -34,7 +34,7 @@ Add `TOTALS_V2_ENABLED` feature flag infrastructure without changing any calcula
 
 ---
 
-## 🎯 Phase A2.1: V2 Query Stub
+## 🎯 Phase A2.1: V3 Query Stub
 **Scope:**  
 Add a placeholder function for V2 logic that doesn’t execute queries yet, just logs that it would run.
 
@@ -113,7 +113,7 @@ Add logging to compare V1 and V2 results, with warnings when they differ.
 
 ## 🎯 Phase A3: Feature Flag Activation
 **Scope:**  
-Enable `TOTALS_V2_ENABLED=true` to return V2 results in API, keeping V1 as default.
+Enable `FF_POTATO_TOTALS_V3=true` to return V2 results in API, keeping V1 as default.
 
 **Changes Required:**  
 - Add conditional logic for V2 return  
@@ -133,7 +133,7 @@ Enable `TOTALS_V2_ENABLED=true` to return V2 results in API, keeping V1 as defau
 - ❌ Fail if flag doesn’t work or wrong logic activated  
 
 **Rollback Strategy:**  
-- Set `TOTALS_V2_ENABLED=false`  
+- Set `FF_POTATO_TOTALS_V3=false`  
 - Or revert to A2.3 state  
 
 ---
@@ -143,7 +143,7 @@ Enable `TOTALS_V2_ENABLED=true` to return V2 results in API, keeping V1 as defau
 Enable V2 logic in production-like testing to validate correctness across multiple users and scenarios.
 
 **Changes Required:**  
-- Set `TOTALS_V2_ENABLED=true` in environment  
+- Set `FF_POTATO_TOTALS_V3=true` in environment  
 - Monitor logs for errors or unexpected values  
 - Test across multiple user patterns  
 
@@ -158,7 +158,7 @@ Enable V2 logic in production-like testing to validate correctness across multip
 - ❌ Fail if API errors or user confusion  
 
 **Rollback Strategy:**  
-- Set `TOTALS_V2_ENABLED=false`  
+- Set `FF_POTATO_TOTALS_V3=false`  
 
 ---
 
@@ -307,3 +307,4 @@ Based on this live evidence:
 
 This live system evidence shows that:  
 **Current Run = day_count of whichever run has active = true, independent of recency.**
+ 
