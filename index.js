@@ -928,8 +928,20 @@ app.get('/api/v2/totals', requireFeatureFlag('ff.potato.totals_v2'), requireAuth
       throw new Error('Database pool not available');
     }
 
-    // Use real-time totals calculation from Phase 7A-2
-    const totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    // Check V3 feature flag for totals calculation path
+    const useV3Logic = featureFlagService.isEnabled('ff.potato.totals_v3');
+    
+    let totals;
+    if (useV3Logic) {
+      console.log('[Totals] Using V3 logic (flag enabled)');
+      // For Phase A2.1: Call V3 stub for logging, but still use V1 for response
+      await totalsAggregation.calculateRealTimeTotalsV3(dbPool, req.session.userId);
+      // TODO: Replace with actual V3 logic in future phases
+      totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    } else {
+      console.log('[Totals] Using V1 logic (flag disabled)');
+      totals = await totalsAggregation.calculateRealTimeTotals(dbPool, req.session.userId);
+    }
     
     // Transform to match API contract
     const response = {

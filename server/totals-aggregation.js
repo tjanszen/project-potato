@@ -253,6 +253,23 @@ async function logReconciliation(db, logEntry) {
 }
 
 /**
+ * Calculate real-time totals using V3 logic (MAX(end_date) approach) - STUB VERSION
+ * @param {Object} db - Database connection
+ * @param {string} userId - User ID to calculate totals for
+ * @returns {Promise<Object>} Real-time totals { totalDays, longestRun, currentRun }
+ */
+async function calculateRealTimeTotalsV3(db, userId) {
+  console.log(`[Totals V3] Stub function called for user ${userId}`);
+  
+  // STUB: Return placeholder values - actual V3 logic will be implemented in future phases
+  return {
+    totalDays: 0,
+    longestRun: 0,
+    currentRun: 0
+  };
+}
+
+/**
  * Bulk reconciliation job for multiple users
  * @param {Object} db - Database connection
  * @param {Array} userIds - Array of user IDs to reconcile (optional - if empty, reconciles all)
@@ -329,6 +346,7 @@ async function bulkReconciliation(db, userIds = [], yearMonth = null) {
 
 module.exports = {
   calculateRealTimeTotals,
+  calculateRealTimeTotalsV3,
   updateMonthlyAggregates,
   reconcileUserMonth,
   bulkReconciliation,
