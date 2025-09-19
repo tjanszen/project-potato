@@ -244,3 +244,66 @@ Remove feature flag infrastructure completely, making V2 permanent.
 - C2: Remove flag infrastructure entirely  
 
 Each sub-phase builds incrementally with clear verification points and rollback options.
+
+## 📑 Appendix: Live System "Current Run" Verification
+
+### ✅ Verification Details for User `runs@me.com`
+**User ID:** `5b966240-5564-4347-b576-b5d77c0045ef`  
+
+---
+
+### 🗃️ Raw SQL Query Results from Runs Table
+
+    run_id                                  start_date   end_date                 day_count  active
+    e6a51ea1-5144-4b1a-b9c0-a53357dedce5    2025-09-07   2025-09-08 00:00:00      2          t
+    f61a0614-d6db-4696-8b83-fbeae74fd094    2025-09-16   2025-09-18 00:00:00      3          f
+
+---
+
+### 📊 Raw JSON Response from Totals API
+
+    {
+      "total_days": 5,
+      "longest_run": 3,
+      "current_run": 2
+    }
+
+---
+
+### 🔍 Evidence-Based Analysis
+
+**How the Values Map:**
+- ✅ `current_run = 2`  
+  - Source: Run with `active = true` has `day_count = 2`  
+  - Active Run: Sept 7–8 (2 days, active = t)  
+  - Logic: `current_run` = day_count of the single run where `active = true`
+
+- ✅ `longest_run = 3`  
+  - Source: Maximum `day_count` across all runs = 3  
+  - Longest Run: Sept 16–18 (3 days)  
+  - Logic: `longest_run` = MAX(day_count) from all runs
+
+- ✅ `total_days = 5`  
+  - Source: Sum of all `day_count` values = 2 + 3 = 5  
+  - Logic: `total_days` = SUM(day_count) from all runs  
+
+---
+
+### 🤔 Key Finding: Active Status vs. Recency
+
+**Surprising Evidence:**
+- The older run (Sept 7–8) has `active = true`  
+- The more recent run (Sept 16–18) has `active = false`  
+- This proves: the live system’s `current_run` is determined by **which run has `active = true` in the database**, not necessarily the most recent run or the run ending on today’s date.  
+
+---
+
+### 📋 Plain-Language Explanation
+
+Based on this live evidence:  
+- `current_run = 2` because there is exactly one run with `active = true` (the Sept 7–8 run with 2 days).  
+- The system does **not** automatically use the most recent run — even though Sept 16–18 is more recent (3 days), it has `active = false` so it does not count as the current run.  
+- The **active flag is the definitive controller**: whichever run has `active = true` determines `current_run`, regardless of dates.  
+
+This live system evidence shows that:  
+**Current Run = day_count of whichever run has active = true, independent of recency.**
