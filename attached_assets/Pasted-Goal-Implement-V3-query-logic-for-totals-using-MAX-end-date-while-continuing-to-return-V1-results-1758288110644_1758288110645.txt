@@ -1,0 +1,46 @@
+Goal: Implement V3 query logic for totals using MAX(end_date), while continuing to return V1 results.
+
+Do:
+- Update `calculateRealTimeTotalsV3(db, userId)` in `server/totals-aggregation.js`:
+    - Replace stub return values with the real query:
+        SELECT 
+          COALESCE(SUM(day_count), 0) as total_days,
+          COALESCE(MAX(day_count), 0) as longest_run,
+          COALESCE(
+            (SELECT day_count FROM runs 
+             WHERE user_id = $1 
+             AND end_date = (SELECT MAX(end_date) FROM runs WHERE user_id = $1)),
+            0
+          ) as current_run
+        FROM runs 
+        WHERE user_id = $1;
+    - Log timing: `[Totals V3] Real-time calculation for user ${userId}: ${processingTime}ms`
+- Ensure API still returns V1 results, even when flag is enabled (this phase is shadow only).
+- Keep `[Totals V3]` logging to confirm query execution.
+
+Proof:
+- Call `/api/v2/totals` for a test user.
+- Logs must include `[Totals V3] Real-time calculation for user <userId>: <timing>ms`.
+- API response must still return **real V1 values** (not replaced yet).
+- Manual DB query should confirm V3 values match logs.
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+  → Ensures backend reloads with updated V3 query logic.
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+  → Only after confirming log outputs in dev mode.
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming

@@ -253,20 +253,45 @@ async function logReconciliation(db, logEntry) {
 }
 
 /**
- * Calculate real-time totals using V3 logic (MAX(end_date) approach) - STUB VERSION
+ * Calculate real-time totals using V3 logic (MAX(end_date) approach)
  * @param {Object} db - Database connection
  * @param {string} userId - User ID to calculate totals for
  * @returns {Promise<Object>} Real-time totals { totalDays, longestRun, currentRun }
  */
 async function calculateRealTimeTotalsV3(db, userId) {
-  console.log(`[Totals V3] Stub function called for user ${userId}`);
+  const startTime = Date.now();
   
-  // STUB: Return placeholder values - actual V3 logic will be implemented in future phases
-  return {
-    totalDays: 0,
-    longestRun: 0,
-    currentRun: 0
-  };
+  try {
+    const query = `
+      SELECT 
+        COALESCE(SUM(day_count), 0) as total_days,
+        COALESCE(MAX(day_count), 0) as longest_run,
+        COALESCE(
+          (SELECT day_count FROM runs 
+           WHERE user_id = $1 
+           AND end_date = (SELECT MAX(end_date) FROM runs WHERE user_id = $1)),
+          0
+        ) as current_run
+      FROM runs 
+      WHERE user_id = $1
+    `;
+    
+    const result = await db.query(query, [userId]);
+    const totals = result.rows[0];
+    
+    const processingTime = Date.now() - startTime;
+    console.log(`[Totals V3] Real-time calculation for user ${userId}: ${processingTime}ms`);
+    
+    return {
+      totalDays: parseInt(totals.total_days),
+      longestRun: parseInt(totals.longest_run),
+      currentRun: parseInt(totals.current_run),
+      processingTimeMs: processingTime
+    };
+  } catch (error) {
+    console.error(`[Totals V3] Error calculating real-time totals for user ${userId}:`, error);
+    throw error;
+  }
 }
 
 /**
