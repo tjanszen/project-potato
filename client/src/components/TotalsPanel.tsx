@@ -174,11 +174,7 @@ export function TotalsPanel() {
         📊 Your Progress
       </h3>
       
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-        gap: '15px' 
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
         {/* Current Run */}
         <div style={{ 
           textAlign: 'center',
