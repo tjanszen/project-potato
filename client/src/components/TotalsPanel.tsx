@@ -8,8 +8,48 @@ interface TotalsData {
   current_run: number
 }
 
+interface FeatureFlag {
+  enabled: boolean
+}
+
 export function TotalsPanel() {
   console.log("TotalsPanel updated: Longest Run 🔥");
+  
+  // Feature flag queries
+  const {
+    data: runsV2Flag,
+    isLoading: runsV2Loading,
+    error: runsV2Error
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.runs_v2'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.runs_v2').then(response => {
+      if (response.error || !response.data) {
+        throw new Error(response.error || 'Failed to fetch feature flag')
+      }
+      return response.data as FeatureFlag
+    }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  })
+
+  const {
+    data: totalsV2Flag,
+    isLoading: totalsV2Loading,
+    error: totalsV2Error
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.totals_v2'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.totals_v2').then(response => {
+      if (response.error || !response.data) {
+        throw new Error(response.error || 'Failed to fetch feature flag')
+      }
+      return response.data as FeatureFlag
+    }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  })
+
+  // Only fetch totals if both feature flags are enabled
+  const bothFlagsEnabled = runsV2Flag?.enabled && totalsV2Flag?.enabled
   
   const {
     data: totalsData,
@@ -19,11 +59,79 @@ export function TotalsPanel() {
   } = useQuery<TotalsData>({
     queryKey: ['totals'],
     queryFn: () => apiClient.getTotals() as Promise<TotalsData>,
+    enabled: bothFlagsEnabled, // Only run if both flags are enabled
     staleTime: 30 * 1000, // 30 seconds
     retry: 2,
   })
 
-  // Loading state
+  // Feature flags loading state
+  if (runsV2Loading || totalsV2Loading) {
+    return (
+      <div style={{ 
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #e9ecef',
+        textAlign: 'center'
+      }} data-testid="totals-panel-flag-loading">
+        <LoadingSpinner />
+        <p style={{ marginTop: '10px', color: '#666', fontSize: '14px' }}>
+          Checking feature availability...
+        </p>
+      </div>
+    )
+  }
+
+  // Feature flag error state
+  if (runsV2Error || totalsV2Error) {
+    return (
+      <div style={{ 
+        padding: '20px',
+        backgroundColor: '#fff3cd',
+        borderRadius: '8px',
+        border: '1px solid #ffeaa7',
+        textAlign: 'center'
+      }} data-testid="totals-panel-flag-error">
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</div>
+        <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>
+          Feature Check Failed
+        </h3>
+        <p style={{ color: '#856404', fontSize: '14px', marginBottom: '15px' }}>
+          Unable to verify feature availability. Please try again.
+        </p>
+      </div>
+    )
+  }
+
+  // Feature flags disabled state
+  if (!bothFlagsEnabled) {
+    const disabledFlags = []
+    if (!runsV2Flag?.enabled) disabledFlags.push('Runs V2')
+    if (!totalsV2Flag?.enabled) disabledFlags.push('Totals V2')
+    
+    return (
+      <div style={{ 
+        padding: '20px',
+        backgroundColor: '#f8d7da',
+        borderRadius: '8px',
+        border: '1px solid #f5c6cb',
+        textAlign: 'center'
+      }} data-testid="totals-panel-disabled">
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>🚫</div>
+        <h3 style={{ margin: '0 0 10px 0', color: '#721c24' }}>
+          Feature Not Available
+        </h3>
+        <p style={{ color: '#721c24', fontSize: '14px', marginBottom: '10px' }}>
+          The progress tracking feature is currently disabled.
+        </p>
+        <p style={{ color: '#721c24', fontSize: '12px' }}>
+          Required features: {disabledFlags.join(', ')}
+        </p>
+      </div>
+    )
+  }
+
+  // Totals data loading state (when feature flags are enabled)
   if (totalsLoading) {
     return (
       <div style={{ 
