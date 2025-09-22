@@ -36,6 +36,15 @@ export function TotalsPanel() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
+  const { 
+    data: progressHeaderV2Flag, 
+    isLoading: progressHeaderV2Loading 
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.progress_header_v2'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.progress_header_v2') as Promise<FeatureFlag>,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
   // Fetch totals data only if both flags are enabled
   const shouldFetchTotals = runsV2Flag?.enabled && totalsV2Flag?.enabled
   
@@ -53,7 +62,7 @@ export function TotalsPanel() {
   })
 
   // Don't render if either feature flag is disabled
-  if (runsV2Loading || totalsV2Loading) {
+  if (runsV2Loading || totalsV2Loading || progressHeaderV2Loading) {
     return (
       <div style={{ 
         padding: '15px',
@@ -157,6 +166,114 @@ export function TotalsPanel() {
   }
 
   // Success state with data
+  // Check if progress header should be removed
+  const shouldRemoveHeader = progressHeaderV2Flag?.enabled === true
+
+  if (shouldRemoveHeader) {
+    // Render only the stats grid without container, header, or explanatory text
+    return (
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+        {/* Current Run */}
+        <div style={{ 
+          textAlign: 'center',
+          padding: '15px',
+          backgroundColor: totalsData.current_run > 0 ? '#d4edda' : '#f8f9fa',
+          borderRadius: '6px',
+          border: `1px solid ${totalsData.current_run > 0 ? '#c3e6cb' : '#e9ecef'}`
+        }} data-testid="stat-current-run">
+          <div style={{ 
+            fontSize: '28px', 
+            fontWeight: 'bold', 
+            color: totalsData.current_run > 0 ? '#155724' : '#666',
+            marginBottom: '5px'
+          }}>
+            {totalsData.current_run}
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: totalsData.current_run > 0 ? '#155724' : '#666',
+            fontWeight: '500'
+          }}>
+            Current Run
+          </div>
+          <div style={{ 
+            fontSize: '10px', 
+            color: '#999',
+            marginTop: '2px'
+          }}>
+            {totalsData.current_run === 1 ? 'day' : 'days'}
+          </div>
+        </div>
+
+        {/* Longest Run */}
+        <div style={{ 
+          textAlign: 'center',
+          padding: '15px',
+          backgroundColor: '#fff3cd',
+          borderRadius: '6px',
+          border: '1px solid #ffeaa7'
+        }} data-testid="stat-longest-run">
+          <div style={{ 
+            fontSize: '28px', 
+            fontWeight: 'bold', 
+            color: '#856404',
+            marginBottom: '5px'
+          }}>
+            {totalsData.longest_run}
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#856404',
+            fontWeight: '500'
+          }}>
+            Longest Run 🔥
+          </div>
+          <div style={{ 
+            fontSize: '10px', 
+            color: '#999',
+            marginTop: '2px'
+          }}>
+            {totalsData.longest_run === 1 ? 'day' : 'days'}
+          </div>
+        </div>
+
+        {/* Total Days */}
+        <div style={{ 
+          textAlign: 'center',
+          padding: '15px',
+          backgroundColor: '#e7f3ff',
+          borderRadius: '6px',
+          border: '1px solid #bee5eb'
+        }} data-testid="stat-total-days">
+          <div style={{ 
+            fontSize: '28px', 
+            fontWeight: 'bold', 
+            color: '#0c5460',
+            marginBottom: '5px'
+          }}>
+            {totalsData.total_days}
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#0c5460',
+            fontWeight: '500'
+          }}>
+            Total Days
+          </div>
+          <div style={{ 
+            fontSize: '10px', 
+            color: '#999',
+            marginTop: '2px'
+          }}>
+            {totalsData.total_days === 1 ? 'day' : 'days'}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default rendering with header, container, and explanatory text
   return (
     <div style={{ 
       padding: '20px',

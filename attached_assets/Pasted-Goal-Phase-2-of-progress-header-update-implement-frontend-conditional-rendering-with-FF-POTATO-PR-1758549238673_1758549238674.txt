@@ -1,0 +1,42 @@
+Goal: Phase 2 of progress header update — implement frontend conditional rendering with FF_POTATO_PROGRESS_HEADER_V2.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/progress_header_v2.md
+- Feature flag name: FF_POTATO_PROGRESS_HEADER_V2
+- Phase 1 complete: backend plumbing, API + admin toggle tested and verified
+
+Do:
+- In client/src/components/TotalsPanel.tsx:
+  - Import/use feature flag hook to check ff.potato.progress_header_v2
+  - Wrap the "📊 Your Progress" header (lines 168-175) in conditional rendering → hidden when flag=true
+  - Wrap the container <div> styling (lines 161-167) in conditional rendering → removed when flag=true
+  - Wrap the explanatory text block (lines 275-288) in conditional rendering → removed when flag=true
+  - When flag=true, render only the stats grid (3 stat boxes) with no header/container/explanatory text
+- No spacing changes yet (those come in Phase 3)
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")  
+  → Use this for all testing scenarios after code modifications
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")  
+  → Use when validating final changes in a built frontend environment
+- Never use individual frontend-only restarts (causes "Failed to fetch" errors)
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing endpoints, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new endpoints, schema changes, unplanned refactors, added features):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With FF_POTATO_PROGRESS_HEADER_V2=false → UI remains unchanged (header + container + explanatory text all visible)
+- With FF_POTATO_PROGRESS_HEADER_V2=true → UI shows only 3 stat boxes grid, no header, no container, no explanatory text
+- Logs show flag query and correct conditional render path
