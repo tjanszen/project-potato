@@ -1,0 +1,60 @@
+Goal: Phase 3 of sticky bottom navigation — implement icons, active state, and routing placeholders under FF_POTATO_BOTTOM_NAV.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/botton_nav.md
+- Feature flag: FF_POTATO_BOTTOM_NAV (default=false, validated in Phases 1–2)
+- Phase 1: Flag + placeholder component
+- Phase 2: Sticky mobile-only layout with responsive CSS
+- Now: Add icons, active state logic, and routing placeholders
+
+Do:
+- In client/src/components/BottomNav.tsx:
+  - Import Home, Sword, Settings from lucide-react
+  - Define navItems array:
+    - Home → path="/" → active by default
+    - Leagues → path="/leagues" (placeholder, no routing yet)
+    - Settings → path="/settings" (placeholder, no routing yet)
+  - Use useLocation from wouter to track active path
+  - Render nav buttons in .nav-grid:
+    - Show icon + label stacked vertically
+    - Apply active state style when item is active
+  - Accessibility:
+    - Add aria-label for each nav item
+    - Add aria-current="page" for active item
+- Update BottomNav.css:
+  - .nav-item: flex column, center alignment
+  - .nav-item.active: highlighted background, bold text, primary color (#007bff)
+  - Icons sized ~20px, spaced above label
+  - Ensure min touch size ≥44px (padding/margin)
+- Preserve backward compatibility:
+  - Flag=false → No nav bar rendered
+  - Flag=true → New nav bar with icons, active Home by default, placeholders for others
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (icons not rendering, active state not working, >3 TS errors, repeated crashes, unmet prerequisites):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (implementing routing for Leagues/Settings, adding new pages, unrelated refactors):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With FF_POTATO_BOTTOM_NAV=false → No footer rendered
+- With FF_POTATO_BOTTOM_NAV=true:
+  - Home, Leagues, Settings displayed in footer
+  - Each item shows correct icon + label stacked vertically
+  - Home is highlighted (active) when app loads
+  - Clicking nav items updates active state via useLocation
+  - Console log shows: "Phase 3: BottomNav active state + icons enabled"

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
+import { useLocation } from 'wouter'
+import { Home, Sword, Settings } from 'lucide-react'
 import './BottomNav.css'
 
 interface FeatureFlag {
