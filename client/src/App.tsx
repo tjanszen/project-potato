@@ -4,6 +4,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { AppRoutes } from './AppRoutes'
+import { BottomNav } from './components/BottomNav'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -27,6 +28,7 @@ function App() {
                 fontFamily: 'Arial, sans-serif'
               }}>
                 <AppRoutes />
+                <BottomNav />
               </div>
             </Router>
           </AuthProvider>
