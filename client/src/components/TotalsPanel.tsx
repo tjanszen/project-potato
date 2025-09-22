@@ -184,32 +184,30 @@ export function TotalsPanel() {
           borderRadius: '6px',
           border: `1px solid ${totalsData.current_run > 0 ? '#c3e6cb' : '#e9ecef'}`
         }} data-testid="stat-current-run">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: totalsData.current_run > 0 ? '#155724' : '#666',
-            marginBottom: '5px'
-          }}>
-            {totalsData.current_run}
-          </div>
+          {/* Header text at top */}
           <div style={{ 
             fontSize: '12px', 
             color: totalsData.current_run > 0 ? '#155724' : '#666',
-            fontWeight: '500'
+            fontWeight: '500',
+            marginBottom: '8px'
           }}>
             Current Run
           </div>
+          {/* Number and icon in horizontal layout */}
           <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px'
+            gap: '8px'
           }}>
-            {totalsData.current_run === 1 ? 'day' : 'days'}
-            <User size={12} color="#999" />
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 'bold', 
+              color: totalsData.current_run > 0 ? '#155724' : '#666'
+            }}>
+              {totalsData.current_run}
+            </div>
+            <User size={20} color={totalsData.current_run > 0 ? '#155724' : '#666'} />
           </div>
         </div>
 
@@ -221,32 +219,30 @@ export function TotalsPanel() {
           borderRadius: '6px',
           border: '1px solid #ffeaa7'
         }} data-testid="stat-longest-run">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: '#856404',
-            marginBottom: '5px'
-          }}>
-            {totalsData.longest_run}
-          </div>
+          {/* Header text at top */}
           <div style={{ 
             fontSize: '12px', 
             color: '#856404',
-            fontWeight: '500'
+            fontWeight: '500',
+            marginBottom: '8px'
           }}>
-            Longest Run 🔥
+            Longest Run
           </div>
+          {/* Number and icon in horizontal layout */}
           <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px'
+            gap: '8px'
           }}>
-            {totalsData.longest_run === 1 ? 'day' : 'days'}
-            <Flame size={12} color="#999" />
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 'bold', 
+              color: '#856404'
+            }}>
+              {totalsData.longest_run}
+            </div>
+            <Flame size={20} color="#856404" />
           </div>
         </div>
 
@@ -258,32 +254,30 @@ export function TotalsPanel() {
           borderRadius: '6px',
           border: '1px solid #bee5eb'
         }} data-testid="stat-total-days">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: '#0c5460',
-            marginBottom: '5px'
-          }}>
-            {totalsData.total_days}
-          </div>
+          {/* Header text at top */}
           <div style={{ 
             fontSize: '12px', 
             color: '#0c5460',
-            fontWeight: '500'
+            fontWeight: '500',
+            marginBottom: '8px'
           }}>
             Total Days
           </div>
+          {/* Number and icon in horizontal layout */}
           <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px'
+            gap: '8px'
           }}>
-            {totalsData.total_days === 1 ? 'day' : 'days'}
-            <Trophy size={12} color="#999" />
+            <div style={{ 
+              fontSize: '28px', 
+              fontWeight: 'bold', 
+              color: '#0c5460'
+            }}>
+              {totalsData.total_days}
+            </div>
+            <Trophy size={20} color="#0c5460" />
           </div>
         </div>
       </div>

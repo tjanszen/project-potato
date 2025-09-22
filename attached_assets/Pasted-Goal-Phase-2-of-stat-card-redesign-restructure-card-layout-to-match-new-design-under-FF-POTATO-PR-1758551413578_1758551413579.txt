@@ -1,0 +1,47 @@
+Goal: Phase 2 of stat card redesign — restructure card layout to match new design under FF_POTATO_PROGRESS_HEADER_V2.
+
+Context:
+- Implementation plan documented in docs/agent_memory/imp_plans/stat_card_update.md
+- Feature flag: FF_POTATO_PROGRESS_HEADER_V2 (already exists and validated)
+- Phase 1 complete: icons imported and test-rendered next to "days" text
+- Now restructure card layout for the final design
+
+Do:
+- In client/src/components/TotalsPanel.tsx (within shouldRemoveHeader branch):
+  - Move stat label text (e.g. "Current Run", "Longest Run", "Total Days") to the top of each card
+  - Render number below the header
+  - Render icon to the right of the number in a horizontal flex layout
+  - Remove the “days” label entirely
+  - Maintain existing background colors and styling per card
+- Preserve backward compatibility:
+  - Flag=false → Original UI unchanged
+  - Flag=true → New card layout (header → number+icon)
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing components, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new features, schema changes, unrelated refactors):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With FF_POTATO_PROGRESS_HEADER_V2=false → UI unchanged (label under number, “days” text present, no icons)
+- With FF_POTATO_PROGRESS_HEADER_V2=true:
+  - Each card shows header at top
+  - Number displayed below header
+  - Icon aligned to right of number
+  - “days” text removed
+- Browser visually matches wireframe mock
