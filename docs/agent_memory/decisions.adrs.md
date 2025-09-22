@@ -161,3 +161,10 @@ A separate implementation plan (`imp_plans/6b1_completion.md`) has been created 
 
 ### Status
 Accepted — 2025-09-12
+
+## ADR-2025-09-22 Progress Header Conditional Rendering with Feature Flags
+**Context:** Users requested ability to remove "Your Progress" header and container styling to achieve cleaner minimal layout  
+**Decision:** Implement FF_POTATO_PROGRESS_HEADER_V2 feature flag with conditional rendering in TotalsPanel component  
+**Status:** Accepted & Implemented  
+**Consequences:** Flag=false shows full UI (header+container+explanatory text), flag=true shows minimal UI (only 3 stat boxes)  
+**Links:** client/src/components/TotalsPanel.tsx, server/feature-flags.js, docs/agent_memory/imp_plans/progress_header_v2.md
