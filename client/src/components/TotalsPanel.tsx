@@ -8,36 +8,8 @@ interface TotalsData {
   current_run: number
 }
 
-interface FeatureFlag {
-  name: string
-  enabled: boolean
-  description?: string
-}
-
 export function TotalsPanel() {
   console.log("TotalsPanel updated: Longest Run 🔥");
-  
-  // Check both required feature flags
-  const { 
-    data: runsV2Flag, 
-    isLoading: runsV2Loading 
-  } = useQuery<FeatureFlag>({
-    queryKey: ['feature-flag', 'ff.potato.runs_v2'],
-    queryFn: () => apiClient.getFeatureFlag('ff.potato.runs_v2') as Promise<FeatureFlag>,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-
-  const { 
-    data: totalsV2Flag, 
-    isLoading: totalsV2Loading 
-  } = useQuery<FeatureFlag>({
-    queryKey: ['feature-flag', 'ff.potato.totals_v2'],
-    queryFn: () => apiClient.getFeatureFlag('ff.potato.totals_v2') as Promise<FeatureFlag>,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-
-  // Fetch totals data only if both flags are enabled
-  const shouldFetchTotals = runsV2Flag?.enabled && totalsV2Flag?.enabled
   
   const {
     data: totalsData,
@@ -47,33 +19,9 @@ export function TotalsPanel() {
   } = useQuery<TotalsData>({
     queryKey: ['totals'],
     queryFn: () => apiClient.getTotals() as Promise<TotalsData>,
-    enabled: shouldFetchTotals,
     staleTime: 30 * 1000, // 30 seconds
     retry: 2,
   })
-
-  // Don't render if either feature flag is disabled
-  if (runsV2Loading || totalsV2Loading) {
-    return (
-      <div style={{ 
-        padding: '15px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        border: '1px solid #e9ecef',
-        textAlign: 'center'
-      }}>
-        <LoadingSpinner />
-        <p style={{ marginTop: '10px', color: '#666', fontSize: '14px' }}>
-          Checking feature flags...
-        </p>
-      </div>
-    )
-  }
-
-  if (!runsV2Flag?.enabled || !totalsV2Flag?.enabled) {
-    // Feature flags are off - don't show the panel
-    return null
-  }
 
   // Loading state
   if (totalsLoading) {
@@ -158,132 +106,100 @@ export function TotalsPanel() {
 
   // Success state with data
   return (
-    <div style={{ 
-      padding: '20px',
-      backgroundColor: 'white',
-      borderRadius: '8px',
-      border: '1px solid #e9ecef',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-    }} data-testid="totals-panel-success">
-      <h3 style={{ 
-        margin: '0 0 20px 0', 
-        color: '#333',
-        fontSize: '18px',
-        textAlign: 'center'
-      }}>
-        📊 Your Progress
-      </h3>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-        {/* Current Run */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+      {/* Current Run */}
+      <div style={{ 
+        textAlign: 'center',
+        padding: '15px',
+        backgroundColor: totalsData.current_run > 0 ? '#d4edda' : '#f8f9fa',
+        borderRadius: '6px',
+        border: `1px solid ${totalsData.current_run > 0 ? '#c3e6cb' : '#e9ecef'}`
+      }} data-testid="stat-current-run">
         <div style={{ 
-          textAlign: 'center',
-          padding: '15px',
-          backgroundColor: totalsData.current_run > 0 ? '#d4edda' : '#f8f9fa',
-          borderRadius: '6px',
-          border: `1px solid ${totalsData.current_run > 0 ? '#c3e6cb' : '#e9ecef'}`
-        }} data-testid="stat-current-run">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: totalsData.current_run > 0 ? '#155724' : '#666',
-            marginBottom: '5px'
-          }}>
-            {totalsData.current_run}
-          </div>
-          <div style={{ 
-            fontSize: '12px', 
-            color: totalsData.current_run > 0 ? '#155724' : '#666',
-            fontWeight: '500'
-          }}>
-            Current Run
-          </div>
-          <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px'
-          }}>
-            {totalsData.current_run === 1 ? 'day' : 'days'}
-          </div>
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          color: totalsData.current_run > 0 ? '#155724' : '#666',
+          marginBottom: '5px'
+        }}>
+          {totalsData.current_run}
         </div>
-
-        {/* Longest Run */}
         <div style={{ 
-          textAlign: 'center',
-          padding: '15px',
-          backgroundColor: '#fff3cd',
-          borderRadius: '6px',
-          border: '1px solid #ffeaa7'
-        }} data-testid="stat-longest-run">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: '#856404',
-            marginBottom: '5px'
-          }}>
-            {totalsData.longest_run}
-          </div>
-          <div style={{ 
-            fontSize: '12px', 
-            color: '#856404',
-            fontWeight: '500'
-          }}>
-            Longest Run 🔥
-          </div>
-          <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px'
-          }}>
-            {totalsData.longest_run === 1 ? 'day' : 'days'}
-          </div>
+          fontSize: '12px', 
+          color: totalsData.current_run > 0 ? '#155724' : '#666',
+          fontWeight: '500'
+        }}>
+          Current Run
         </div>
-
-        {/* Total Days */}
         <div style={{ 
-          textAlign: 'center',
-          padding: '15px',
-          backgroundColor: '#e7f3ff',
-          borderRadius: '6px',
-          border: '1px solid #bee5eb'
-        }} data-testid="stat-total-days">
-          <div style={{ 
-            fontSize: '28px', 
-            fontWeight: 'bold', 
-            color: '#0c5460',
-            marginBottom: '5px'
-          }}>
-            {totalsData.total_days}
-          </div>
-          <div style={{ 
-            fontSize: '12px', 
-            color: '#0c5460',
-            fontWeight: '500'
-          }}>
-            Total Days
-          </div>
-          <div style={{ 
-            fontSize: '10px', 
-            color: '#999',
-            marginTop: '2px'
-          }}>
-            {totalsData.total_days === 1 ? 'day' : 'days'}
-          </div>
+          fontSize: '10px', 
+          color: '#999',
+          marginTop: '2px'
+        }}>
+          {totalsData.current_run === 1 ? 'day' : 'days'}
         </div>
       </div>
 
-      {/* Last updated indicator */}
+      {/* Longest Run */}
       <div style={{ 
-        textAlign: 'center', 
-        marginTop: '15px',
-        paddingTop: '10px',
-        borderTop: '1px solid #e9ecef'
-      }}>
+        textAlign: 'center',
+        padding: '15px',
+        backgroundColor: '#fff3cd',
+        borderRadius: '6px',
+        border: '1px solid #ffeaa7'
+      }} data-testid="stat-longest-run">
+        <div style={{ 
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          color: '#856404',
+          marginBottom: '5px'
+        }}>
+          {totalsData.longest_run}
+        </div>
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#856404',
+          fontWeight: '500'
+        }}>
+          Longest Run 🔥
+        </div>
         <div style={{ 
           fontSize: '10px', 
-          color: '#999'
+          color: '#999',
+          marginTop: '2px'
         }}>
-          Updated automatically when you mark days
+          {totalsData.longest_run === 1 ? 'day' : 'days'}
+        </div>
+      </div>
+
+      {/* Total Days */}
+      <div style={{ 
+        textAlign: 'center',
+        padding: '15px',
+        backgroundColor: '#e7f3ff',
+        borderRadius: '6px',
+        border: '1px solid #bee5eb'
+      }} data-testid="stat-total-days">
+        <div style={{ 
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          color: '#0c5460',
+          marginBottom: '5px'
+        }}>
+          {totalsData.total_days}
+        </div>
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#0c5460',
+          fontWeight: '500'
+        }}>
+          Total Days
+        </div>
+        <div style={{ 
+          fontSize: '10px', 
+          color: '#999',
+          marginTop: '2px'
+        }}>
+          {totalsData.total_days === 1 ? 'day' : 'days'}
         </div>
       </div>
     </div>
