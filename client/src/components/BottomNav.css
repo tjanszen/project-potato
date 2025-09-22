@@ -34,10 +34,49 @@
   padding: 0 16px;
 }
 
-/* Navigation items placeholder styling */
-.nav-item-placeholder {
-  text-align: center;
+/* Navigation items styling */
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
   padding: 8px 4px;
+  min-height: 44px; /* Ensure touch target ≥44px */
+  min-width: 44px;
   color: #666;
   font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.nav-item:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.nav-item:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Active navigation item styling */
+.nav-item.active {
+  color: #007bff;
+  background-color: #e7f3ff;
+  font-weight: 600;
+}
+
+.nav-item.active:hover {
+  background-color: #cce7ff;
+}
+
+/* Navigation label styling */
+.nav-label {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
 }
