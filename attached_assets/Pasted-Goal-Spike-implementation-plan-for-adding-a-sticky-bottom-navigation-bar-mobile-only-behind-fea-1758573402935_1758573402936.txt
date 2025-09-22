@@ -1,0 +1,54 @@
+Goal: Spike + implementation plan for adding a sticky bottom navigation bar (mobile-only) behind feature flag FF_POTATO_BOTTOM_NAV.
+
+Context:
+- New feature flag: FF_POTATO_BOTTOM_NAV (default=false)
+- Wireframe attached (shows sticky footer with icons)
+- Requirements:
+  - Only visible on mobile web (not on desktop/tablet)
+  - Sticky at bottom of viewport
+  - 3 nav options:
+    - Home (icon: house) → default active, routes to main landing page
+    - Leagues (icon: sword) → placeholder (no routing yet)
+    - Settings (icon: gear) → placeholder (no routing yet)
+- Active state: Home should be active when app loads on mobile
+- Non-mobile → footer does not display at all
+
+Do:
+- Investigate codebase for:
+  - Where to inject sticky footer component (e.g., layout wrapper, App.tsx, or page container)
+  - Existing device detection or responsive breakpoints for mobile-only rendering
+  - Icon library usage (lucide-react is installed, confirm icons available: House, Sword, Gear)
+  - Feature flag integration points
+- Propose phased implementation plan:
+  - Phase 1: Feature flag + placeholder footer component
+  - Phase 2: Layout integration (sticky footer visible only on mobile, hidden on desktop)
+  - Phase 3: Active state + routing for Home, placeholders for Leagues/Settings
+  - Phase 4: Validation + testing across screen sizes
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing icons, mobile detection fails, >3 TS errors, crashes, infra problems):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (extra routes, new components unrelated to footer):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- Output includes:
+  - File(s)/components identified for footer integration
+  - Current responsive/mobile detection method
+  - Icon availability confirmation (House, Sword, Gear)
+  - Draft phased plan for implementation
+- No functional code changes yet, spike + planning only
