@@ -29,6 +29,11 @@ const featureFlags = {
         enabled: false,
         description: 'V3 feature flag for totals calculation with MAX(end_date) logic',
     },
+    'ff.potato.progress_header_v2': {
+        name: 'ff.potato.progress_header_v2',
+        enabled: false,
+        description: 'V2 feature flag for removing progress header and container styling',
+    },
 };
 
 class FeatureFlagService {
@@ -45,6 +50,7 @@ class FeatureFlagService {
         featureFlags['ff.potato.totals_v2'].enabled = normalize(process.env.FF_POTATO_TOTALS_V2);
         featureFlags['ff.potato.dev_rate_limit'].enabled = normalize(process.env.FF_POTATO_DEV_RATE_LIMIT);
         featureFlags['ff.potato.totals_v3'].enabled = normalize(process.env.FF_POTATO_TOTALS_V3);
+        featureFlags['ff.potato.progress_header_v2'].enabled = normalize(process.env.FF_POTATO_PROGRESS_HEADER_V2);
 
         // Log feature flag status on startup
         this.logFlagStatus();
@@ -75,6 +81,7 @@ class FeatureFlagService {
             'ff.potato.totals_v2': this.getFlag('ff.potato.totals_v2'),
             'ff.potato.dev_rate_limit': this.getFlag('ff.potato.dev_rate_limit'),
             'ff.potato.totals_v3': this.getFlag('ff.potato.totals_v3'),
+            'ff.potato.progress_header_v2': this.getFlag('ff.potato.progress_header_v2'),
         };
     }
 
