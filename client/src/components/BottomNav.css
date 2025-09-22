@@ -1,0 +1,43 @@
+/* Bottom Navigation Styles */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top: 1px solid #e9ecef;
+  padding: 12px 0;
+  z-index: 1000;
+  display: none; /* Hidden by default */
+  height: 60px; /* Fixed height for consistent spacing */
+}
+
+/* Show only on mobile */
+@media (max-width: 480px) {
+  .bottom-nav {
+    display: block;
+  }
+  
+  /* Add bottom padding to app container on mobile to prevent overlap */
+  .app-container {
+    padding-bottom: 70px !important;
+  }
+}
+
+/* Navigation grid - 3 equal columns */
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 480px;
+  margin: 0 auto;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+/* Navigation items placeholder styling */
+.nav-item-placeholder {
+  text-align: center;
+  padding: 8px 4px;
+  color: #666;
+  font-size: 12px;
+}

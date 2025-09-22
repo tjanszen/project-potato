@@ -1,0 +1,51 @@
+Goal: Phase 2 of sticky bottom navigation — implement mobile-only sticky footer layout with CSS, behind FF_POTATO_BOTTOM_NAV.
+
+Context:
+- Implementation plan documented in docs/agent_memory/imp_plans/botton_nav.md
+- Feature flag: FF_POTATO_BOTTOM_NAV (default=false, verified in Phase 1)
+- Phase 1 complete: placeholder footer component integrated behind flag
+- Now implement responsive design (mobile-only) and sticky positioning
+
+Do:
+- Create new stylesheet: client/src/components/BottomNav.css
+  - .bottom-nav: sticky footer styles (fixed, bottom:0, full width, white background, border-top, padding, z-index)
+  - Hidden by default (display:none)
+  - @media (max-width: 480px): display:block (mobile only)
+  - .nav-grid: grid layout with 3 equal-width columns, max-width 480px centered
+- Update BottomNav.tsx:
+  - Import BottomNav.css
+  - Replace placeholder <div> with <nav className="bottom-nav"><div className="nav-grid">Placeholder Items</div></nav>
+- Update App.tsx:
+  - Add bottom padding (via CSS var or inline style) to prevent content overlap with sticky footer on mobile
+- Preserve backward compatibility:
+  - Flag=false → BottomNav not rendered
+  - Flag=true → Sticky footer visible only on mobile widths (≤480px), hidden on tablet/desktop
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (footer visible at wrong breakpoints, layout overlap, >3 TS errors, repeated crashes, unmet prerequisites):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (adding icons, routing, active states before Phase 3):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With FF_POTATO_BOTTOM_NAV=false → Footer not rendered
+- With FF_POTATO_BOTTOM_NAV=true:
+  - Footer visible only when viewport ≤480px
+  - Footer hidden at >480px (tablet/desktop)
+  - Footer stays sticky at bottom during scroll
+  - Content above footer not overlapped (padding adjustment confirmed)
+- Console log: "Phase 2: BottomNav sticky layout active"

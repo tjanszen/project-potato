@@ -26,7 +26,8 @@ function App() {
               <div style={{ 
                 minHeight: '100vh',
                 fontFamily: 'Arial, sans-serif'
-              }}>
+              }}
+              className="app-container">
                 <AppRoutes />
                 <BottomNav />
               </div>

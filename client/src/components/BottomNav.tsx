@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
+import './BottomNav.css'
 
 interface FeatureFlag {
   name: string
@@ -21,8 +22,17 @@ export function BottomNav() {
     return null
   }
 
-  // If flag is enabled, render placeholder
+  // Phase 2 logging
+  console.log("Phase 2: BottomNav sticky layout active");
+
+  // If flag is enabled, render sticky footer with mobile-only display
   return (
-    <div>Mobile Bottom Nav Placeholder</div>
+    <nav className="bottom-nav">
+      <div className="nav-grid">
+        <div className="nav-item-placeholder">Home</div>
+        <div className="nav-item-placeholder">Leagues</div>
+        <div className="nav-item-placeholder">Settings</div>
+      </div>
+    </nav>
   )
 }
