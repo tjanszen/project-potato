@@ -1,0 +1,55 @@
+Goal: Spike and create an implementation plan for redesigning the 3 stat cards in TotalsPanel to match new wireframe layout under feature flag FF_POTATO_PROGRESS_HEADER_V2.
+
+Context:
+- Current implementation: 3 stat boxes (Current Run, Longest Run, Total Days) with number + “days” label
+- Desired update (only when FF_POTATO_PROGRESS_HEADER_V2=true):
+  - Header text at the top of each card
+  - Number displayed below the header
+  - Icon displayed to the right of the number
+  - Remove “days” label entirely
+  - Maintain order: Current Run → Longest Run → Total Days
+  - Icons to use:
+    - Current Run = running person
+    - Longest Run = flame
+    - Total Days = trophy
+- Feature flag: FF_POTATO_PROGRESS_HEADER_V2 (already exists, default=false)
+
+Do:
+- Investigate TotalsPanel.tsx code where stat boxes are rendered
+- Document how each stat card is currently styled and laid out (grid/flexbox, internal structure)
+- Identify where number + label rendering occurs
+- Propose changes needed to:
+  - Move header text to top
+  - Render number below
+  - Render icon to the right of the number
+  - Remove “days” label
+- Outline implementation plan (Phases) with feature flag gating
+- No UI changes yet, spike only
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing components, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new features, schema changes, unrelated refactors):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- Output must include:
+  - Files/components identified
+  - Current layout description
+  - Where number + label rendering is handled
+  - Proposed UI changes required
+  - Phased plan for implementation under FF_POTATO_PROGRESS_HEADER_V2
