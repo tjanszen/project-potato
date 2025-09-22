@@ -1,0 +1,47 @@
+Goal: Fix Phase 2 of stat card redesign — properly restructure card layout to match wireframe under FF_POTATO_PROGRESS_HEADER_V2.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/stat_card_update.md
+- Feature flag: FF_POTATO_PROGRESS_HEADER_V2 (already exists and validated)
+- Phase 1 complete: icons imported and test-rendered
+- Current Phase 2 attempt only placed icons next to "days" text, did not restructure layout
+
+Do:
+- In client/src/components/TotalsPanel.tsx (within shouldRemoveHeader branch):
+  - Move stat label text ("Current Run", "Longest Run", "Total Days") to the top of each card
+  - Render the **number below the label**
+  - Render the **icon inline to the right of the number** using horizontal flexbox
+  - Remove the **“days” text completely**
+  - Ensure consistent styling (icons sized appropriately, aligned with number)
+- Preserve backward compatibility:
+  - Flag=false → Original UI unchanged
+  - Flag=true → New layout with label on top, number+icon inline, no “days”
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (layout breaks, >3 TS errors, repeated crashes, unmet prerequisites):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (adding new designs, refactors, schema changes):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With FF_POTATO_PROGRESS_HEADER_V2=false → Original UI (number → label → days)
+- With FF_POTATO_PROGRESS_HEADER_V2=true:
+  - Label shown at top of card
+  - Number displayed below the label
+  - Icon aligned horizontally to the right of the number
+  - “days” text removed completely
+- Browser visually matches wireframe mock (header → number+icon layout)
