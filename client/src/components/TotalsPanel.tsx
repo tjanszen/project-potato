@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { LoadingSpinner } from './LoadingSpinner'
+import { User, Flame, Trophy } from 'lucide-react'
 
 interface TotalsData {
   total_days: number
@@ -200,9 +201,14 @@ export function TotalsPanel() {
           <div style={{ 
             fontSize: '10px', 
             color: '#999',
-            marginTop: '2px'
+            marginTop: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px'
           }}>
             {totalsData.current_run === 1 ? 'day' : 'days'}
+            <User size={12} color="#999" />
           </div>
         </div>
 
@@ -232,9 +238,14 @@ export function TotalsPanel() {
           <div style={{ 
             fontSize: '10px', 
             color: '#999',
-            marginTop: '2px'
+            marginTop: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px'
           }}>
             {totalsData.longest_run === 1 ? 'day' : 'days'}
+            <Flame size={12} color="#999" />
           </div>
         </div>
 
@@ -264,9 +275,14 @@ export function TotalsPanel() {
           <div style={{ 
             fontSize: '10px', 
             color: '#999',
-            marginTop: '2px'
+            marginTop: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px'
           }}>
             {totalsData.total_days === 1 ? 'day' : 'days'}
+            <Trophy size={12} color="#999" />
           </div>
         </div>
       </div>
