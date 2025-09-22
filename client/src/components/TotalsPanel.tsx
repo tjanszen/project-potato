@@ -17,7 +17,7 @@ interface FeatureFlag {
 
 export function TotalsPanel() {
   console.log("TotalsPanel updated: Longest Run 🔥");
-  console.log("Phase 1: Icons imported - User, Flame, Trophy");
+  console.log("Phase 2: Card layout restructured - header at top, number+icon horizontal");
   
   // Check both required feature flags
   const { 
