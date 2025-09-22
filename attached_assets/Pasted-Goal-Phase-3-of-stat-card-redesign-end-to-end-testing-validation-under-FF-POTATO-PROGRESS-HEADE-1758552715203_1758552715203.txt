@@ -1,0 +1,53 @@
+Goal: Phase 3 of stat card redesign — end-to-end testing & validation under FF_POTATO_PROGRESS_HEADER_V2.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/stat_card_update.md
+- Feature flag: FF_POTATO_PROGRESS_HEADER_V2
+- Phase 1: Icons imported + gated
+- Phase 2: Card layout restructured (header at top, number+icon inline, “days” removed)
+- Now validate functionality, responsiveness, and edge cases
+
+Do:
+- Test with FF_POTATO_PROGRESS_HEADER_V2=false:
+  - Verify original UI (number → label → days text)
+- Test with FF_POTATO_PROGRESS_HEADER_V2=true:
+  - Verify new layout: header at top, number + icon inline, no “days”
+- Validate responsive behavior:
+  - Small screen widths (mobile)
+  - Medium and large layouts
+- Edge case testing:
+  - Zero values for stats
+  - Loading states (skeletons or spinners)
+  - Error states (API failure, missing data)
+- Accessibility validation:
+  - Ensure icons have aria-labels or hidden appropriately
+  - Headings and numbers are screen-reader friendly
+- Add console log token: "Phase 3: Validation complete" once all tests pass
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (flag not toggling, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (new endpoints, schema changes, unrelated redesigns):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- With flag=false → Original UI unchanged
+- With flag=true → New card layout shown correctly
+- Responsive layouts verified visually in browser at different screen sizes
+- Edge cases handled gracefully (zero, loading, error)
+- Accessibility checks passed (labels/icons properly handled)
+- Browser console shows: "Phase 3: Validation complete"
