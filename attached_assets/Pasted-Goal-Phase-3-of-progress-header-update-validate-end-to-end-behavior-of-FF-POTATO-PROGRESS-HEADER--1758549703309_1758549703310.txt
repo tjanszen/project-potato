@@ -1,0 +1,43 @@
+Goal: Phase 3 of progress header update — validate end-to-end behavior of FF_POTATO_PROGRESS_HEADER_V2 and update documentation.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/progress_header_v2.md
+- Phase 1 complete: backend plumbing + API verified
+- Phase 2 complete: frontend conditional rendering implemented
+- Decision: No spacing adjustments required (screenshot + operator review confirmed layout is good)
+
+Do:
+- Perform final validation tests:
+  - Flag=false → header, container, explanatory text present
+  - Flag=true → only 3 stat boxes visible
+  - Toggle via /api/admin/toggle-flag updates UI correctly after reload
+- Run restart_workflow("Full Clean Restart") to confirm stable default environment
+- Run restart_workflow("Clean Production Deploy") to verify production-style build works with flag toggles
+- Update docs/agent_memory/imp_plans/progress_header_v2.md to mark Phase 3 (Validation) as complete
+- Add short entry to docs/agent_memory/decisions.adrs.md noting FF_POTATO_PROGRESS_HEADER_V2 was introduced and validated successfully
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (flag not toggling, errors >3, crashes, unmet prerequisites):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If unexpected work arises (schema changes, refactor requests, new UI behaviors):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- API: curl /api/feature-flags → shows ff.potato.progress_header_v2 with correct true/false state
+- Admin toggle: POST /api/admin/toggle-flag/ff.potato.progress_header_v2 → flips state successfully
+- UI: Browser shows correct conditional rendering in both flag states
+- Docs updated: progress_header_v2.md marked complete, ADR entry added
