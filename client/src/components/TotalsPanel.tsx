@@ -18,6 +18,7 @@ interface FeatureFlag {
 export function TotalsPanel() {
   console.log("TotalsPanel updated: Longest Run 🔥");
   console.log("Phase 2: Card layout restructured - header at top, number+icon horizontal");
+  console.log("Phase 3: Validation complete");
   
   // Check both required feature flags
   const { 
@@ -207,7 +208,7 @@ export function TotalsPanel() {
             }}>
               {totalsData.current_run}
             </div>
-            <User size={20} color={totalsData.current_run > 0 ? '#155724' : '#666'} />
+            <User size={20} color={totalsData.current_run > 0 ? '#155724' : '#666'} aria-label="Current run icon" />
           </div>
         </div>
 
@@ -242,7 +243,7 @@ export function TotalsPanel() {
             }}>
               {totalsData.longest_run}
             </div>
-            <Flame size={20} color="#856404" />
+            <Flame size={20} color="#856404" aria-label="Longest run icon" />
           </div>
         </div>
 
@@ -277,7 +278,7 @@ export function TotalsPanel() {
             }}>
               {totalsData.total_days}
             </div>
-            <Trophy size={20} color="#0c5460" />
+            <Trophy size={20} color="#0c5460" aria-label="Total days icon" />
           </div>
         </div>
       </div>
