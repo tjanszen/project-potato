@@ -1,0 +1,46 @@
+Goal: Phase 1 of sticky bottom navigation — add feature flag FF_POTATO_BOTTOM_NAV and placeholder footer component.
+
+Context:
+- Implementation plan documented in docs/agent_memory/imp_plans/botton_nav.md
+- Feature flag name: FF_POTATO_BOTTOM_NAV (default=false)
+- Wireframe specifies: Home (house), Leagues (sword), Settings (gear), but Phase 1 is placeholder only
+
+Do:
+- Backend:
+  - Add registry entry for 'ff.potato.bottom_nav' in server/feature-flags.js (default: false)
+  - Add environment variable support for FF_POTATO_BOTTOM_NAV using normalization pattern
+  - Ensure /api/feature-flags returns this new flag
+- Frontend:
+  - Create new file client/src/components/BottomNav.tsx
+  - Use useQuery with apiClient.getFeatureFlag('ff.potato.bottom_nav') to fetch flag
+  - If flag is disabled → return null
+  - If flag is enabled → render placeholder <div>Mobile Bottom Nav Placeholder</div>
+  - Inject component into App.tsx after <AppRoutes />
+- Do not implement layout, icons, or styling yet (covered in Phase 2)
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (flag not showing in API, >3 TS errors, repeated crashes, unmet prerequisites, infra failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates from agreed scope (routing, icons, layout beyond placeholder):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- server/feature-flags.js includes ff.potato.bottom_nav=false by default
+- Environment variable FF_POTATO_BOTTOM_NAV toggles the flag
+- GET /api/feature-flags returns ff.potato.bottom_nav with correct state
+- With flag=false → placeholder not rendered
+- With flag=true → App.tsx renders <div>Mobile Bottom Nav Placeholder</div>
