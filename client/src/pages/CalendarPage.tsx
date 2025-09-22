@@ -69,7 +69,7 @@ export function CalendarPage() {
       }}>🥔</div>
       
       {/* Totals Panel - Phase 7C-1 */}
-      <div style={{ marginBottom: '15px' }}>
+      <div style={{ marginBottom: '30px' }}>
         <TotalsPanel />
       </div>
       
