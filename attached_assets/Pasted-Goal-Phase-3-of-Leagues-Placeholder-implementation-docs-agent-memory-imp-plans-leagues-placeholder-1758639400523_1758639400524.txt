@@ -1,0 +1,48 @@
+Goal: Phase 3 of Leagues Placeholder implementation (docs/agent_memory/imp_plans/leagues_placeholder.md)
+
+Context:
+- Feature flag: FF_POTATO_LEAGUES_PLACEHOLDER (default=false, controls LeaguesPage rendering)
+- Phase 2 delivered: /leagues route with 6 hardcoded inline placeholder cards
+- Phase 2.5 delivered: BottomNav Leagues button now navigates to /leagues
+- Requirement: Refactor inline card markup into a reusable LeagueCard component to reduce duplication and improve maintainability
+
+Do:
+- Create new component: client/src/components/LeagueCard.tsx
+  - Props: 
+    - tag (string)
+    - title (string)
+    - description (string)
+    - users (number)
+    - trending (boolean)
+  - Structure:
+    - Gray rectangle image placeholder
+    - Top-right tag label
+    - Title (header)
+    - Description (subtext)
+    - Bottom row:
+      - Left: Users icon + users count
+      - Right: LineChart icon + "Trending" (only if trending=true)
+  - Accessibility: role="listitem", cursor: default
+- Update LeaguesPage.tsx:
+  - Replace inline markup with mapped array of league objects passed into <LeagueCard />
+  - Example object: { tag: "Beginner", title: "Weekend Warrior", description: "Casual weekend running league", users: 55, trending: true }
+- Keep scrollable container layout and styling as-is
+- Ensure feature flag gating remains at the LeaguesPage level
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification:
+  restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If LeagueCard props integration fails → STOP and summarize findings
+- If styling diverges from Phase 2 output → STOP and summarize differences
+
+Proof:
+- With FF_POTATO_LEAGUES_PLACEHOLDER=false → /leagues renders nothing
+- With FF_POTATO_LEAGUES_PLACEHOLDER=true:
+  - Visiting /leagues shows 6 placeholder cards rendered via LeagueCard component
+  - Cards match Phase 2 layout (no regressions)
+  - Console logs confirm LeagueCard component mounted for each card
+- Active state in BottomNav highlights Leagues when on /leagues
