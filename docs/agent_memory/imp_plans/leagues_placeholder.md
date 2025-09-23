@@ -68,6 +68,42 @@ Follows existing patterns:
 
 ---
 
+## Phase 2.5: BottomNav Integration for Leagues
+
+### Problem
+After Phase 2, the `/leagues` route and placeholder page are functional, but the BottomNav "Leagues" button remains a placeholder and does not navigate to the new page. This creates a broken navigation flow for users.
+
+### Scope
+- Update `client/src/components/BottomNav.tsx` to enable navigation for the Leagues button.
+- Ensure proper active state detection when on `/leagues`.
+- Preserve existing feature flag gating in `LeaguesPage.tsx` (page rendering still controlled by `FF_POTATO_LEAGUES_PLACEHOLDER`).
+
+### Implementation
+- Modify the Leagues nav item:
+  - Set `path: '/leagues'` instead of placeholder.
+  - Enable active state check: `isActive: location === '/leagues'`.
+- Keep BottomNav visibility tied to `FF_POTATO_BOTTOM_NAV` only (not `FF_POTATO_LEAGUES_PLACEHOLDER`).
+- Preserve AuthGuard protection:
+  - If user is not authenticated and taps Leagues → redirect to `/auth`.
+- Do not conditionally hide the button when the Leagues feature flag is off; button remains visible, but `/leagues` will return `null`.
+
+### Validation
+- ✅ With `FF_POTATO_BOTTOM_NAV=true`, Leagues button visible in bottom nav.
+- ✅ When tapping Leagues:
+  - If `FF_POTATO_LEAGUES_PLACEHOLDER=false` → navigates to `/leagues`, but no content is rendered (page returns `null`).
+  - If `FF_POTATO_LEAGUES_PLACEHOLDER=true` → navigates to `/leagues` and placeholder cards render correctly.
+- ✅ Active state styling highlights Leagues button when on `/leagues`.
+- ✅ AuthGuard enforces login if unauthenticated.
+
+### Risks
+- Low: Limited to updating BottomNav navigation path and active state logic.
+- Mitigation: Confirm navigation works for Home and Settings after changes.
+
+### Status
+This phase bridges the gap between the Leagues placeholder page and navigation. It ensures users can access `/leagues` via the BottomNav, while still respecting feature flag and authentication rules.
+
+___
+
 ### Phase 3: Refactor into LeagueCard Component
 **Scope**
 - Extract inline card markup into `LeagueCard.tsx`

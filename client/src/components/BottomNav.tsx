@@ -20,7 +20,7 @@ export function BottomNav() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const [location] = useLocation()
+  const [location, navigate] = useLocation()
   const { isAuthenticated, isLoading } = useAuth()
 
   // Define navigation items with icons and paths
@@ -35,13 +35,13 @@ export function BottomNav() {
       path: '/leagues', 
       label: 'Leagues', 
       icon: Sword,
-      ariaLabel: 'Navigate to Leagues (placeholder)'
+      ariaLabel: 'Navigate to Leagues'
     },
     { 
       path: '/settings', 
       label: 'Settings', 
       icon: Settings,
-      ariaLabel: 'Navigate to Settings (placeholder)'
+      ariaLabel: 'Navigate to Settings'
     }
   ]
 
@@ -85,10 +85,12 @@ export function BottomNav() {
           return (
             <button
               key={item.path}
+              type="button"
               className={`nav-item ${isActive ? 'active' : ''}`}
               aria-label={item.ariaLabel}
               aria-current={isActive ? 'page' : undefined}
               data-testid={`nav-${item.label.toLowerCase()}`}
+              onClick={() => navigate(item.path)}
             >
               <Icon size={20} />
               <span className="nav-label">{item.label}</span>
