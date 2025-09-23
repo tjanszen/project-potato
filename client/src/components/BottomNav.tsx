@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { useLocation } from 'wouter'
+import { useAuth } from '../contexts/AuthContext'
 import { Home, Sword, Settings } from 'lucide-react'
 import './BottomNav.css'
 
@@ -20,6 +21,7 @@ export function BottomNav() {
   })
 
   const [location] = useLocation()
+  const { isAuthenticated, isLoading } = useAuth()
 
   // Define navigation items with icons and paths
   const navItems = [
@@ -48,8 +50,29 @@ export function BottomNav() {
     return null
   }
 
-  // Phase 3 logging
-  console.log("Phase 3: BottomNav active state + icons enabled");
+  // Addendum Phase: Authentication and route checks
+  
+  // Hide on /auth routes (Sign In / Sign Up)
+  if (location.startsWith('/auth')) {
+    console.log("BottomNav hidden: /auth route");
+    return null
+  }
+
+  // Hide on unauthenticated root route (Authentication Required page)
+  if (location === '/' && !isAuthenticated && !isLoading) {
+    console.log("BottomNav hidden: unauthenticated");
+    return null
+  }
+
+  // Don't render while auth is loading to prevent flash
+  if (isLoading) {
+    return null
+  }
+
+  // Show for authenticated users on in-app routes
+  if (isAuthenticated) {
+    console.log("BottomNav rendered: authenticated in-app route");
+  }
 
   // If flag is enabled, render sticky footer with mobile-only display
   return (
