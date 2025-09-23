@@ -1,0 +1,45 @@
+Goal: Phase 4 of Leagues Placeholder implementation (docs/agent_memory/imp_plans/leagues_placeholder.md)
+
+Context:
+- Feature flag: FF_POTATO_LEAGUES_PLACEHOLDER (default=false, controls LeaguesPage rendering)
+- Phase 2 delivered: /leagues route with 6 hardcoded inline placeholder cards
+- Phase 2.5 delivered: BottomNav integration → Leagues button now navigates to /leagues
+- Phase 3 delivered: LeagueCard.tsx refactor with props for tag, title, description, users, trending
+- Requirement: Add responsive layout polish and scroll improvements to match mobile-first wireframe
+
+Do:
+- Update LeaguesPage.tsx and/or LeagueCard.css to improve responsiveness:
+  - Mobile (≤480px): 1 card per row
+  - Tablet (481–768px): 2 cards per row
+  - Desktop (>768px): 3 cards per row
+- Ensure scrollable container works across all viewports:
+  - Container: overflow-y: auto
+  - Respect BottomNav spacing by reusing CSS variable or padding-bottom (70px)
+- Validate smooth scrolling on mobile devices
+- Ensure touch-friendly spacing (min 44px tap targets preserved)
+- Accessibility improvements:
+  - Add role="list" to card container
+  - Ensure LeagueCard keeps role="listitem"
+- Visual polish:
+  - Maintain consistent margins, rounded corners, and shadows
+  - Ensure tags and icons scale well across breakpoints
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification:
+  restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If responsive breakpoints don’t apply as expected → STOP, summarize findings
+- If BottomNav overlaps cards → STOP, summarize fix options before proceeding
+
+Proof:
+- With FF_POTATO_LEAGUES_PLACEHOLDER=false → /leagues renders nothing
+- With FF_POTATO_LEAGUES_PLACEHOLDER=true:
+  - /leagues shows 6 LeagueCard components in scrollable container
+  - On mobile viewport (≤480px): 1 card per row
+  - On tablet viewport (481–768px): 2 cards per row
+  - On desktop viewport (>768px): 3 cards per row
+  - Scrolling works smoothly, no overlap with BottomNav
+  - Console log: "Phase 4: Responsive polish active"
