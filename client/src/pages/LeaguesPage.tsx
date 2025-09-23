@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { apiClient } from '../lib/api'
 import { LeagueCard } from '../components/LeagueCard'
 
@@ -17,10 +18,38 @@ export function LeaguesPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
+  // Responsive layout state
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 768)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // If flag is disabled, don't render anything
   if (!leaguesFlag?.enabled) {
     return null
   }
+
+  // Phase 4: Log responsive polish activation
+  console.log("Phase 4: Responsive polish active")
+
+  // Calculate grid columns and max width based on viewport
+  const getGridConfig = () => {
+    if (windowWidth <= 480) {
+      return { columns: '1fr', maxWidth: '400px' }
+    } else if (windowWidth <= 768) {
+      return { columns: 'repeat(2, 1fr)', maxWidth: '800px' }
+    } else {
+      return { columns: 'repeat(3, 1fr)', maxWidth: '1200px' }
+    }
+  }
+
+  const gridConfig = getGridConfig()
 
   // Hardcoded league data for Phase 3
   const leagueCards = [
@@ -102,11 +131,15 @@ export function LeaguesPage() {
         style={{
           maxHeight: 'calc(100vh - 140px)', // Account for header + BottomNav
           overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'grid',
           gap: '20px',
-          maxWidth: '600px',
-          margin: '0 auto'
+          padding: '0 10px',
+          paddingBottom: '70px', // Respect BottomNav spacing
+          gridTemplateColumns: gridConfig.columns,
+          maxWidth: gridConfig.maxWidth,
+          margin: '0 auto',
+          // Ensure smooth scrolling on touch devices
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         {leagueCards.map((league) => (
