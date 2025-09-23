@@ -1,0 +1,55 @@
+Goal: Diagnose why the BottomNav component (FF_POTATO_BOTTOM_NAV) is no longer visible, even though it was working yesterday.
+
+Context:
+- Implementation plan: docs/agent_memory/imp_plans/botton_nav.md
+- Feature flag: FF_POTATO_BOTTOM_NAV
+- Phase 3 previously confirmed working: footer visible on mobile ≤480px, icons rendered, Home active
+- Current issue: BottomNav no longer appears in UI
+
+Do:
+- Verify feature flag:
+  - Check server/feature-flags.js entry for ff.potato.bottom_nav
+  - Check /api/feature-flags response for ff.potato.bottom_nav state
+  - Confirm environment variable FF_POTATO_BOTTOM_NAV is set as expected
+- Verify App.tsx integration:
+  - Ensure <BottomNav /> is still injected after <AppRoutes />
+  - Confirm App container padding (to prevent overlap) still applied
+- Verify BottomNav.tsx:
+  - Confirm feature flag query still runs and conditional rendering is intact
+  - Add console.log to confirm component mount attempt and flag value
+- Verify CSS:
+  - Check BottomNav.css media query (@media max-width: 480px) is still applied
+  - Confirm .bottom-nav { display: block } actually triggers at ≤480px
+  - Check z-index and positioning aren’t being overridden by other styles
+- Verify responsive test:
+  - Resize browser to ≤480px and confirm .bottom-nav element exists in DOM (even if hidden)
+
+Workflows to Use:
+- Always run:  
+  restart_workflow("Full Clean Restart")
+- For production-style verification:  
+  restart_workflow("Clean Production Deploy")
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (flag missing in API, CSS not applied, injection point missing, >3 TS errors):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If investigation reveals unrelated regressions (routing errors, unrelated CSS changes, missing dependencies):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Proof:
+- Logs must include:
+  - "BottomNav flag value: true|false"
+  - "BottomNav component mounted"
+- With FF_POTATO_BOTTOM_NAV=false → no footer in DOM
+- With FF_POTATO_BOTTOM_NAV=true at ≤480px:
+  - .bottom-nav exists in DOM
+  - CSS media query shows display:block
+  - Footer visible at bottom of viewport
