@@ -1,0 +1,47 @@
+Goal: Spike to investigate how to implement a new "Leagues" page with placeholder cards. Do not build UI yet — this is only to understand the codebase and draft a phased implementation plan.
+
+Context:
+- New feature: Leagues page under BottomNav (/leagues route placeholder already exists from FF_POTATO_BOTTOM_NAV work).
+- Requirement (future phases): Display a scrollable list of ~6 placeholder "league cards" with structure:
+  - Image placeholder
+  - Top-right tag (e.g., Beginner/Intermediate/Advanced)
+  - Header (league name)
+  - Subtext (short description)
+  - Bottom left: user count with "Users" icon + number (use 55)
+  - Bottom right: "Trending" with line graph icon
+  - Not clickable yet
+  - Scrollable list layout
+
+Do (Spike Scope):
+- Investigate routing integration for /leagues (confirm where routes are defined, and how placeholders can be injected).
+- Identify best file structure for LeaguesPage.tsx and LeagueCard.tsx components.
+- Review existing UI patterns (e.g., card styles, shadows, spacing) to determine reuse vs new styles.
+- Verify lucide-react icons available:
+  - Users (3-people icon)
+  - LineChart (for Trending)
+- Recommend best approach for scrollable list layout (flexbox vs CSS grid vs overflow-y).
+- Draft a phased implementation plan for building the feature in follow-up work.
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+
+Error Handling (Mid-Phase Protocol):
+- If routing integration is unclear or auth gating blocks rendering → STOP, summarize findings, wait for operator approval
+- If icons missing from lucide-react → STOP and recommend alternatives
+
+Scope Control (Deviation Protocol):
+- If work drifts toward creating a working UI prototype, new API endpoints, or schema changes → STOP and summarize deviation
+- This spike is only for analysis and planning
+
+Expected Deliverables:
+- Documentation of:
+  - Where the /leagues route should live
+  - Recommended file/component structure
+  - Feasible styling/layout approaches
+  - Available icons verification
+- A phased implementation plan, e.g.:
+  - Phase 1: Build static LeagueCard component
+  - Phase 2: Render 6 placeholder cards in LeaguesPage
+  - Phase 3: Add scrollable container & responsive polish
+  - Phase 4: Validation & test plan
