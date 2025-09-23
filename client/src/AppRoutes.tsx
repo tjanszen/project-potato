@@ -3,6 +3,7 @@ import { AuthGuard } from './components/AuthGuard'
 import { AuthPage } from './pages/AuthPage'
 import { DevTestingPage } from './pages/DevTestingPage'
 import { CalendarPage } from './pages/CalendarPage'
+import { LeaguesPage } from './pages/LeaguesPage'
 
 export function AppRoutes() {
   return (
@@ -20,6 +21,12 @@ export function AppRoutes() {
       <Route path="/dev">
         <AuthGuard>
           <DevTestingPage />
+        </AuthGuard>
+      </Route>
+      
+      <Route path="/leagues">
+        <AuthGuard>
+          <LeaguesPage />
         </AuthGuard>
       </Route>
       

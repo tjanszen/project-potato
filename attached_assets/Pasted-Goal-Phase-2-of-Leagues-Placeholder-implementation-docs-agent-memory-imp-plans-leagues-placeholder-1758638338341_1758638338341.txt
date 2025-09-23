@@ -1,0 +1,51 @@
+Goal: Phase 2 of Leagues Placeholder implementation (docs/agent_memory/imp_plans/leagues_placeholder.md)
+
+Context:
+- Feature flag: FF_POTATO_LEAGUES_PLACEHOLDER (implemented in Phase 1, default=false)
+- Wireframe reference: docs/assets/leagues_wireframe.png
+- Requirement: Create LeaguesPage with 6 hardcoded placeholder cards, inline (no separate component yet)
+- Navigation: /leagues route already exists in BottomNav as placeholder, must now render page content when flag=true
+
+Do:
+- Create new file: client/src/pages/LeaguesPage.tsx
+  - Import useQuery with apiClient.getFeatureFlag('ff.potato.leagues_placeholder')
+  - If flag is disabled → return null
+  - If flag is enabled → render page with header "Leagues" and 6 hardcoded placeholder cards
+- Add route in client/src/AppRoutes.tsx:
+  <Route path="/leagues">
+    <AuthGuard>
+      <LeaguesPage />
+    </AuthGuard>
+  </Route>
+- Inline card structure (per wireframe):
+  - Gray rectangle as image placeholder
+  - Top-right tag (e.g. Beginner, Intermediate, Advanced)
+  - Header (league name)
+  - Subtext (short description)
+  - Bottom-left: Users icon + number (55)
+  - Bottom-right: LineChart icon + "Trending"
+- Layout:
+  - Scrollable vertical list (overflow-y: auto, max-height adjusted for header + BottomNav)
+  - Container: role="list"
+  - Cards: role="listitem", cursor: default
+  - Basic rounded corners, white background, shadow, padding
+- Hardcode 6 cards with varied league names/descriptions/tags, but same placeholder numbers/icons
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification:
+  restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If route integration breaks → STOP and summarize findings
+- If feature flag query fails → STOP and summarize findings
+
+Proof:
+- Flag=false → /leagues renders nothing (no cards, no page)
+- Flag=true (unauthenticated) → route blocked by AuthGuard
+- Flag=true (authenticated):
+  - Visiting /leagues shows page with "Leagues" header
+  - 6 placeholder cards rendered
+  - Cards display all required elements (image placeholder, tag, header, subtext, users count with icon, trending with icon)
+  - Page is scrollable on mobile viewport
