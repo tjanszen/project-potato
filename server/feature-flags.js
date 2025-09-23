@@ -39,6 +39,11 @@ const featureFlags = {
         enabled: false,
         description: 'Mobile-only sticky bottom navigation bar',
     },
+    'ff.potato.leagues_placeholder': {
+        name: 'ff.potato.leagues_placeholder',
+        enabled: false,
+        description: 'Enables Leagues page with placeholder cards for testing',
+    },
 };
 
 class FeatureFlagService {
@@ -57,6 +62,7 @@ class FeatureFlagService {
         featureFlags['ff.potato.totals_v3'].enabled = normalize(process.env.FF_POTATO_TOTALS_V3);
         featureFlags['ff.potato.progress_header_v2'].enabled = normalize(process.env.FF_POTATO_PROGRESS_HEADER_V2);
         featureFlags['ff.potato.bottom_nav'].enabled = normalize(process.env.FF_POTATO_BOTTOM_NAV);
+        featureFlags['ff.potato.leagues_placeholder'].enabled = normalize(process.env.FF_POTATO_LEAGUES_PLACEHOLDER);
 
         // Log feature flag status on startup
         this.logFlagStatus();
@@ -89,6 +95,7 @@ class FeatureFlagService {
             'ff.potato.totals_v3': this.getFlag('ff.potato.totals_v3'),
             'ff.potato.progress_header_v2': this.getFlag('ff.potato.progress_header_v2'),
             'ff.potato.bottom_nav': this.getFlag('ff.potato.bottom_nav'),
+            'ff.potato.leagues_placeholder': this.getFlag('ff.potato.leagues_placeholder'),
         };
     }
 
