@@ -128,6 +128,61 @@ This feature is controlled by the feature flag `FF_POTATO_BOTTOM_NAV` (default=f
   - Screen reader accessibility  
 
 ---
+# Addendum Phase — Auth-Aware Rendering for Bottom Navigation
+
+## Problem
+Currently, the BottomNav component is rendered whenever:
+- Feature flag FF_POTATO_BOTTOM_NAV = true
+- Viewport ≤480px
+
+It does not consider authentication state or route, so it appears:
+- On unauthenticated "/" (Authentication Required page)
+- On "/auth" (Sign In / Sign Up page)
+
+## Requirement
+The BottomNav should only render when:
+- User is authenticated
+- AND the current route is an "in-app" route (not /auth, not unauthenticated home)
+
+## Implementation Plan
+### Step 1: Add Auth State Check
+- Use existing auth context/hook (e.g., useAuth or similar) to check if user is authenticated
+- If user is not authenticated → return null immediately
+
+### Step 2: Add Route Guard
+- Use useLocation (wouter) to check current path
+- If path starts with `/auth` → return null
+- If path is `/` but user is not authenticated (shows Authentication Required) → return null
+
+### Step 3: Conditional Render Update
+Update BottomNav.tsx:
+
+    if (!bottomNavFlag?.enabled) return null
+    if (!auth.user) return null
+    if (location.startsWith('/auth')) return null
+    if (location === '/' && !auth.user) return null
+
+### Step 4: Validation
+- ✅ With FF_POTATO_BOTTOM_NAV=false → footer hidden everywhere
+- ✅ With FF_POTATO_BOTTOM_NAV=true:
+  - /auth/* (sign in/up) → footer hidden
+  - / (unauthenticated) → footer hidden
+  - / (authenticated) → footer visible
+  - /leagues (placeholder) → footer visible
+  - /settings (placeholder) → footer visible
+- ✅ Responsive behavior preserved (≤480px only)
+- ✅ Authenticated in-app pages show footer as expected
+
+## Risk
+- Low: Limited to conditional rendering logic
+- Medium: Ensure auth state is reliably available at render time
+
+## Proof
+- Console logs:
+  - "BottomNav hidden: unauthenticated"
+  - "BottomNav hidden: /auth route"
+  - "BottomNav rendered: authenticated in-app route"
+___
 
 ## Risk Assessment
 - ✅ **Low Risk**: Isolated component, feature-flag gated.  
