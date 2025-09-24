@@ -18,6 +18,14 @@ export function LeaguesPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
+  const { 
+    data: leaguesTabsFlag 
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.leagues_tabs'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.leagues_tabs') as Promise<FeatureFlag>,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
   // Responsive layout state
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 768)
 
@@ -37,6 +45,9 @@ export function LeaguesPage() {
 
   // Phase 4: Log responsive polish activation
   console.log("Phase 4: Responsive polish active")
+  
+  // Phase 1 Leagues Tabs: Log feature flag state
+  console.log("FF_POTATO_LEAGUES_TABS state:", leaguesTabsFlag?.enabled)
 
   // Calculate grid columns and max width based on viewport
   const getGridConfig = () => {
