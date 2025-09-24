@@ -1,0 +1,60 @@
+Goal: Spike to analyze current LeaguesPage.tsx structure and draft a phased implementation plan for adding tabbed sub-pages (Active, List, Clubs) behind a new feature flag FF_POTATO_LEAGUES_TABS.
+
+Context:
+- File path: client/src/pages/LeaguesPage.tsx (created in Phase 2 of FF_POTATO_LEAGUES_PLACEHOLDER plan: docs/agent_memory/imp_plans/leagues_placeholder.md)
+- Current Behavior: /leagues route renders 6 placeholder LeagueCard components in a scrollable container
+- Requirement: Break this page into 3 sub-tabs (Active, List, Clubs) for mobile web
+  - Default tab: List (renders existing LeagueCard placeholders, unchanged)
+  - Active tab: Placeholder only (blank state for now, will later show user-joined leagues)
+  - Clubs tab: Placeholder only (blank state for now, will later show user clubs)
+  - Tab navigation should be visible at top of LeaguesPage (just below header/title)
+  - Tabs should be horizontally aligned, styled for mobile web, with clear active state
+  - Switching tabs updates visible content but does not navigate away from /leagues
+  - Only one tab content visible at a time
+- New Feature Flag: FF_POTATO_LEAGUES_TABS
+  - Default: false
+  - Purpose: Ensure tabbed layout is gated and not shown prematurely
+  - Behavior:
+    - When false → current LeagueCard list renders as-is (existing FF_POTATO_LEAGUES_PLACEHOLDER behavior)
+    - When true → tabbed interface enabled, List tab shows LeagueCards, Active and Clubs show placeholders
+
+Do (Spike Investigation):
+1. Analyze LeaguesPage.tsx code structure today:
+   - How LeagueCard list is currently rendered
+   - How feature flag FF_POTATO_LEAGUES_PLACEHOLDER is integrated
+   - Where layout/container styles are applied
+2. Identify best approach for implementing tabbed navigation:
+   - Option A: Local state with conditional rendering inside LeaguesPage
+   - Option B: Nested routes (/leagues/active, /leagues/list, /leagues/clubs) handled by React Router
+   - Option C: Hybrid approach (default /leagues → List, tabs update URL but remain within LeaguesPage layout)
+3. Evaluate mobile styling patterns in repo (e.g. BottomNav.css, TotalsPanel.tsx) for tab styling reuse
+4. Document risks/trade-offs (e.g. routing complexity, responsive design concerns)
+5. Outline how FF_POTATO_LEAGUES_TABS interacts with FF_POTATO_LEAGUES_PLACEHOLDER (both required? does tabs override placeholder flag?)
+
+Deliverable:
+- DO NOT implement yet
+- Provide a **draft implementation plan** with clear phases:
+  - Phase 1: Add FF_POTATO_LEAGUES_TABS flag (backend + frontend support)
+  - Phase 2: Build tab bar UI with 3 tabs (Active, List, Clubs) and placeholders
+  - Phase 3: Integrate existing LeagueCard list into List tab
+  - Phase 4: Responsive testing & validation (mobile first, tablet, desktop)
+- Include notes on whether nested routes or local state is better for this repo
+- Ensure backward compatibility:
+  - FF_POTATO_LEAGUES_PLACEHOLDER=false → /leagues page hidden
+  - FF_POTATO_LEAGUES_PLACEHOLDER=true & FF_POTATO_LEAGUES_TABS=false → existing LeagueCard list
+  - FF_POTATO_LEAGUES_PLACEHOLDER=true & FF_POTATO_LEAGUES_TABS=true → tabbed layout
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification (if needed during spike exploration):
+  restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If repo structure doesn’t support local tab state or nested routing without major refactor → STOP, summarize findings + recommend approach
+- If UI libraries exist that already solve tabs → STOP, summarize before suggesting custom solution
+
+Proof of Spike:
+- Documentation of current LeaguesPage structure
+- Recommendation of local state vs nested routes
+- Draft phased implementation plan for tabbed Leagues page gated by FF_POTATO_LEAGUES_TABS
