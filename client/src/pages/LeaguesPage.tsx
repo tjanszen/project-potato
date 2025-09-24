@@ -28,6 +28,14 @@ export function LeaguesPage() {
 
   // Responsive layout state
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 768)
+  
+  // Phase 2: Tab state management
+  const [activeTab, setActiveTab] = useState<'active' | 'list' | 'clubs'>('list')
+  
+  const handleTabChange = (tab: 'active' | 'list' | 'clubs') => {
+    setActiveTab(tab)
+    console.log("Active tab switched to:", tab)
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,6 +69,59 @@ export function LeaguesPage() {
   }
 
   const gridConfig = getGridConfig()
+
+  // Phase 2: TabBar component
+  const TabBar = () => {
+    console.log("Phase 2: Leagues TabBar rendered")
+    
+    const tabs: Array<{key: 'active' | 'list' | 'clubs', label: string}> = [
+      { key: 'active', label: 'Active' },
+      { key: 'list', label: 'List' },
+      { key: 'clubs', label: 'Clubs' }
+    ]
+
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: '20px',
+        paddingBottom: '10px',
+        borderBottom: '1px solid #e9ecef'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '8px',
+          maxWidth: '400px',
+          width: '100%'
+        }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => handleTabChange(tab.key)}
+              style={{
+                background: activeTab === tab.key ? '#e7f3ff' : 'transparent',
+                color: activeTab === tab.key ? '#007bff' : '#666',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 8px',
+                fontSize: '14px',
+                fontWeight: activeTab === tab.key ? '600' : '400',
+                cursor: 'pointer',
+                minHeight: '44px',
+                minWidth: '44px',
+                transition: 'all 0.2s ease'
+              }}
+              data-testid={`tab-${tab.key}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   // Hardcoded league data for Phase 3
   const leagueCards = [
@@ -136,35 +197,99 @@ export function LeaguesPage() {
         </h1>
       </div>
 
-      {/* Scrollable Cards Container */}
-      <div 
-        role="list"
-        style={{
-          maxHeight: 'calc(100vh - 140px)', // Account for header + BottomNav
-          overflowY: 'auto',
-          display: 'grid',
-          gap: '20px',
-          padding: '0 10px',
-          paddingBottom: '70px', // Respect BottomNav spacing
-          gridTemplateColumns: gridConfig.columns,
-          maxWidth: gridConfig.maxWidth,
-          margin: '0 auto',
-          // Ensure smooth scrolling on touch devices
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
-        {leagueCards.map((league) => (
-          <LeagueCard
-            key={league.id}
-            id={league.id}
-            tag={league.tag}
-            title={league.title}
-            description={league.description}
-            users={league.users}
-            trending={league.trending}
-          />
-        ))}
-      </div>
+      {/* Conditional rendering based on feature flags */}
+      {leaguesTabsFlag?.enabled ? (
+        <>
+          {/* Phase 2: TabBar */}
+          <TabBar />
+          
+          {/* Tab Content */}
+          <div style={{
+            maxHeight: 'calc(100vh - 200px)', // Account for header + TabBar + BottomNav
+            overflowY: 'auto',
+            padding: '0 10px',
+            paddingBottom: '70px', // Respect BottomNav spacing
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {activeTab === 'list' && (
+              <div 
+                role="list"
+                style={{
+                  display: 'grid',
+                  gap: '20px',
+                  gridTemplateColumns: gridConfig.columns,
+                  maxWidth: gridConfig.maxWidth,
+                  margin: '0 auto'
+                }}
+              >
+                {leagueCards.map((league) => (
+                  <LeagueCard
+                    key={league.id}
+                    id={league.id}
+                    tag={league.tag}
+                    title={league.title}
+                    description={league.description}
+                    users={league.users}
+                    trending={league.trending}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {activeTab === 'active' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#666'
+              }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
+                <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
+              </div>
+            )}
+            
+            {activeTab === 'clubs' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#666'
+              }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Clubs</h3>
+                <p style={{ margin: '0' }}>Your clubs will appear here</p>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Phase 4: Original LeagueCard grid when tabs disabled */
+        <div 
+          role="list"
+          style={{
+            maxHeight: 'calc(100vh - 140px)', // Account for header + BottomNav
+            overflowY: 'auto',
+            display: 'grid',
+            gap: '20px',
+            padding: '0 10px',
+            paddingBottom: '70px', // Respect BottomNav spacing
+            gridTemplateColumns: gridConfig.columns,
+            maxWidth: gridConfig.maxWidth,
+            margin: '0 auto',
+            // Ensure smooth scrolling on touch devices
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {leagueCards.map((league) => (
+            <LeagueCard
+              key={league.id}
+              id={league.id}
+              tag={league.tag}
+              title={league.title}
+              description={league.description}
+              users={league.users}
+              trending={league.trending}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
