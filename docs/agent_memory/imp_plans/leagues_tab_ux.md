@@ -118,15 +118,30 @@ This ensures safe rollout and maintains backward compatibility with the existing
 
 ---
 
-### Phase 4: Responsive Testing & Polish
+### Phase 4: Header/Headline Size Adjustment
+
+**Goal:** Reduce the space taken up by large headers across the 3 main app pages.
 
 **Deliverables**
-- Validate on mobile web (≤480px)
-- Confirm tab switching updates content instantly
-- Ensure tab bar and BottomNav do not overlap
-- Verify scroll behavior works correctly on List tab
+- Reduce font size of top headers/headlines by ~50% compared to current size
+- Affected pages:
+  - Home (CalendarPage main headline)
+  - Leagues (LeaguesPage headline “Leagues”)
+  - Settings (SettingsPage headline)
+- Ensure headers remain bold and clear but occupy less vertical space
+- Verify reduced headers still look balanced with surrounding UI on mobile web
 
-**Time Estimate:** 2–3 hours
+**Implementation Notes**
+- Update inline styles or shared CSS classes for page-level headers only
+- Suggested scale: if current font size is 32px, reduce to ~16px
+- Adjust margin spacing as needed to avoid excess whitespace
+
+**Validation**
+- “Leagues” header visibly smaller on mobile web (about half previous size)
+- Home and Settings headers adopt same smaller style
+- Console log: “Phase 4: Header size reduced on all main pages”
+
+**Time Estimate:** 2 hours
 
 ---
 
