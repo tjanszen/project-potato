@@ -637,6 +637,14 @@ export default app;
 
 // Start the server only if this file is run directly
 if (require.main === module) {
+  // Test CSV parser at startup
+  console.log('🔧 Testing CSV parser...');
+  const leagues = parseLeaguesCSV();
+  if (leagues.length > 0) {
+    console.log('✅ CSV Parser working correctly. Sample league:');
+    console.log(JSON.stringify(leagues[0], null, 2));
+  }
+  
   app.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
   });
