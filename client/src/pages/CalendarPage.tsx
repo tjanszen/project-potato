@@ -53,6 +53,7 @@ export function CalendarPage() {
   console.log("[Phase1] Header removed, emoji only");
   console.log("Footer rendered");
   console.log("Phase 3 footer controls rendered");
+  console.log("Phase 4: Header size reduced on CalendarPage");
 
   return (
     <div style={{ 
@@ -63,8 +64,8 @@ export function CalendarPage() {
     }}>
       {/* Standalone Potato Emoji */}
       <div style={{ 
-        fontSize: '28px', 
-        marginBottom: '30px', 
+        fontSize: '14px', 
+        marginBottom: '15px', 
         textAlign: 'left'
       }}>🥔</div>
       

@@ -56,6 +56,9 @@ export function LeaguesPage() {
   
   // Phase 1 Leagues Tabs: Log feature flag state
   console.log("FF_POTATO_LEAGUES_TABS state:", leaguesTabsFlag?.enabled)
+  
+  // Phase 4: Header size reduction
+  console.log("Phase 4: Header size reduced on LeaguesPage")
 
   // Calculate grid columns and max width based on viewport
   const getGridConfig = () => {
@@ -185,10 +188,10 @@ export function LeaguesPage() {
       {/* Page Header */}
       <div style={{
         textAlign: 'center',
-        marginBottom: '30px'
+        marginBottom: '15px'
       }}>
         <h1 style={{
-          fontSize: '32px',
+          fontSize: '16px',
           fontWeight: 'bold',
           color: '#333',
           margin: '0'
