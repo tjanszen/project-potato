@@ -222,17 +222,20 @@ export function LeaguesPage() {
                   margin: '0 auto'
                 }}
               >
-                {leagueCards.map((league) => (
-                  <LeagueCard
-                    key={league.id}
-                    id={league.id}
-                    tag={league.tag}
-                    title={league.title}
-                    description={league.description}
-                    users={league.users}
-                    trending={league.trending}
-                  />
-                ))}
+                {(() => {
+                  console.log("Phase 3: Rendering list content")
+                  return leagueCards.map((league) => (
+                    <LeagueCard
+                      key={league.id}
+                      id={league.id}
+                      tag={league.tag}
+                      title={league.title}
+                      description={league.description}
+                      users={league.users}
+                      trending={league.trending}
+                    />
+                  ))
+                })()}
               </div>
             )}
             
@@ -242,8 +245,15 @@ export function LeaguesPage() {
                 padding: '40px 20px',
                 color: '#666'
               }}>
-                <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
-                <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
+                {(() => {
+                  console.log("Phase 3: Rendering active content")
+                  return (
+                    <>
+                      <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
+                      <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
+                    </>
+                  )
+                })()}
               </div>
             )}
             
@@ -253,8 +263,15 @@ export function LeaguesPage() {
                 padding: '40px 20px',
                 color: '#666'
               }}>
-                <h3 style={{ margin: '0 0 10px 0' }}>Clubs</h3>
-                <p style={{ margin: '0' }}>Your clubs will appear here</p>
+                {(() => {
+                  console.log("Phase 3: Rendering clubs content")
+                  return (
+                    <>
+                      <h3 style={{ margin: '0 0 10px 0' }}>Clubs</h3>
+                      <p style={{ margin: '0' }}>Your clubs will appear here</p>
+                    </>
+                  )
+                })()}
               </div>
             )}
           </div>
