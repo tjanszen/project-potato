@@ -66,6 +66,12 @@ Instead, validate changes using one or more of the following:
 
 If you detect that `mark_completed_and_get_feedback` is failing or unavailable, automatically fall back to the above methods and report success/failure explicitly in your result.  
 
+Server Architecture Reminder
+- The **production server entrypoint is `index.js` at the project root`.  
+- The file `server/index.ts` exists but is **legacy/unused** — do **not** add routes or middleware here.  
+- All backend changes (routes, middleware, APIs, feature flags, CSV parsing, etc.) must go in **index.js**.  
+- When implementing server-side features, always edit **index.js** unless explicitly instructed otherwise.  
+
 ~~~
 
 ---

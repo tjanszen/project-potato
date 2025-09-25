@@ -1,0 +1,50 @@
+Goal: Phase 2.1 of Leagues CSV uploader — extend frontend API client with getLeagues() method.
+
+Do:
+- In client/src/lib/api.ts:
+  - Add a new async method getLeagues() that calls the /api/leagues endpoint
+  - Return parsed JSON response matching the expected schema { leagues: [...], count: number, source: string }
+- Ensure proper typing (TypeScript interface for League if needed)
+- Add console.log("Phase 2.1: getLeagues API client method available") for verification
+
+Proof:
+- Logs: must include "Phase 2.1: getLeagues API client method available"
+- curl http://localhost:3000/api/leagues returns a valid JSON array when FF_POTATO_LEAGUES_CSV=true
+- API client method can be invoked in browser console (window.apiClient.getLeagues()) and returns leagues data
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If TypeScript errors >3, missing endpoint, or incorrect JSON parsing:
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates (e.g., adds frontend UI, modifies LeaguesPage prematurely, or alters unrelated API client methods):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Do **not** use `mark_completed_and_get_feedback`.  
+Instead, validate via:
+- curl /api/leagues  
+- console.log proof message  
+- Browser check of apiClient method
+
+Server Architecture Reminder
+- The **production server entrypoint is `index.js` at the project root`.  
+- The file `server/index.ts` exists but is **legacy/unused** — do **not** add routes or middleware here.  
+- All backend changes (routes, middleware, APIs, feature flags, CSV parsing, etc.) must go in **index.js**.  
+- When implementing server-side features, always edit **index.js** unless explicitly instructed otherwise.  
+
+File System Reminder:
+- CSV data lives in /data (repo-committed)
+- Static images live in client/public/assets for development
+- Use App Storage for production persistence

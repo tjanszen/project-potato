@@ -12,6 +12,24 @@ export interface ApiResponse<T> {
   message?: string
 }
 
+// League data structure (matches LeagueCardProps from components)
+export interface League {
+  id: number
+  image_url?: string
+  tag: string
+  title: string
+  description: string
+  users: number
+  trending: boolean
+}
+
+// Leagues API response structure
+export interface LeaguesResponse {
+  leagues: League[]
+  count: number
+  source: string
+}
+
 export class ApiClient {
   private baseURL: string
 
@@ -109,6 +127,12 @@ export class ApiClient {
   // V2 Totals endpoint (Phase 7C-1)
   async getTotals() {
     return this.request('/api/v2/totals')
+  }
+
+  // Leagues endpoint (Phase 2.1 - CSV Integration)
+  async getLeagues(): Promise<ApiResponse<LeaguesResponse>> {
+    console.log("Phase 2.1: getLeagues API client method available")
+    return this.request<LeaguesResponse>('/api/leagues')
   }
 
   // Health check
