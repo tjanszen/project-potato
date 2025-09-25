@@ -1,36 +1,46 @@
 # Implementation Plan — Leagues CSV Uploader (FF_POTATO_LEAGUES_CSV)
 
 ## Overview
-We want to replace hardcoded placeholder leagues with a **dynamic CSV-driven system**.  
-This will allow us to upload/update a `leagues.csv` file and have the app automatically display those leagues on the **Leagues tab**.
+We want to replace hardcoded placeholder leagues with a **CSV-driven system**.  
+This enables us to maintain a simple `data/leagues.csv` file in the repo and serve its contents dynamically to the frontend via `/api/leagues`.
 
-- The CSV will be **stored inside the repo** (under `data/leagues.csv`) and committed to git.  
-- The backend will expose a new API endpoint `/api/leagues` that parses the CSV and returns JSON.  
-- The frontend will query this API when `FF_POTATO_LEAGUES_CSV` is enabled.  
-- This ensures that we can test and iterate quickly without adding database infrastructure yet.  
-
-## Wireframe Reference
-The existing **Leagues placeholder wireframe** still applies. This work changes **data ingestion**, not UI.
+- Controlled by a new feature flag: **FF_POTATO_LEAGUES_CSV**  
+- Backend parses CSV on-demand and exposes data via an API endpoint  
+- Frontend conditionally consumes the API response when the flag is enabled, falling back to hardcoded placeholders otherwise  
+- Scale is not a concern right now → optimize later only if needed  
 
 ---
 
 ## Spike Context & Findings
-From the spike analysis:
-- **Current State**
-  - Hardcoded data lives inside `LeaguesPage.tsx` (lines ~130–179).
-  - Leagues rendering works via placeholder LeagueCard components.
-- **Backend Architecture**
-  - Routes are defined in `server/index.ts`.
-  - Feature flags registered in `server/feature-flags.js`.
-  - Middleware available to gate endpoints with feature flags.
-- **Frontend Architecture**
-  - API client defined in `client/src/lib/api.ts`.
-  - Data fetching uses `react-query` (`useQuery`) consistently.
-  - Existing feature flag queries can be mirrored for CSV integration.
 
-- **Missing Dependencies**
-  - No CSV parser currently installed.
-  - Will need `fs` + `path` (Node built-ins) to load the CSV.
+### Current Architecture
+- **Backend**
+  - Routes defined in `server/index.ts`
+  - Feature flags stored in `server/feature-flags.js` with env var hydration
+  - REST endpoints use `/api/*` with standard middleware
+  - Auth system: `requireAuthentication` middleware
+
+- **Frontend**
+  - API client lives in `client/src/lib/api.ts`
+  - Data fetching uses React Query (`useQuery`)
+  - Hardcoded league data inside `LeaguesPage.tsx` (~lines 130–179)
+  - Feature flags already gate Leagues page via `FF_POTATO_LEAGUES_PLACEHOLDER` and `FF_POTATO_LEAGUES_TABS`
+
+- **Dependencies Missing**
+  - No CSV parsing library installed
+  - Need Node.js `fs` + `path` for file reads
+
+### Mobile Styling Patterns
+- `BottomNav.css` uses `@media (max-width: 480px)` for mobile-first breakpoints
+- Reusable grid patterns found in `CalendarGrid.css`
+- Card styling already standardized via TotalsPanel and LeagueCard
+
+### Recommendations from Spike
+- Keep it simple: use **CSV file + API endpoint** (no DB yet)  
+- Parse CSV on-demand; caching not needed at current scale  
+- Feature flag isolation ensures safe rollout  
+- Fallback to hardcoded placeholders if CSV missing or invalid  
+- CSV schema needs `league_id` now to prep for “Active League” future phase  
 
 ---
 
@@ -43,105 +53,141 @@ From the spike analysis:
 ---
 
 ## CSV Schema
-The CSV will live in `data/leagues.csv` and follow this schema:
+File path: `data/leagues.csv`
 
 ```
 league_id,image_url,tag,header,subtext,users_count,trending_flag
 1,/assets/weekend.jpg,Beginner,Weekend Warrior,Go on a weekend dry run!,55,true
-2,/assets/nba.jpg,Beginner,NBA Finals,Professional Basketball League,55,true
+2,/assets/nba.jpg,Intermediate,NBA Finals,Professional Basketball League,55,true
 ```
 
-- `league_id` → unique ID for the league (used later when selecting “Active”)  
-- `image_url` → placeholder image path (for now still static assets or gray block)  
-- `tag` → Beginner/Intermediate/Advanced  
-- `header` → league title  
+Fields:
+- `league_id` → unique ID for each league  
+- `image_url` → placeholder image path (gray block or static asset)  
+- `tag` → Beginner / Intermediate / Advanced  
+- `header` → league name  
 - `subtext` → short description  
-- `users_count` → integer  
+- `users_count` → integer (e.g. 55)  
 - `trending_flag` → true/false  
 
 ---
 
-## Phased Implementation Plan
+## Phase 1: Backend CSV Ingestion + API Endpoint
 
-### Phase 1: Backend CSV Ingestion + API Endpoint
-**Goal:** Enable `/api/leagues` to return JSON parsed from `data/leagues.csv`.
+### Phase 1.1: Feature Flag Setup
+- Add new entry in `server/feature-flags.js`:
+    - Key: `ff.potato.leagues_csv`
+    - Default: false
+    - Env var: `FF_POTATO_LEAGUES_CSV`
+    - Description: "Enables CSV-based dynamic leagues content loading"
+- Verify flag toggle works via `/api/admin/toggle-flag/ff.potato.leagues_csv`
 
-Deliverables:
-- Install a CSV parsing library.
-  - **Lean/testing recommendation:** `csv-parse/sync` (simpler, one-shot parsing).
-  - **Alternative/production-ready:** `fast-csv` (streaming, scalable).
-- Add new feature flag: `ff.potato.leagues_csv`.
-- Add `data/leagues.csv` with starter content.
-- Create parser function:
-    - Read CSV synchronously from `data/leagues.csv`.
-    - Validate required fields exist.
-    - Parse into JSON objects.
-    - If file missing or malformed → return `[]` instead of crashing.
-- Add API endpoint `/api/leagues`:
-    - Gated by feature flag.
-    - Returns `{ leagues: [...], count: n, source: "csv" }`.
+### Phase 1.2: CSV File Setup
+- Create `data/leagues.csv`
+- Add sample rows (2–3 leagues to start)
+- Commit file into repo for version control
 
-Notes:
-- **For now:** no caching, just re-parse on every request (fine at small scale).
-- **Later (optional):** add in-memory cache + schema validation (Zod).
+### Phase 1.3: CSV Parser Function
+- Use a simple synchronous parser for now (`csv-parse/sync` or `papaparse`)
+- Read file from `data/leagues.csv`
+- Map rows into JSON objects:
+    - Ensure `league_id` parsed as int
+    - `users_count` parsed as int
+    - `trending_flag` parsed as boolean
+- Handle errors gracefully:
+    - If file missing → return empty array
+    - If row malformed → skip row and log warning
+
+### Phase 1.4: API Endpoint
+- Add `/api/leagues` in `server/index.ts`
+- Gate with feature flag `ff.potato.leagues_csv`
+- Response format:
+
+```json
+{
+  "leagues": [ ... ],
+  "count": <number>,
+  "source": "csv"
+}
+```
+
+- Error handling:
+    - On failure, return `{ leagues: [], count: 0, source: "fallback" }`
 
 ---
 
-### Phase 2: Frontend Integration
-**Goal:** Replace hardcoded leagues with API-driven data (when flag enabled).
+## Phase 2: Frontend Integration
 
-Deliverables:
-- Extend API client (`client/src/lib/api.ts`) with `getLeagues()` method.
-- Update `LeaguesPage.tsx`:
-    - Add query for `ff.potato.leagues_csv`.
-    - Add query for `/api/leagues` (enabled only when flag is true).
-    - Render:
-        - API leagues if flag + data available.
-        - Fallback to hardcoded leagues if CSV missing or flag disabled.
-- Add simple **loading** and **error states**:
-    - `"Loading leagues..."` while waiting.
-    - On error, log to console and fallback to hardcoded data.
+### Phase 2.1: API Client
+- Extend `client/src/lib/api.ts` with new method:
+
+```ts
+async getLeagues() {
+  return this.request('/api/leagues')
+}
+```
+
+### Phase 2.2: Feature Flag Query
+- In `LeaguesPage.tsx`, add React Query for `ff.potato.leagues_csv`
+- Use `useQuery` to fetch flag state
+- Default fallback: false
+
+### Phase 2.3: Leagues Data Query
+- If flag is enabled → query `/api/leagues`
+- Cache for 10 minutes with React Query
+- Use conditional rendering:
+    - CSV data if available
+    - Hardcoded placeholder data if not
+
+### Phase 2.4: Loading + Error States
+- Display `"Loading leagues..."` while fetching
+- On error, log details and fallback to placeholders
 
 ---
 
-### Phase 3: Future — League Selection Infrastructure
-**Not part of current scope.**  
+## Phase 3: Future — League Selection Infrastructure
 
-This will allow users to mark a League as “Active.”  
-For now, **leagues are static placeholders only.**
+### Phase 3.1: Local Active State
+- Add `league_id` to CSV schema (already included)
+- In frontend → store `activeLeagueId` in component state
+- User selects a league by clicking its card
+- Highlight selection visually
 
-Future deliverables:
-- Add `league_id` to CSV schema.
-- Add click handler in LeagueCard to set `activeLeagueId`.
-- Store active state locally in frontend (context or state).
-- Eventually → persist in DB with a `user_league_selections` table.
+### Phase 3.2: Persistent Storage (Later)
+- Add DB table `user_league_selections`
+- Schema:
+    - `id`, `user_id`, `league_id`, `is_active`, `selected_at`
+- Sync frontend selection with DB
+
+(Not required for initial CSV uploader, but provides a roadmap)
 
 ---
 
 ## Risks & Mitigations
 
-- **CSV Malformed**  
-  Risk: bad CSV breaks parsing.  
-  Mitigation: try/catch parser, skip bad rows, fallback to empty array.  
+- **Malformed CSV**
+  - Risk: missing/invalid fields
+  - Mitigation: skip bad rows, log warnings, fallback to empty array
 
-- **File Missing**  
-  Risk: no CSV found.  
-  Mitigation: log warning, return `[]`, fallback to hardcoded.  
+- **File Missing**
+  - Risk: no CSV present
+  - Mitigation: return `[]`, fallback to placeholders
 
-- **Schema Drift**  
-  Risk: CSV fields don’t match expected columns.  
-  Mitigation: document schema in repo, enforce reviews on updates.  
+- **Performance**
+  - Risk: parsing file on every request
+  - Mitigation: fine at small scale (<100 rows). Add caching if needed.
 
-- **Performance**  
-  Risk: parsing CSV on every request.  
-  Mitigation: fine for testing (<100 rows). Cache later if needed.  
+- **Schema Drift**
+  - Risk: CSV edited incorrectly
+  - Mitigation: keep schema documented in repo, validate on load
 
 ---
 
 ## Success Criteria
-- ✅ `/api/leagues` returns JSON array from `data/leagues.csv` when flag enabled.  
-- ✅ Frontend renders leagues dynamically from API response.  
-- ✅ If CSV is missing/malformed, frontend gracefully falls back to hardcoded placeholders.  
-- ✅ No crashes, responsive load time (<200ms).  
+- ✅ `/api/leagues` returns parsed CSV data when flag is enabled  
+- ✅ Frontend dynamically renders leagues from API  
+- ✅ Fallback to hardcoded placeholders works if CSV missing/malformed  
+- ✅ Feature flag gating confirmed (CSV → Tabs → Placeholder precedence)  
+- ✅ No crashes, reasonable load time (<200ms for small CSVs)  
 
 ---
