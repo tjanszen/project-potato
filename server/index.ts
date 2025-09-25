@@ -286,6 +286,35 @@ app.get('/api/admin/backfill-runs', async (req, res) => {
   }
 });
 
+// Leagues CSV endpoint - get all leagues from CSV file
+app.get('/api/leagues', async (req, res) => {
+  try {
+    // Call the CSV parser function
+    const leagues = parseLeaguesCSV();
+    
+    // Success response
+    const response = {
+      leagues: leagues,
+      count: leagues.length,
+      source: 'csv'
+    };
+    
+    console.log(`API /api/leagues served ${leagues.length} leagues`);
+    res.json(response);
+    
+  } catch (error) {
+    console.error('API /api/leagues failed:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Error response
+    res.status(500).json({
+      error: 'Failed to load leagues',
+      leagues: [],
+      count: 0,
+      source: 'error'
+    });
+  }
+});
+
 // Feature flag gating middleware
 const requireFeatureFlag = (flagName: string) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
