@@ -8,11 +8,86 @@ import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import { parse } from 'csv-parse/sync';
 import { featureFlagService } from './feature-flags.js';
 import { storage } from './storage.js';
 import { insertUserSchema } from '../shared/schema.js';
 
+// CSV Parser function for leagues data
+interface LeagueCSVRow {
+  league_id: string;
+  image_url: string;
+  tag: string;
+  header: string;
+  subtext: string;
+  users_count: string;
+  trending_flag: string;
+}
 
+function parseLeaguesCSV(): any[] {
+  const csvPath = path.resolve(process.cwd(), 'data/leagues.csv');
+  
+  try {
+    // Check if file exists
+    if (!fs.existsSync(csvPath)) {
+      console.warn('CSV Parser: File not found at /data/leagues.csv, returning empty array');
+      return [];
+    }
+    
+    // Read and parse CSV file
+    const csvContent = fs.readFileSync(csvPath, 'utf-8');
+    const records = parse(csvContent, {
+      columns: true,  // Use first row as column headers
+      skip_empty_lines: true,
+      delimiter: ','
+    }) as LeagueCSVRow[];
+    
+    const leagues: any[] = [];
+    let skippedRows = 0;
+    
+    for (let i = 0; i < records.length; i++) {
+      const row = records[i];
+      
+      try {
+        // Transform and validate each row
+        const league = {
+          id: parseInt(row.league_id),
+          image_url: row.image_url || '',
+          tag: row.tag || '',
+          title: row.header || '',
+          description: row.subtext || '',
+          users: parseInt(row.users_count),
+          trending: row.trending_flag === 'true'
+        };
+        
+        // Validate required fields
+        if (isNaN(league.id) || isNaN(league.users)) {
+          console.warn(`CSV Parser: Skipping row ${i + 1} - invalid numeric data`);
+          skippedRows++;
+          continue;
+        }
+        
+        leagues.push(league);
+        
+      } catch (error) {
+        console.warn(`CSV Parser: Skipping row ${i + 1} - malformed data:`, error instanceof Error ? error.message : 'Unknown error');
+        skippedRows++;
+      }
+    }
+    
+    console.log(`CSV Parser loaded ${leagues.length} leagues from /data/leagues.csv`);
+    if (skippedRows > 0) {
+      console.warn(`CSV Parser: Skipped ${skippedRows} malformed rows`);
+    }
+    
+    return leagues;
+    
+  } catch (error) {
+    console.error('CSV Parser: Failed to load leagues CSV:', error instanceof Error ? error.message : 'Unknown error');
+    return [];
+  }
+}
 
 // Extend express-session types
 declare module 'express-session' {
