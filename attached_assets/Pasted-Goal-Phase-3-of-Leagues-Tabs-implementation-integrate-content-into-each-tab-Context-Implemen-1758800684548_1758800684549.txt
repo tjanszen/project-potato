@@ -1,0 +1,50 @@
+Goal: Phase 3 of Leagues Tabs implementation — integrate content into each tab.
+
+Context:
+- Implementation plan documented in docs/agent_memory/imp_plans/leagues_tabs.md
+- Phase 2 complete: TabBar UI added with Active, List, Clubs tabs (local state switching, styled for mobile web)
+- Feature flags:
+  - FF_POTATO_LEAGUES_PLACEHOLDER=true → enables /leagues page
+  - FF_POTATO_LEAGUES_TABS=true → enables tabbed layout
+- Current state: Tab switching works, but no tab content is rendered
+
+Do:
+- In client/src/pages/LeaguesPage.tsx:
+  - Create a TabContent component (inline or sub-component in same file)
+  - When activeTab === "list":
+    - Render the existing LeagueCard grid (from Phase 2 implementation of FF_POTATO_LEAGUES_PLACEHOLDER)
+  - When activeTab === "active":
+    - Render placeholder content: <div>Active leagues placeholder</div>
+  - When activeTab === "clubs":
+    - Render placeholder content: <div>Clubs placeholder</div>
+- Ensure LeagueCard grid is unchanged in design and behavior when inside the List tab
+- Adjust container height so scrollable content works properly with tab bar and BottomNav
+- Add console logging:
+  - “Phase 3: Rendering [tab] content”
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification:
+  restart_workflow("Clean Production Deploy")
+
+Error Handling:
+- If grid does not render inside List tab or placeholders do not appear, STOP and summarize findings
+- If flags misbehave, STOP and log current flag states
+
+Prompt Template Instruction (New Rule):
+- Do NOT use mark_completed_and_get_feedback — this tool is unreliable and undocumented
+- Instead, validate success with:
+  - curl /api/feature-flags → confirm both FF_POTATO_LEAGUES_PLACEHOLDER and FF_POTATO_LEAGUES_TABS enabled
+  - Browser test → Tab switching updates visible content
+  - Console logs → “Phase 3: Rendering [tab] content” appears when switching tabs
+
+Proof:
+- With FF_POTATO_LEAGUES_PLACEHOLDER=true and FF_POTATO_LEAGUES_TABS=false:
+  - Page shows current LeagueCard grid with no TabBar
+- With both flags true:
+  - TabBar visible
+  - Active tab → shows “Active leagues placeholder”
+  - List tab → shows 6 placeholder LeagueCards in scrollable grid
+  - Clubs tab → shows “Clubs placeholder”
+  - Console logs confirm active tab content rendering

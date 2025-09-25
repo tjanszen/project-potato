@@ -55,6 +55,17 @@ Scope Control (Deviation Protocol):
   → Provide pros/cons of addressing now vs. deferring
   → WAIT for explicit operator approval before resuming
 
+Do **not** use the `mark_completed_and_get_feedback` tool — it has shown consistent failures and lacks public documentation.  
+Instead, validate changes using one or more of the following:
+
+- Direct API checks (e.g. `curl /api/...`)  
+- Console log assertions (e.g. `console.log("Phase X completed")`)  
+- Browser manual testing (verify UI behavior)  
+- Health/status endpoints  
+- React Query or front-end flag state queries  
+
+If you detect that `mark_completed_and_get_feedback` is failing or unavailable, automatically fall back to the above methods and report success/failure explicitly in your result.  
+
 ~~~
 
 ---
