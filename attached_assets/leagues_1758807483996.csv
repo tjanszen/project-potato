@@ -1,0 +1,9 @@
+league_id,image_url,tag,header,subtext,users_count,trending_flag
+1,/assets/league_placeholder.png,Beginner,Sunday Reset,Reset your week,201,FALSE
+2,/assets/league_placeholder.png,Beginner,Weekend Warrior,Go on a weekend dry run,68,TRUE
+3,/assets/league_placeholder.png,Intermediate,Weekly Reset,A week w/o a drink won't kill you,77,FALSE
+4,/assets/league_placeholder.png,Intermediate,Monthly Kickstart,No drinks the first 2-weeks of Octover,123,TRUE
+5,/assets/league_placeholder.png,Intermediate,Sober October,Go into the holiday season with a reset,331,FALSE
+6,/assets/league_placeholder.png,Advance,90 Dry Binge,3 months is nothing ,45,TRUE
+7,/assets/league_placeholder.png,Pro,Family Wedding,Go to a wedding sober ,9,FALSE
+8,/assets/league_placeholder.png,Pro,Holiday Cheers,"Survive T-Day, xMas, and New Years",24,TRUE
