@@ -1,0 +1,56 @@
+Goal: Fix LeagueCard component so it properly displays the image_url from CSV data (instead of gray placeholder).
+
+Do:
+- In client/src/components/LeagueCard.tsx:
+  - Update LeagueCardProps interface to include optional image_url?: string
+  - Replace the current gray "Image Placeholder" <div> with an <img> element:
+    - Use the image_url prop when provided
+    - Fallback to '/assets/league_placeholder.png' if image_url is missing or empty
+  - Style the image:
+    - width: 100%
+    - height: ~120px
+    - object-fit: cover
+    - border-radius: 8px
+    - background-color: #f0f0f0 (as safety for missing images)
+  - Add alt={title} for accessibility
+- Ensure other props (tag, title, description, users, trending) remain unchanged
+- Add console.log("Image fix applied: LeagueCard now rendering image_url") for verification
+
+Proof:
+- Logs: must include "Image fix applied: LeagueCard now rendering image_url"
+- With FF_POTATO_LEAGUES_CSV=false → LeagueCard still renders hardcoded placeholder cards
+- With FF_POTATO_LEAGUES_CSV=true → LeagueCard displays image from CSV (should show /assets/league_placeholder.png)
+- If image_url is removed from a CSV row, fallback to /assets/league_placeholder.png still renders
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If >3 TypeScript errors, props mismatch, or missing image renders blank:
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- Do not modify unrelated card fields (users, trending, etc.)
+- Do not implement click behavior (that belongs to Phase 3 roadmap)
+- Only update props interface + image rendering logic
+
+Do **not** use `mark_completed_and_get_feedback`.  
+Instead validate via:
+- console.log proof message  
+- Browser Preview showing LeagueCard images from CSV  
+
+Server Architecture Reminder:
+- The **production server entrypoint is `index.js` at the project root`.  
+- The file `server/index.ts` exists but is **legacy/unused** — do **not** add routes or middleware here.  
+- All backend changes must go in **index.js** (not relevant for this phase).
+
+File System Reminder:
+- CSV data lives in /data (repo-committed)
+- Static images live in client/public/assets for development
+- Use App Storage for production persistence

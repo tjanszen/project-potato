@@ -2,6 +2,7 @@ import { Users, LineChart } from 'lucide-react'
 
 interface LeagueCardProps {
   id: number
+  image_url?: string
   tag: string
   title: string
   description: string
@@ -9,7 +10,8 @@ interface LeagueCardProps {
   trending: boolean
 }
 
-export function LeagueCard({ id, tag, title, description, users, trending }: LeagueCardProps) {
+export function LeagueCard({ id, image_url, tag, title, description, users, trending }: LeagueCardProps) {
+  console.log("Image fix applied: LeagueCard now rendering image_url")
   return (
     <div
       role="listitem"
@@ -23,21 +25,22 @@ export function LeagueCard({ id, tag, title, description, users, trending }: Lea
       }}
       data-testid={`league-card-${id}`}
     >
-      {/* Image Placeholder */}
+      {/* League Image */}
       <div style={{
-        width: '100%',
-        height: '120px',
-        backgroundColor: '#e0e0e0',
-        borderRadius: '8px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#999',
-        fontSize: '14px',
-        marginBottom: '12px',
-        position: 'relative'
+        position: 'relative',
+        marginBottom: '12px'
       }}>
-        Image Placeholder
+        <img
+          src={image_url || '/assets/league_placeholder.png'}
+          alt={title}
+          style={{
+            width: '100%',
+            height: '120px',
+            objectFit: 'cover',
+            borderRadius: '8px',
+            backgroundColor: '#f0f0f0'
+          }}
+        />
         
         {/* Top-right tag */}
         <div style={{

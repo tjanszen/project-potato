@@ -291,6 +291,7 @@ export function LeaguesPage() {
                     <LeagueCard
                       key={league.id}
                       id={league.id}
+                      image_url={league.image_url}
                       tag={league.tag}
                       title={league.title}
                       description={league.description}
@@ -361,6 +362,7 @@ export function LeaguesPage() {
             <LeagueCard
               key={league.id}
               id={league.id}
+              image_url={league.image_url}
               tag={league.tag}
               title={league.title}
               description={league.description}
