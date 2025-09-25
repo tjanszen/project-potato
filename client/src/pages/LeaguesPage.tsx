@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { apiClient } from '../lib/api'
+import { apiClient, type LeaguesResponse, type League } from '../lib/api'
 import { LeagueCard } from '../components/LeagueCard'
 
 interface FeatureFlag {
@@ -23,6 +23,26 @@ export function LeaguesPage() {
   } = useQuery<FeatureFlag>({
     queryKey: ['feature-flag', 'ff.potato.leagues_tabs'],
     queryFn: () => apiClient.getFeatureFlag('ff.potato.leagues_tabs') as Promise<FeatureFlag>,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
+  const { 
+    data: leaguesCsvFlag 
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.leagues_csv'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.leagues_csv') as Promise<FeatureFlag>,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
+  // Phase 2.2: Leagues CSV data query - only enabled when CSV flag is true
+  const { 
+    data: leaguesData,
+    isLoading: leaguesLoading,
+    isError: leaguesError 
+  } = useQuery<LeaguesResponse>({
+    queryKey: ['leagues'],
+    queryFn: () => apiClient.getLeagues() as Promise<LeaguesResponse>,
+    enabled: leaguesCsvFlag?.enabled === true,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
@@ -126,8 +146,8 @@ export function LeaguesPage() {
     )
   }
 
-  // Hardcoded league data for Phase 3
-  const leagueCards = [
+  // Hardcoded league data for Phase 3 (fallback when CSV disabled)
+  const hardcodedLeagueCards = [
     {
       id: 1,
       title: "Weekend Warrior",
@@ -178,6 +198,46 @@ export function LeaguesPage() {
     }
   ]
 
+  // Phase 2.2: Determine which leagues data to use
+  const getLeaguesData = (): League[] => {
+    if (leaguesCsvFlag?.enabled && leaguesData?.leagues) {
+      console.log("Phase 2.2: LeaguesPage rendering from CSV")
+      return leaguesData.leagues
+    } else {
+      if (leaguesCsvFlag?.enabled && leaguesError) {
+        console.warn("Phase 2.2: CSV data fetch failed, using fallback hardcoded data")
+      }
+      // Convert hardcoded data to match League interface
+      return hardcodedLeagueCards.map(card => ({
+        ...card,
+        image_url: undefined // Optional field not in hardcoded data
+      }))
+    }
+  }
+
+  const currentLeagues = getLeaguesData()
+
+  // Phase 2.2: Show loading state when fetching CSV data
+  if (leaguesCsvFlag?.enabled && leaguesLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f5f5f5',
+        padding: '20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          <div style={{ marginBottom: '10px', fontSize: '16px' }}>Loading leagues...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -227,7 +287,7 @@ export function LeaguesPage() {
               >
                 {(() => {
                   console.log("Phase 3: Rendering list content")
-                  return leagueCards.map((league) => (
+                  return currentLeagues.map((league) => (
                     <LeagueCard
                       key={league.id}
                       id={league.id}
@@ -297,7 +357,7 @@ export function LeaguesPage() {
             WebkitOverflowScrolling: 'touch'
           }}
         >
-          {leagueCards.map((league) => (
+          {currentLeagues.map((league) => (
             <LeagueCard
               key={league.id}
               id={league.id}

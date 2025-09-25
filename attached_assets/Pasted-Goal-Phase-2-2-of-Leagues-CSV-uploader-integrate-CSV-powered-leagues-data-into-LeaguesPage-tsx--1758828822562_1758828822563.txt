@@ -1,0 +1,58 @@
+Goal: Phase 2.2 of Leagues CSV uploader — integrate CSV-powered leagues data into LeaguesPage.tsx.
+
+Do:
+- In client/src/pages/LeaguesPage.tsx:
+  - Import and use the getLeagues() method via React Query
+  - Add a feature flag query for ff.potato.leagues_csv
+  - When flag=true → fetch leagues from /api/leagues
+  - When flag=false → fall back to current hardcoded placeholder array
+- Replace hardcoded data rendering with conditional logic:
+  - Use leaguesData.leagues when available
+  - Use hardcodedLeagueCards as fallback
+- Add console.log("Phase 2.2: LeaguesPage rendering from CSV") when flag=true
+- Ensure proper error + loading states:
+  - Show "Loading leagues..." while fetching
+  - Show warning log if leaguesData fails but fallback is used
+
+Proof:
+- Logs: must include "Phase 2.2: LeaguesPage rendering from CSV"
+- curl http://localhost:3000/api/leagues returns non-empty JSON when FF_POTATO_LEAGUES_CSV=true
+- With FF_POTATO_LEAGUES_CSV=false → UI renders hardcoded leagues
+- With FF_POTATO_LEAGUES_CSV=true → UI renders leagues from /data/leagues.csv
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+- Never use individual frontend-only restarts
+
+Error Handling (Mid-Phase Protocol):
+- If fetch fails, schema mismatch, or >3 TypeScript errors:
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates (e.g., modifies BottomNav, adds Active/Clubs functionality, or changes unrelated components):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming  
+
+Do **not** use `mark_completed_and_get_feedback`.  
+Instead, validate via:
+- curl /api/leagues  
+- console.log proof message  
+- Browser UI showing CSV-driven cards when flag=true
+
+Server Architecture Reminder
+- The **production server entrypoint is `index.js` at the project root`.  
+- The file `server/index.ts` exists but is **legacy/unused** — do **not** add routes or middleware here.  
+- All backend changes (routes, middleware, APIs, feature flags, CSV parsing, etc.) must go in **index.js**.  
+- When implementing server-side features, always edit **index.js** unless explicitly instructed otherwise.  
+
+File System Reminder:
+- CSV data lives in /data (repo-committed)
+- Static images live in client/public/assets for development
+- Use App Storage for production persistence
