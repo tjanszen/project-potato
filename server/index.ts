@@ -317,6 +317,9 @@ app.use('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/days', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'));
 
+// Leagues CSV functionality gated behind leagues CSV feature flag
+app.use('/api/leagues', requireFeatureFlag('ff.potato.leagues_csv'));
+
 // Auth routes
 app.post('/api/auth/signup', async (req, res) => {
   try {
