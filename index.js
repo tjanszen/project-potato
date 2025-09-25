@@ -12,6 +12,8 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const morgan = require('morgan');
 const crypto = require('crypto');
+const fs = require('fs');
+const { parse } = require('csv-parse/sync');
 
 // Add error handling for imports
 let featureFlagService, storage, insertUserSchema, totalsAggregation, totalsInvalidation;
@@ -38,6 +40,71 @@ try {
 } catch (error) {
   console.error('❌ Import error:', error);
   process.exit(1);
+}
+
+// CSV Parser function for leagues data  
+function parseLeaguesCSV() {
+  const csvPath = path.resolve(process.cwd(), 'data/leagues.csv');
+  
+  try {
+    // Check if file exists
+    if (!fs.existsSync(csvPath)) {
+      console.warn('CSV Parser: File not found at /data/leagues.csv, returning empty array');
+      return [];
+    }
+    
+    // Read and parse CSV file
+    const csvContent = fs.readFileSync(csvPath, 'utf-8');
+    const records = parse(csvContent, {
+      columns: true,  // Use first row as column headers
+      skip_empty_lines: true,
+      delimiter: ','
+    });
+    
+    const leagues = [];
+    let skippedRows = 0;
+    
+    for (let i = 0; i < records.length; i++) {
+      const row = records[i];
+      
+      try {
+        // Transform and validate each row
+        const league = {
+          id: parseInt(row.league_id),
+          image_url: row.image_url || '',
+          tag: row.tag || '',
+          title: row.header || '',
+          description: row.subtext || '',
+          users: parseInt(row.users_count),
+          trending: row.trending_flag === 'true'
+        };
+        
+        // Validate required fields
+        if (isNaN(league.id) || isNaN(league.users)) {
+          console.warn(`CSV Parser: Skipping row ${i + 1} - invalid numeric data`);
+          skippedRows++;
+          continue;
+        }
+        
+        leagues.push(league);
+        
+      } catch (error) {
+        console.warn(`CSV Parser: Skipping row ${i + 1} - malformed data:`, error.message);
+        skippedRows++;
+      }
+    }
+    
+    console.log(`CSV Parser loaded ${leagues.length} leagues from /data/leagues.csv`);
+    if (skippedRows > 0) {
+      console.warn(`CSV Parser: Skipped ${skippedRows} malformed rows`);
+    }
+    
+    return leagues;
+    
+  } catch (error) {
+    console.error('CSV Parser: Failed to load leagues CSV:', error.message);
+    return [];
+  }
 }
 
 // Load environment
@@ -432,6 +499,44 @@ app.get('/api/admin/toggle-flag/:flagName', (req, res) => {
     enabled: newState,
     message: `Feature flag ${flagName} is now ${newState ? 'enabled' : 'disabled'}`
   });
+});
+
+// Leagues CSV endpoint - get all leagues from CSV file
+app.get('/api/leagues', (req, res) => {
+  // Check feature flag first
+  if (!featureFlagService.isEnabled('ff.potato.leagues_csv')) {
+    return res.status(403).json({ 
+      error: 'Feature not available',
+      flag: 'ff.potato.leagues_csv',
+      enabled: false
+    });
+  }
+
+  try {
+    // Call the CSV parser function
+    const leagues = parseLeaguesCSV();
+    
+    // Success response
+    const response = {
+      leagues: leagues,
+      count: leagues.length,
+      source: 'csv'
+    };
+    
+    console.log(`API /api/leagues served ${leagues.length} leagues`);
+    res.json(response);
+    
+  } catch (error) {
+    console.error('API /api/leagues failed:', error.message);
+    
+    // Error response
+    res.status(500).json({
+      error: 'Failed to load leagues',
+      leagues: [],
+      count: 0,
+      source: 'error'
+    });
+  }
 });
 
 // Feature flag gating middleware

@@ -288,6 +288,15 @@ app.get('/api/admin/backfill-runs', async (req, res) => {
 
 // Leagues CSV endpoint - get all leagues from CSV file
 app.get('/api/leagues', async (req, res) => {
+  // Check feature flag first
+  if (!featureFlagService.isEnabled('ff.potato.leagues_csv')) {
+    return res.status(403).json({ 
+      error: 'Feature not available',
+      flag: 'ff.potato.leagues_csv',
+      enabled: false
+    });
+  }
+
   try {
     // Call the CSV parser function
     const leagues = parseLeaguesCSV();
@@ -345,9 +354,6 @@ app.use('/api/auth', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/calendar', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/days', requireFeatureFlag('ff.potato.no_drink_v1'));
 app.use('/api/me', requireFeatureFlag('ff.potato.no_drink_v1'));
-
-// Leagues CSV functionality gated behind leagues CSV feature flag
-app.use('/api/leagues', requireFeatureFlag('ff.potato.leagues_csv'));
 
 // Auth routes
 app.post('/api/auth/signup', async (req, res) => {
