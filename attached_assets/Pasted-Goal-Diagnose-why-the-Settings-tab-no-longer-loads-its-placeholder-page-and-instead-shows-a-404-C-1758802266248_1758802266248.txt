@@ -1,0 +1,46 @@
+Goal: Diagnose why the Settings tab no longer loads its placeholder page and instead shows a 404.
+
+Context:
+- The Settings tab used to work and display a placeholder page.
+- Current behavior: Clicking the Settings tab in the BottomNav shows a 404 Page Not Found.
+- No intentional removal of the Settings page was requested.
+- BottomNav integration for Settings still appears in the UI, but the route may no longer resolve correctly.
+
+Do:
+1. Inspect client/src/AppRoutes.tsx:
+   - Confirm if a <Route path="/settings"> exists and points to a valid SettingsPage component.
+   - Verify if <AuthGuard> is applied consistently for the Settings route.
+
+2. Inspect client/src/pages/ directory:
+   - Confirm whether a SettingsPage.tsx file exists.
+   - If it exists, check for recent changes that might affect rendering or exports.
+   - If it does not exist, identify when/where it was removed.
+
+3. Inspect BottomNav.tsx:
+   - Verify that the "Settings" nav item points to path="/settings".
+   - Ensure no mismatched casing or typos between the BottomNav path and the AppRoutes path.
+
+4. Trace navigation behavior:
+   - Add console logs to confirm which route path is triggered when clicking "Settings".
+   - Check whether wouter is attempting to navigate to /settings or another route.
+
+5. Summarize findings:
+   - Explain why /settings currently resolves to 404.
+   - Provide recommendations (e.g., re-add placeholder SettingsPage.tsx, fix AppRoutes, or adjust BottomNav path).
+
+Workflows to Use:
+- restart_workflow("Full Clean Restart") for consistent reproduction.
+- If testing in production build, restart_workflow("Clean Production Deploy").
+
+Error Handling:
+- If SettingsPage.tsx is missing, STOP and recommend re-adding it as a placeholder.
+- If the route exists but isn’t wired in AppRoutes.tsx, STOP and summarize the mismatch.
+- If BottomNav path mismatch is detected, STOP and summarize the required fix.
+
+Prompt Template Reminder:
+- Do NOT use mark_completed_and_get_feedback (unreliable).
+- Use console logs, server responses, and UI inspection to confirm findings.
+
+Output Expected:
+- Diagnosis of why Settings currently routes to 404.
+- Specific recommended next step to restore placeholder Settings page functionality.
