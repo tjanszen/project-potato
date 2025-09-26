@@ -1,0 +1,44 @@
+Goal: Implement backend service logic for league memberships (join/leave + counts)
+
+Do:
+- Create a new file: `server/league-membership.js`
+- Implement functions:
+  - `joinLeague(userId, leagueId)`:
+    - Insert a new row into `league_memberships` with `is_active=true`
+    - If an active membership already exists, return existing row instead of inserting
+  - `leaveLeague(userId, leagueId)`:
+    - Update the existing row to set `is_active=false` and `left_at=NOW()`
+    - No hard deletes
+  - `getUserMembership(userId, leagueId)`:
+    - Query the latest row for that user/league, return `{ joinedAt, leftAt, isActive }`
+  - `countActiveMembers(leagueId)`:
+    - Return the number of rows with `league_id=<id>` and `is_active=true`
+- Export these functions for later use in API routes
+
+Proof:
+- Logs must include: "LeagueMembershipService initialized"
+- Insert test: call `joinLeague(<user>, 1)` → new row appears in `league_memberships`
+- Update test: call `leaveLeague(<user>, 1)` → row updated with `is_active=false`, `left_at` populated
+- Query test: `getUserMembership(<user>, 1)` returns expected data
+- Count test: `countActiveMembers(1)` matches actual active rows in DB
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+  → Ensure backend compiles and logic layer loads
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+  → Confirm service functions callable in live environment
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (DB errors, duplicate insertions, constraint violations, TypeScript errors):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates (e.g. creates API routes prematurely, modifies unrelated DB tables):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
