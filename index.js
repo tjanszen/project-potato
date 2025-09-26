@@ -16,7 +16,7 @@ const fs = require('fs');
 const { parse } = require('csv-parse/sync');
 
 // Add error handling for imports
-let featureFlagService, storage, insertUserSchema, totalsAggregation, totalsInvalidation;
+let featureFlagService, storage, insertUserSchema, totalsAggregation, totalsInvalidation, leagueMembershipService;
 try {
   console.log('Loading feature flags...');
   ({ featureFlagService } = require('./server/feature-flags.js'));
@@ -37,6 +37,11 @@ try {
   console.log('Loading totals invalidation...');
   totalsInvalidation = require('./server/totals-invalidation.js');
   console.log('✅ Totals invalidation loaded');
+  
+  console.log('Loading league membership service...');
+  leagueMembershipService = require('./server/league-membership.js');
+  console.log('✅ League membership service loaded');
+  console.log('LeagueMembershipService API routes initialized');
 } catch (error) {
   console.error('❌ Import error:', error);
   process.exit(1);
@@ -501,8 +506,8 @@ app.get('/api/admin/toggle-flag/:flagName', (req, res) => {
   });
 });
 
-// Leagues CSV endpoint - get all leagues from CSV file
-app.get('/api/leagues', (req, res) => {
+// Leagues CSV endpoint - get all leagues from CSV file with membership data
+app.get('/api/leagues', async (req, res) => {
   // Check feature flag first
   if (!featureFlagService.isEnabled('ff.potato.leagues_csv')) {
     return res.status(403).json({ 
@@ -516,14 +521,35 @@ app.get('/api/leagues', (req, res) => {
     // Call the CSV parser function
     const leagues = parseLeaguesCSV();
     
+    // Enhance leagues with membership data if user is logged in
+    const enhancedLeagues = await Promise.all(leagues.map(async (league) => {
+      const enhancedLeague = { ...league };
+      
+      try {
+        // Add member count for this league
+        enhancedLeague.memberCount = await leagueMembershipService.countActiveMembers(league.id);
+        
+        // Add user membership status if authenticated
+        if (req.session?.userId) {
+          enhancedLeague.userMembership = await leagueMembershipService.getUserMembership(req.session.userId, league.id);
+        }
+      } catch (membershipError) {
+        console.error(`Error fetching membership data for league ${league.id}:`, membershipError.message);
+        enhancedLeague.memberCount = 0;
+        enhancedLeague.userMembership = null;
+      }
+      
+      return enhancedLeague;
+    }));
+    
     // Success response
     const response = {
-      leagues: leagues,
-      count: leagues.length,
+      leagues: enhancedLeagues,
+      count: enhancedLeagues.length,
       source: 'csv'
     };
     
-    console.log(`API /api/leagues served ${leagues.length} leagues`);
+    console.log(`API /api/leagues served ${enhancedLeagues.length} leagues with membership data`);
     res.json(response);
     
   } catch (error) {
@@ -978,6 +1004,115 @@ app.get('/api/events', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthe
   } catch (error) {
     console.error('Event retrieval error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// League membership endpoints
+// POST /api/leagues/:id/memberships - Join a league
+app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    const userId = req.session.userId;
+    
+    // Validate league ID
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ 
+        error: 'Invalid league ID',
+        leagueId: req.params.id 
+      });
+    }
+    
+    // Join the league
+    const membership = await leagueMembershipService.joinLeague(userId, leagueId);
+    const memberCount = await leagueMembershipService.countActiveMembers(leagueId);
+    
+    console.log(`User ${userId} joined league ${leagueId}`);
+    
+    res.json({
+      success: true,
+      membership,
+      memberCount
+    });
+    
+  } catch (error) {
+    console.error('League join error:', error);
+    res.status(500).json({ 
+      error: 'Failed to join league',
+      message: error.message 
+    });
+  }
+});
+
+// DELETE /api/leagues/:id/memberships - Leave a league
+app.delete('/api/leagues/:id/memberships', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    const userId = req.session.userId;
+    
+    // Validate league ID
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ 
+        error: 'Invalid league ID',
+        leagueId: req.params.id 
+      });
+    }
+    
+    // Leave the league
+    const membership = await leagueMembershipService.leaveLeague(userId, leagueId);
+    
+    if (!membership) {
+      return res.status(404).json({ 
+        error: 'No active membership found',
+        leagueId 
+      });
+    }
+    
+    const memberCount = await leagueMembershipService.countActiveMembers(leagueId);
+    
+    console.log(`User ${userId} left league ${leagueId}`);
+    
+    res.json({
+      success: true,
+      membership,
+      memberCount
+    });
+    
+  } catch (error) {
+    console.error('League leave error:', error);
+    res.status(500).json({ 
+      error: 'Failed to leave league',
+      message: error.message 
+    });
+  }
+});
+
+// GET /api/leagues/:id/membership - Get user's membership status for a league
+app.get('/api/leagues/:id/membership', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    const userId = req.session.userId;
+    
+    // Validate league ID
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ 
+        error: 'Invalid league ID',
+        leagueId: req.params.id 
+      });
+    }
+    
+    // Get membership status
+    const membership = await leagueMembershipService.getUserMembership(userId, leagueId);
+    
+    res.json({
+      membership
+    });
+    
+  } catch (error) {
+    console.error('Membership status error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get membership status',
+      message: error.message 
+    });
   }
 });
 

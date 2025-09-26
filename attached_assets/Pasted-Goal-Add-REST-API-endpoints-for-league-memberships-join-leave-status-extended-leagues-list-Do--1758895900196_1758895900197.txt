@@ -1,0 +1,50 @@
+Goal: Add REST API endpoints for league memberships (join/leave/status + extended leagues list)
+
+Do:
+- In `index.js` (root server entrypoint, not `server/index.ts`):
+  - Add route: `POST /api/leagues/:id/memberships`
+    - Auth required
+    - Calls `joinLeague(userId, leagueId)`
+    - Returns `{ success: true, membership, memberCount }`
+  - Add route: `DELETE /api/leagues/:id/memberships`
+    - Auth required
+    - Calls `leaveLeague(userId, leagueId)`
+    - Returns `{ success: true, membership, memberCount }`
+  - Add route: `GET /api/leagues/:id/membership`
+    - Auth required
+    - Calls `getUserMembership(userId, leagueId)`
+    - Returns `{ membership }`
+  - Extend existing `GET /api/leagues`
+    - For each league, append:
+      - `memberCount` via `countActiveMembers(leagueId)`
+      - `userMembership` via `getUserMembership(userId, leagueId)` if logged in
+- Ensure endpoints follow existing error handling + logging patterns
+
+Proof:
+- Logs must include: "LeagueMembership API routes initialized"
+- Test 1: `POST /api/leagues/1/memberships` → response JSON includes `membership.isActive=true` and `memberCount > 0`
+- Test 2: `DELETE /api/leagues/1/memberships` → response JSON includes `membership.isActive=false` and `memberCount=0`
+- Test 3: `GET /api/leagues/1/membership` → returns correct membership object for logged-in user
+- Test 4: `GET /api/leagues` → each league includes `memberCount` and `userMembership` keys
+- Auth test: unauthenticated requests to membership routes return 401
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+  → Verify endpoints mount without crashing
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+  → Confirm endpoints callable in live environment
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (missing endpoints, server crashes, TS errors, auth failures):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates (e.g. adds unrelated endpoints, modifies leagues CSV ingestion logic):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
