@@ -286,6 +286,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   runs: many(runs),
   runTotals: many(runTotals),
   reconciliationLogs: many(reconciliationLog),
+  leagueMemberships: many(leagueMemberships),
 }));
 
 export const dayMarksRelations = relations(dayMarks, ({ one }) => ({
@@ -433,6 +434,46 @@ export type NewReconciliationLogSqlite = z.infer<typeof insertReconciliationLogS
 export const reconciliationLogRelations = relations(reconciliationLog, ({ one }) => ({
   user: one(users, {
     fields: [reconciliationLog.userId],
+    references: [users.id],
+  }),
+}));
+
+// League memberships table (League Selection functionality)
+console.log("leagueMemberships schema defined");
+export const leagueMemberships = pgTable('league_memberships', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  leagueId: integer('league_id').notNull(), // References CSV league_id
+  isActive: boolean('is_active').notNull().default(true),
+  joinedAt: timestamp('joined_at').notNull().defaultNow(),
+  leftAt: timestamp('left_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  // Indexes for performance
+  userIdx: index('membership_user_idx').on(table.userId),
+  leagueIdx: index('membership_league_idx').on(table.leagueId),
+  leagueActiveIdx: index('membership_league_active_idx').on(table.leagueId, table.isActive),
+  // Partial unique constraint: one active membership per user per league
+  uniqueActiveMembership: sql`UNIQUE (${table.userId}, ${table.leagueId}) WHERE ${table.isActive} = true`,
+}));
+
+// Zod schemas for league memberships validation
+export const insertLeagueMembershipSchema = createInsertSchema(leagueMemberships).omit({
+  id: true,
+  joinedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// TypeScript types for league memberships
+export type LeagueMembership = typeof leagueMemberships.$inferSelect;
+export type NewLeagueMembership = z.infer<typeof insertLeagueMembershipSchema>;
+
+// League memberships relations
+export const leagueMembershipsRelations = relations(leagueMemberships, ({ one }) => ({
+  user: one(users, {
+    fields: [leagueMemberships.userId],
     references: [users.id],
   }),
 }));
