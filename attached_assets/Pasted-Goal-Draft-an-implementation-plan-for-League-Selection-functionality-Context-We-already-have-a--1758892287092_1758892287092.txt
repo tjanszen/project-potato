@@ -1,0 +1,74 @@
+Goal: Draft an implementation plan for League Selection functionality
+
+Context:
+- We already have a Leagues tab/page with LeagueCards rendering dynamically from a CSV file (via /api/leagues).
+- This feature is about allowing users to "join" or "leave" a League (select/deselect).
+- Requirements based on clarified business rules:
+
+Selection Model:
+- Users can join multiple leagues at the same time (no limit).
+- Selection is via a "Join" CTA on each LeagueCard.
+- CTA toggles between "Join" (not a member) and "Joined" (is a member).
+- Clicking "Joined" again removes the user (soft delete).
+
+Opt-out Behavior:
+- We use soft-delete: keep records in DB, set is_active=false when user leaves a league.
+- Track historical join/leave cycles per user per league.
+
+Tracking Metadata:
+- Track both joined_at and left_at timestamps.
+- Allow multiple cycles per user (history preserved).
+- League "total members" count should mean currently active users only.
+
+Counts & Aggregation:
+- Counts should update on refresh (not strict real-time).
+- Acceptable to calculate counts with queries instead of live updates.
+
+Auth & Access:
+- Only authenticated users can join/leave leagues.
+- Expose new endpoints:
+  - POST /api/leagues/:id/select (join)
+  - POST /api/leagues/:id/deselect (leave)
+
+Frontend UX:
+- Add "Join" CTA to LeagueCard (button, not checkbox/radio).
+- CTA changes states: Join → Joined.
+- Toggling works with API calls and local state update.
+
+Future-Proofing:
+- Long term: joining a league may unlock private content or league-specific activities.
+- Short term: this is purely membership tracking.
+
+Task for Replit Agent:
+- Analyze current codebase (frontend + backend) for where best to implement this.
+- Recommend and draft a **phased implementation plan** for League Selection.
+- Include database schema recommendation upfront (SQL table design).
+- Include frontend component changes, new API endpoints, and feature flag strategy if needed.
+- Highlight any risks, dependencies, and testing strategy.
+
+Proof:
+- New DB schema created and migrations applied.
+- GET /api/leagues reflects active membership counts.
+- POST /api/leagues/:id/select updates DB and response.
+- POST /api/leagues/:id/deselect updates DB and response.
+- Frontend: LeagueCard CTA toggles Join ↔ Joined correctly.
+- Browser confirms Join/Joined states and count updates after refresh.
+
+Workflows to Use:
+- Always run:
+  restart_workflow("Full Clean Restart")
+- For production-style verification:
+  restart_workflow("Clean Production Deploy")
+
+Error Handling:
+- If DB migration fails, STOP and summarize.
+- If auth or API endpoints fail, STOP and summarize.
+- If frontend state doesn’t toggle correctly, STOP and summarize.
+
+Server Architecture Reminder:
+- The production server entrypoint is index.js at project root.
+- server/index.ts exists but is legacy/unused — do NOT add routes there.
+- All backend changes must go into index.js.
+
+Do NOT use mark_completed_and_get_feedback. Validate via:
+- API tests (curl /api/le
