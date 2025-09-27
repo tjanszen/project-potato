@@ -1,0 +1,48 @@
+Goal: Add Join/Joined CTA button to LeagueCard component (Strava-style)
+
+Do:
+- In `client/src/components/LeagueCard.tsx`:
+  - Add a bottom-anchored CTA button inside each card.
+  - States:
+    - **Join**: orange background (#FF5A1F or use theme primary), bold white text, label "Join"
+    - **Joined**: green background (#28A745 or use theme success), bold white text, label "Joined"
+  - Full-width across the card bottom with slight padding/margin above.
+  - Rounded corners to match the card’s radius.
+  - Fixed height (e.g. 40–48px) for visual consistency across cards.
+- Behavior:
+  - Use `userMembership` prop:
+    - If `isActive=true` → show "Joined" (green, triggers leaveLeague on click)
+    - Else → show "Join" (orange, triggers joinLeague on click)
+  - Hook up to React Query mutations (from Phase 3A API client).
+  - After mutation, refetch membership + counts to keep state consistent.
+- Ensure accessibility: role="button", keyboard focusable, aria-labels for screen readers.
+
+Proof:
+- Logs must include: "LeagueCard CTA rendered"
+- Visual check: Each LeagueCard shows Join/Joined button at bottom
+- Interaction test:
+  - Clicking Join → membership created, button flips to Joined
+  - Clicking Joined → membership deactivated, button flips to Join
+- API check: network requests observed for `/api/leagues/:id/memberships` POST and DELETE
+- State check: memberCount updates correctly after join/leave
+
+Workflows to Use:
+- Always run:  
+  `restart_workflow("Full Clean Restart")`  
+  → Ensure frontend compiles after card changes
+- For production-style verification:  
+  `restart_workflow("Clean Production Deploy")`  
+  → Confirm CTA buttons visible + interactive in live preview
+
+Error Handling (Mid-Phase Protocol):
+- If critical issues occur (buttons not clickable, API errors, React Query not updating):
+  → STOP immediately  
+  → Summarize findings + recommend next steps  
+  → WAIT for operator approval before resuming  
+
+Scope Control (Deviation Protocol):
+- If work deviates (e.g. redesigns full card layout, modifies unrelated pages):
+  → STOP immediately  
+  → Summarize deviation vs. agreed scope  
+  → Provide pros/cons of addressing now vs. deferring  
+  → WAIT for explicit operator approval before resuming
