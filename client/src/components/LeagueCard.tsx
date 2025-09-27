@@ -1,4 +1,11 @@
 import { Users, LineChart } from 'lucide-react'
+import { useJoinLeague, useLeaveLeague } from '../hooks/useLeagueMembership'
+
+interface UserMembership {
+  joinedAt: string
+  leftAt: string | null
+  isActive: boolean
+}
 
 interface LeagueCardProps {
   id: number
@@ -8,10 +15,30 @@ interface LeagueCardProps {
   description: string
   users: number
   trending: boolean
+  userMembership?: UserMembership | null
 }
 
-export function LeagueCard({ id, image_url, tag, title, description, users, trending }: LeagueCardProps) {
+export function LeagueCard({ id, image_url, tag, title, description, users, trending, userMembership }: LeagueCardProps) {
   console.log("Image fix applied: LeagueCard now rendering image_url")
+  console.log("LeagueCard CTA rendered")
+  
+  // React Query hooks for membership mutations
+  const joinMutation = useJoinLeague()
+  const leaveMutation = useLeaveLeague()
+  
+  // Determine CTA button state
+  const isJoined = userMembership?.isActive === true
+  const isPending = joinMutation.isPending || leaveMutation.isPending
+  
+  const handleCTAClick = () => {
+    if (isPending) return
+    
+    if (isJoined) {
+      leaveMutation.mutate(id)
+    } else {
+      joinMutation.mutate(id)
+    }
+  }
   return (
     <div
       role="listitem"
@@ -110,6 +137,42 @@ export function LeagueCard({ id, image_url, tag, title, description, users, tren
           </div>
         )}
       </div>
+
+      {/* CTA Button - Strava-style Join/Joined */}
+      <button
+        onClick={handleCTAClick}
+        disabled={isPending}
+        role="button"
+        tabIndex={0}
+        aria-label={isJoined ? `Leave ${title} league` : `Join ${title} league`}
+        data-testid={`cta-button-${id}`}
+        style={{
+          width: '100%',
+          height: '44px',
+          marginTop: '16px',
+          backgroundColor: isJoined ? '#28A745' : '#FF5A1F',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: isPending ? 'not-allowed' : 'pointer',
+          opacity: isPending ? 0.7 : 1,
+          transition: 'background-color 0.2s ease, opacity 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          outline: 'none'
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleCTAClick()
+          }
+        }}
+      >
+        {isPending ? (isJoined ? 'Leaving...' : 'Joining...') : (isJoined ? 'Joined' : 'Join')}
+      </button>
     </div>
   )
 }
