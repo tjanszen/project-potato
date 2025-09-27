@@ -5,7 +5,7 @@ exports.runProofTests = exports.countActiveMembers = exports.getUserMembership =
 const { drizzle } = require("drizzle-orm/node-postgres");
 const { Pool } = require("pg");
 const { users } = require("../shared/schema.js");
-const { eq, and } = require("drizzle-orm");
+const { eq, and, desc } = require("drizzle-orm");
 const { pgTable, uuid, integer, boolean, timestamp, index } = require("drizzle-orm/pg-core");
 const { sql } = require("drizzle-orm");
 
@@ -128,6 +128,7 @@ exports.leaveLeague = leaveLeague;
  */
 async function getUserMembership(userId, leagueId) {
   try {
+    console.log("Rejoin test: using latest membership row");
     // Get the most recent membership record for this user/league combination
     const membership = await db
       .select({
@@ -142,7 +143,7 @@ async function getUserMembership(userId, leagueId) {
           eq(leagueMemberships.leagueId, leagueId)
         )
       )
-      .orderBy(leagueMemberships.createdAt)
+      .orderBy(desc(leagueMemberships.createdAt))
       .limit(1);
 
     if (membership.length === 0) {
