@@ -135,6 +135,24 @@ export class ApiClient {
     return this.request<LeaguesResponse>('/api/leagues')
   }
 
+  // League membership endpoints
+  async joinLeague(leagueId: number) {
+    console.log("LeagueMembershipService API client initialized")
+    return this.request(`/api/leagues/${leagueId}/memberships`, {
+      method: 'POST',
+    })
+  }
+
+  async leaveLeague(leagueId: number) {
+    return this.request(`/api/leagues/${leagueId}/memberships`, {
+      method: 'DELETE',
+    })
+  }
+
+  async getLeagueMembership(leagueId: number) {
+    return this.request(`/api/leagues/${leagueId}/membership`)
+  }
+
   // Health check
   async health() {
     return this.request('/health')
