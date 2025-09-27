@@ -1,0 +1,49 @@
+Goal: Implement Phase 2 of league rejoin bug fix (see docs/agent_memory/bug_fix_plans/league_rejoin.md)
+
+Do:
+- In `server/league-membership.js`, update the `joinLeague` logic:
+  - Before inserting, query for the most recent membership row for `(userId, leagueId)`
+  - If a row exists and `is_active=false`:
+      → UPDATE that row: set `is_active=true`, `left_at=NULL`, `updated_at=NOW()`
+  - Else:
+      → INSERT a new row as today
+- Gate the new UPDATE-first behavior behind a feature flag:
+    ff.potato.leagues.membership.update_mode = false (default off)
+- Ensure existing leave logic still sets `is_active=false` and `left_at=NOW()`
+- Restart the server using:
+    restart_workflow("Full Clean Restart")
+
+Proof:
+- Logs: must include "JoinLeague: reactivated existing membership" when UPDATE path is used
+- SQL sequence for test user:
+
+    SELECT user_id, league_id, is_active, joined_at, left_at
+    FROM league_memberships
+    WHERE user_id = (SELECT id FROM users WHERE email='tommyjanszen@gmail.com')
+      AND league_id = 1
+    ORDER BY joined_at DESC;
+
+  - After join → one row active
+  - After leave → same row inactive with left_at filled
+  - After rejoin with flag ON → same row reactivated (no new row created)
+- API check: GET /api/leagues/1/membership → returns isActive=true after rejoin
+- With flag OFF → behavior falls back to always-insert mode (multiple rows possible)
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For production-style validation:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If UPDATE query fails, constraint errors appear, or rejoin fails unexpectedly:
+  → STOP immediately
+  → Summarize findings and recommend next step
+  → WAIT for operator approval before resuming
+
+Scope Control (Deviation Protocol):
+- If investigation suggests schema migration, new indexes, or wider refactor:
+  → STOP immediately
+  → Summarize deviation vs. bug fix plan in docs/agent_memory/bug_fix_plans/league_rejoin.md
+  → Provide pros/cons of addressing now vs. deferring
+  → WAIT for explicit operator approval before resuming
