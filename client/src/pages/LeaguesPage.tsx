@@ -297,6 +297,7 @@ export function LeaguesPage() {
                       description={league.description}
                       users={league.users}
                       trending={league.trending}
+                      userMembership={league.userMembership}
                     />
                   ))
                 })()}
@@ -368,6 +369,7 @@ export function LeaguesPage() {
               description={league.description}
               users={league.users}
               trending={league.trending}
+              userMembership={league.userMembership}
             />
           ))}
         </div>

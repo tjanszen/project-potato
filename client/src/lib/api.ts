@@ -21,6 +21,12 @@ export interface League {
   description: string
   users: number
   trending: boolean
+  memberCount?: number
+  userMembership?: {
+    joinedAt: string
+    leftAt: string | null
+    isActive: boolean
+  } | null
 }
 
 // Leagues API response structure
