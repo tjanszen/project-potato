@@ -14,11 +14,12 @@ interface LeagueCardProps {
   title: string
   description: string
   users: number
+  memberCount?: number
   trending: boolean
   userMembership?: UserMembership | null
 }
 
-export function LeagueCard({ id, image_url, tag, title, description, users, trending, userMembership }: LeagueCardProps) {
+export function LeagueCard({ id, image_url, tag, title, description, users, memberCount, trending, userMembership }: LeagueCardProps) {
   console.log("Image fix applied: LeagueCard now rendering image_url")
   console.log("LeagueCard CTA rendered")
   
@@ -111,7 +112,7 @@ export function LeagueCard({ id, image_url, tag, title, description, users, tren
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        {/* Bottom left: Users */}
+        {/* Bottom left: Members */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -120,7 +121,7 @@ export function LeagueCard({ id, image_url, tag, title, description, users, tren
           fontSize: '14px'
         }}>
           <Users size={16} />
-          <span>{users}</span>
+          <span>{memberCount ?? users}</span>
         </div>
 
         {/* Bottom right: Trending (conditional) */}

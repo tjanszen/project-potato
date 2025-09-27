@@ -74,6 +74,9 @@ export function LeaguesPage() {
   // Phase 4: Log responsive polish activation
   console.log("Phase 4: Responsive polish active")
   
+  // Required integration log
+  console.log("LeaguesPage integration complete")
+  
   // Phase 1 Leagues Tabs: Log feature flag state
   console.log("FF_POTATO_LEAGUES_TABS state:", leaguesTabsFlag?.enabled)
   
@@ -296,6 +299,7 @@ export function LeaguesPage() {
                       title={league.title}
                       description={league.description}
                       users={league.users}
+                      memberCount={league.memberCount}
                       trending={league.trending}
                       userMembership={league.userMembership}
                     />
@@ -368,6 +372,7 @@ export function LeaguesPage() {
               title={league.title}
               description={league.description}
               users={league.users}
+              memberCount={league.memberCount}
               trending={league.trending}
               userMembership={league.userMembership}
             />
