@@ -54,6 +54,11 @@ const featureFlags = {
         enabled: false,
         description: 'Enables CSV-based dynamic leagues content loading',
     },
+    'ff.potato.leagues.membership.update_mode': {
+        name: 'ff.potato.leagues.membership.update_mode',
+        enabled: false,
+        description: 'Enables UPDATE-first logic for league rejoin (reactivate existing vs create new row)',
+    },
 };
 
 class FeatureFlagService {
@@ -75,6 +80,7 @@ class FeatureFlagService {
         featureFlags['ff.potato.leagues_placeholder'].enabled = normalize(process.env.FF_POTATO_LEAGUES_PLACEHOLDER);
         featureFlags['ff.potato.leagues_tabs'].enabled = normalize(process.env.FF_POTATO_LEAGUES_TABS);
         featureFlags['ff.potato.leagues_csv'].enabled = normalize(process.env.FF_POTATO_LEAGUES_CSV);
+        featureFlags['ff.potato.leagues.membership.update_mode'].enabled = normalize(process.env.FF_POTATO_LEAGUES_MEMBERSHIP_UPDATE_MODE);
 
         // Log feature flag status on startup
         this.logFlagStatus();
@@ -110,6 +116,7 @@ class FeatureFlagService {
             'ff.potato.leagues_placeholder': this.getFlag('ff.potato.leagues_placeholder'),
             'ff.potato.leagues_tabs': this.getFlag('ff.potato.leagues_tabs'),
             'ff.potato.leagues_csv': this.getFlag('ff.potato.leagues_csv'),
+            'ff.potato.leagues.membership.update_mode': this.getFlag('ff.potato.leagues.membership.update_mode'),
         };
     }
 

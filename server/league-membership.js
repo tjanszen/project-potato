@@ -6,6 +6,7 @@ const { drizzle } = require("drizzle-orm/node-postgres");
 const { Pool } = require("pg");
 const { users } = require("../shared/schema.js");
 const { eq, and, desc } = require("drizzle-orm");
+const { featureFlagService } = require("./feature-flags.js");
 const { pgTable, uuid, integer, boolean, timestamp, index } = require("drizzle-orm/pg-core");
 const { sql } = require("drizzle-orm");
 
@@ -63,7 +64,42 @@ async function joinLeague(userId, leagueId) {
       return existingMembership[0];
     }
 
-    // Insert new membership
+    // Check feature flag for UPDATE-first logic
+    const updateModeEnabled = featureFlagService.isEnabled('ff.potato.leagues.membership.update_mode');
+    
+    if (updateModeEnabled) {
+      // Phase 2: Query for most recent membership row (active or inactive)
+      const mostRecentMembership = await db
+        .select()
+        .from(leagueMemberships)
+        .where(
+          and(
+            eq(leagueMemberships.userId, userId),
+            eq(leagueMemberships.leagueId, leagueId)
+          )
+        )
+        .orderBy(desc(leagueMemberships.createdAt))
+        .limit(1);
+
+      // If a row exists and is_active=false, UPDATE to reactivate it
+      if (mostRecentMembership.length > 0 && !mostRecentMembership[0].isActive) {
+        const reactivatedMembership = await db
+          .update(leagueMemberships)
+          .set({
+            isActive: true,
+            leftAt: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(leagueMemberships.id, mostRecentMembership[0].id))
+          .returning();
+
+        console.log("JoinLeague: reactivated existing membership");
+        console.log(`User ${userId} rejoined league ${leagueId} by reactivating existing membership`);
+        return reactivatedMembership[0];
+      }
+    }
+
+    // Default behavior: Insert new membership
     const newMembership = await db
       .insert(leagueMemberships)
       .values({
