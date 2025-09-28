@@ -1,5 +1,5 @@
 league_id,image_url,tag,header,subtext,users_count,trending_flag
-1,/assets/league_placeholder.png,Beginner,October Weekly Resets,0 drinks on Sundays in October,201,FALSE
+1,/assets/league_id_1.png,Beginner,October Weekly Resets,0 drinks on Sundays in October,201,FALSE
 2,/assets/league_placeholder.png,Beginner,October 29 Challenge,0 drinks for 29 of 31 days ,68,TRUE
 3,/assets/league_placeholder.png,Intermediate,Oct Week 1,0 drinks 10/1 to 10/7,77,FALSE
 4,/assets/league_placeholder.png,Intermediate,Oct Week 2,0 drinks 10/8 to 10/14,123,TRUE
