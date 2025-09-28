@@ -1,9 +1,9 @@
 league_id,image_url,tag,header,subtext,users_count,trending_flag
-1,/assets/league_placeholder.png,Beginner,Sunday Reset,Reset your week,201,false
-2,/assets/league_placeholder.png,Beginner,Weekend Warrior,Go on a weekend dry run,68,true
-3,/assets/league_placeholder.png,Intermediate,Weekly Reset,A week w/o a drink won't kill you,77,false
-4,/assets/league_placeholder.png,Intermediate,Monthly Kickstart,No drinks the first 2-weeks of October,123,true
-5,/assets/league_placeholder.png,Intermediate,Sober October,Go into the holiday season with a reset,331,false
-6,/assets/league_placeholder.png,Advanced,90 Day Binge,3 months is nothing,45,true
-7,/assets/league_placeholder.png,Advanced,Family Wedding,Go to a wedding sober,9,false
-8,/assets/league_placeholder.png,Advanced,Holiday Cheers,"Survive T-Day, xMas, and New Years",24,true
+1,/assets/league_placeholder.png,Beginner,October Weekly Resets,0 drinks on Sundays in October,201,FALSE
+2,/assets/league_placeholder.png,Beginner,October 29 Challenge,0 drinks for 29 of 31 days ,68,TRUE
+3,/assets/league_placeholder.png,Intermediate,Oct Week 1,0 drinks 10/1 to 10/7,77,FALSE
+4,/assets/league_placeholder.png,Intermediate,Oct Week 2,0 drinks 10/8 to 10/14,123,TRUE
+5,/assets/league_placeholder.png,Intermediate,Oct Week 3,0 drinks 10/15 to 10/21,331,FALSE
+6,/assets/league_placeholder.png,Advance,Oct Week 4,0 drinks 10/22 to 10/29,45,TRUE
+7,/assets/league_placeholder.png,Pro,No Halloween Scaries,0 drinks on 10/31,9,FALSE
+8,/assets/league_placeholder.png,Pro,October Kickstart,0 drinks 10/1 to 10/10,24,TRUE
