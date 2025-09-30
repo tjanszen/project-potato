@@ -1,0 +1,50 @@
+Goal: Fix Phase 2 backend API implementation so POST /api/leagues/:id/memberships handles completion correctly.
+
+⚠️ Reminder (per docs/agent_memory/custom_gpt/writing_rules.md):
+- The production server entrypoint is `index.js` at the project root.
+- Do NOT add routes or logic in `server/index.ts` (legacy/unused).
+- All backend changes must go in `index.js`.
+
+Do:
+- Edit `index.js` (lines ~1012–1044) where POST /api/leagues/:id/memberships is implemented.
+- Add action handling:
+  - If `req.body.action === 'complete'` → call `markCompleted(userId, leagueId)`
+  - Else (missing or `'join'`) → continue using `joinLeague(userId, leagueId)`
+- Ensure the response includes the `completed_at` timestamp (null if not completed, populated if completed).
+- Add a log for debugging:
+
+    console.log(`Membership action=${action} for user=${userId}, league=${leagueId}`);
+
+- Restart server with:
+    restart_workflow("Full Clean Restart")
+
+Proof:
+- Logs: must show "Membership action=complete for user=<id>, league=<id>"
+- SQL:
+
+    SELECT user_id, league_id, is_active, completed_at
+    FROM league_memberships
+    WHERE completed_at IS NOT NULL;
+
+  → Should show updated timestamp after marking complete
+- API:
+  - POST /api/leagues/:id/memberships with { action: "complete" } → response includes completed_at
+  - GET /api/leagues/:id/membership → also shows completed_at
+- Frontend:
+  - Active tab “Mark Completed” CTA changes to “Completed ✓” and remains disabled after reload
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For production-like validation:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If POST still returns completed_at=null → STOP, summarize why markCompleted isn’t being invoked
+- If DB updates but API omits completed_at → STOP, summarize serialization issue
+- WAIT for operator approval before applying further fixes
+
+Scope Control (Deviation Protocol):
+- Do not edit `server/index.ts` or create new endpoints
+- Do not introduce schema changes
+- This fix must remain limited to action handling in `index.js`

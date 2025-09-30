@@ -1008,11 +1008,12 @@ app.get('/api/events', requireFeatureFlag('ff.potato.no_drink_v1'), requireAuthe
 });
 
 // League membership endpoints
-// POST /api/leagues/:id/memberships - Join a league
+// POST /api/leagues/:id/memberships - Join or complete a league
 app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res) => {
   try {
     const leagueId = parseInt(req.params.id);
     const userId = req.session.userId;
+    const { action = 'join' } = req.body;
     
     // Validate league ID
     if (isNaN(leagueId)) {
@@ -1022,11 +1023,34 @@ app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res)
       });
     }
     
-    // Join the league
-    const membership = await leagueMembershipService.joinLeague(userId, leagueId);
-    const memberCount = await leagueMembershipService.countActiveMembers(leagueId);
+    // Validate action
+    if (action !== 'join' && action !== 'complete') {
+      return res.status(400).json({ 
+        error: 'Invalid action',
+        message: 'Action must be "join" or "complete"'
+      });
+    }
     
-    console.log(`User ${userId} joined league ${leagueId}`);
+    console.log(`Membership action=${action} for user=${userId}, league=${leagueId}`);
+    
+    let membership;
+    
+    if (action === 'complete') {
+      // Mark league as completed
+      membership = await leagueMembershipService.markCompleted(userId, leagueId);
+      
+      if (!membership) {
+        return res.status(404).json({ 
+          error: 'Active membership not found',
+          message: 'You must have an active membership to complete this league'
+        });
+      }
+    } else {
+      // Join the league (default action)
+      membership = await leagueMembershipService.joinLeague(userId, leagueId);
+    }
+    
+    const memberCount = await leagueMembershipService.countActiveMembers(leagueId);
     
     res.json({
       success: true,
@@ -1035,9 +1059,9 @@ app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res)
     });
     
   } catch (error) {
-    console.error('League join error:', error);
+    console.error('League membership action error:', error);
     res.status(500).json({ 
-      error: 'Failed to join league',
+      error: 'Failed to process membership action',
       message: error.message 
     });
   }
