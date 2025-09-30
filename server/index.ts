@@ -335,6 +335,15 @@ app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res)
       return res.status(400).json({ error: 'Invalid league ID' });
     }
     
+    // Check if completion action is gated behind feature flag
+    if (action === 'complete' && !featureFlagService.isEnabled('ff.potato.leagues.active')) {
+      return res.status(403).json({ 
+        error: 'Feature not available',
+        message: 'League completion is not enabled',
+        flag: 'ff.potato.leagues.active'
+      });
+    }
+    
     if (action !== 'join' && action !== 'complete') {
       return res.status(400).json({ 
         error: 'Invalid action',

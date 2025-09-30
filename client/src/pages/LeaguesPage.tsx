@@ -34,6 +34,14 @@ export function LeaguesPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
+  const { 
+    data: leaguesActiveFlag 
+  } = useQuery<FeatureFlag>({
+    queryKey: ['feature-flag', 'ff.potato.leagues.active'],
+    queryFn: () => apiClient.getFeatureFlag('ff.potato.leagues.active') as Promise<FeatureFlag>,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
   // Phase 2.2: Leagues CSV data query - only enabled when CSV flag is true
   const { 
     data: leaguesData,

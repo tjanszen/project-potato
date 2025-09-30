@@ -59,6 +59,11 @@ const featureFlags = {
         enabled: false,
         description: 'Enables UPDATE-first logic for league rejoin (reactivate existing vs create new row)',
     },
+    'ff.potato.leagues.active': {
+        name: 'ff.potato.leagues.active',
+        enabled: false,
+        description: 'Enables league completion functionality in Active tab and API',
+    },
 };
 
 class FeatureFlagService {
@@ -81,6 +86,7 @@ class FeatureFlagService {
         featureFlags['ff.potato.leagues_tabs'].enabled = normalize(process.env.FF_POTATO_LEAGUES_TABS);
         featureFlags['ff.potato.leagues_csv'].enabled = normalize(process.env.FF_POTATO_LEAGUES_CSV);
         featureFlags['ff.potato.leagues.membership.update_mode'].enabled = normalize(process.env.FF_POTATO_LEAGUES_MEMBERSHIP_UPDATE_MODE);
+        featureFlags['ff.potato.leagues.active'].enabled = normalize(process.env.FF_POTATO_LEAGUES_ACTIVE);
 
         // Log feature flag status on startup
         this.logFlagStatus();
@@ -117,6 +123,7 @@ class FeatureFlagService {
             'ff.potato.leagues_tabs': this.getFlag('ff.potato.leagues_tabs'),
             'ff.potato.leagues_csv': this.getFlag('ff.potato.leagues_csv'),
             'ff.potato.leagues.membership.update_mode': this.getFlag('ff.potato.leagues.membership.update_mode'),
+            'ff.potato.leagues.active': this.getFlag('ff.potato.leagues.active'),
         };
     }
 
