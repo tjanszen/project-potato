@@ -447,6 +447,7 @@ export const leagueMemberships = pgTable('league_memberships', {
   isActive: boolean('is_active').notNull().default(true),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
   leftAt: timestamp('left_at'),
+  completedAt: timestamp('completed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
@@ -462,6 +463,7 @@ export const leagueMemberships = pgTable('league_memberships', {
 export const insertLeagueMembershipSchema = createInsertSchema(leagueMemberships).omit({
   id: true,
   joinedAt: true,
+  completedAt: true,
   createdAt: true,
   updatedAt: true,
 });
