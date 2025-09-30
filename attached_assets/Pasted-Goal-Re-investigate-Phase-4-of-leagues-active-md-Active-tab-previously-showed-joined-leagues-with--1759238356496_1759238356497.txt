@@ -1,0 +1,49 @@
+Goal: Re-investigate Phase 4 of leagues_active.md. Active tab previously showed joined leagues with “Mark Completed” CTAs (but clicking did not update state). After last investigation, Active tab now shows only placeholder text. This regression suggests code or config was changed when no changes should have been made.
+
+⚠️ Critical Requirements:
+- Do NOT make any code changes during this investigation.
+- Only collect evidence.
+- Explicitly confirm test is done while logged in as a user who has active league memberships.
+
+Do:
+1. Verify Regression:
+   - Show screenshot + API response of GET /api/leagues as logged-in user.
+   - Confirm whether `userMembership` data is included for active leagues.
+   - Compare against previous state (where leagues appeared in Active tab).
+
+2. Investigate Original Issue (Mark Completed not updating):
+   - With Active tab showing leagues again, click “Mark Completed.”
+   - Collect:
+     - API response from POST /api/leagues/:id/memberships with `{ action: "complete" }`
+     - Updated SQL row for that membership (check `completed_at`)
+     - React Query cache state for `['leagues']` after mutation
+     - LeagueCard props received after mutation
+
+3. Identify Where It Breaks:
+   - If API sets `completed_at` but cache doesn’t update → problem is React Query.
+   - If cache updates but props don’t update → problem is Active tab prop passing.
+   - If props update but UI doesn’t render correctly → problem is LeagueCard conditional render.
+
+Proof:
+- Logs: show GET /api/leagues response with `userMembership` when logged in.
+- Logs: show POST completion response includes `completed_at`.
+- SQL: show row with updated `completed_at` for test user’s membership.
+- Logs: show React Query cache contents with updated `completed_at`.
+- Logs: show LeagueCard props after mutation (must include completed_at).
+- Frontend: screenshot should show CTA switching from “Mark Completed” → “Completed ✓” if flow works.
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For production-like testing:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If Active tab still shows placeholder even while logged in → STOP and summarize what changed compared to previous test.
+- If completion API works but frontend doesn’t update → STOP and summarize exact break point (API, cache, props, render).
+- WAIT for operator approval before attempting any fix.
+
+Scope Control (Deviation Protocol):
+- Do not alter API routes, database schema, or frontend logic.
+- Investigation only. Collect evidence and identify the precise break point.
+- STOP immediately if changes beyond evidence gathering are attempted.
