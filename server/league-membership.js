@@ -165,6 +165,8 @@ exports.leaveLeague = leaveLeague;
  */
 async function markCompleted(userId, leagueId) {
   try {
+    console.log(`[TRACE] markCompleted called with userId=${userId}, leagueId=${leagueId}`);
+    
     // Check for existing active membership
     const existingMembership = await db
       .select()
@@ -178,6 +180,11 @@ async function markCompleted(userId, leagueId) {
       )
       .limit(1);
 
+    console.log(`[TRACE] Found ${existingMembership.length} active memberships`);
+    if (existingMembership.length > 0) {
+      console.log(`[TRACE] Existing membership:`, JSON.stringify(existingMembership[0]));
+    }
+
     if (existingMembership.length === 0) {
       console.log(`No active membership found for user ${userId} in league ${leagueId}`);
       return null;
@@ -189,6 +196,9 @@ async function markCompleted(userId, leagueId) {
       return existingMembership[0];
     }
 
+    console.log(`[TRACE] About to UPDATE membership id=${existingMembership[0].id}`);
+    console.log(`[TRACE] Setting completedAt to:`, new Date().toISOString());
+    
     // Mark as completed
     const updatedMembership = await db
       .update(leagueMemberships)
@@ -199,10 +209,16 @@ async function markCompleted(userId, leagueId) {
       .where(eq(leagueMemberships.id, existingMembership[0].id))
       .returning();
 
+    console.log(`[TRACE] UPDATE returned ${updatedMembership.length} rows`);
+    if (updatedMembership.length > 0) {
+      console.log(`[TRACE] Updated membership:`, JSON.stringify(updatedMembership[0]));
+    }
+
     console.log(`Completion marked for user ${userId}, league ${leagueId}`);
     return updatedMembership[0];
   } catch (error) {
     console.error(`Error marking league complete: ${error.message}`);
+    console.error(`[TRACE] Full error:`, error);
     throw error;
   }
 }

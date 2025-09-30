@@ -393,18 +393,23 @@ app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res)
     
     if (action === 'join') {
       const membership = await leagueMembershipService.joinLeague(req.session.userId!, leagueId);
+      console.log('[API TRACE] Join response:', JSON.stringify(membership));
       return res.json(membership);
     } else {
       // action === 'complete'
+      console.log('[API TRACE] Calling markCompleted for user:', req.session.userId, 'league:', leagueId);
       const membership = await leagueMembershipService.markCompleted(req.session.userId!, leagueId);
+      console.log('[API TRACE] markCompleted returned:', JSON.stringify(membership));
       
       if (!membership) {
+        console.log('[API TRACE] No membership found, returning 404');
         return res.status(404).json({ 
           error: 'Active membership not found',
           message: 'You must have an active membership to complete this league'
         });
       }
       
+      console.log('[API TRACE] Sending response:', JSON.stringify(membership));
       return res.json(membership);
     }
     
