@@ -26,6 +26,7 @@ export interface League {
     joinedAt: string
     leftAt: string | null
     isActive: boolean
+    completedAt: string | null
   } | null
 }
 
@@ -157,6 +158,13 @@ export class ApiClient {
 
   async getLeagueMembership(leagueId: number) {
     return this.request(`/api/leagues/${leagueId}/membership`)
+  }
+
+  async completeLeague(leagueId: number) {
+    return this.request(`/api/leagues/${leagueId}/memberships`, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'complete' }),
+    })
   }
 
   // Health check

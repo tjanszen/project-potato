@@ -1,0 +1,54 @@
+Goal: Implement Phase 4 of leagues_active.md (frontend Active tab enhancement for league completion)
+
+Do:
+- Update the Active tab in `LeaguesPage`:
+  - Query joined leagues with: GET /api/leagues filtered by `userMembership.isActive = true`
+  - Render joined leagues in list view
+- Update `LeagueCard` component:
+  - Add support for new `completionMode?: boolean` prop for Active tab rendering
+  - In completionMode:
+    - If league `completed_at` is NULL → show “Mark Completed” CTA (orange button, one-click)
+    - If league `completed_at` has a timestamp → show “Completed ✓” badge (green, disabled)
+- CTA behavior:
+  - One-click → triggers POST /api/leagues/:id/memberships with `{ action: "complete" }`
+  - Disable CTA after completion
+- Style:
+  - Use existing Strava-style theme (#FF5A1F orange, #28A745 green)
+  - Badge state should match current “Joined” CTA styling
+- Gating:
+  - Wrap entire Active tab completion UI behind `ff.potato.leagues.active`
+  - If flag OFF → keep placeholder text (“Your joined leagues will appear here”)
+- Restart frontend with:
+    restart_workflow("Full Clean Restart")
+
+Proof:
+- With flag ON:
+  - Active tab lists joined leagues (userMembership.isActive = true)
+  - CTA displays “Mark Completed” → clicking sets badge “Completed ✓” (disabled)
+  - State persists after reload
+- With flag OFF:
+  - Active tab shows placeholder only
+- API and SQL checks confirm completed_at is set for completed leagues:
+
+    SELECT user_id, league_id, is_active, completed_at
+    FROM league_memberships
+    WHERE completed_at IS NOT NULL;
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For production-like check:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If CTA click fails (API/network), ensure error is surfaced (toast/log) but CTA not marked as completed
+- If frontend crashes due to missing data fields:
+  → STOP immediately
+  → Summarize issue and recommend fix
+  → WAIT for operator approval before resuming
+
+Scope Control (Deviation Protocol):
+- If investigation suggests new UI components (e.g., a dedicated Completed tab) beyond requirements:
+  → STOP immediately
+  → Summarize deviation vs. phase plan (docs/agent_memory/imp_plans/leagues_active.md)
+  → WAIT for operator approval before resuming

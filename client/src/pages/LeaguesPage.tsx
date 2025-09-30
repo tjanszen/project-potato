@@ -317,21 +317,74 @@ export function LeaguesPage() {
             )}
             
             {activeTab === 'active' && (
-              <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: '#666'
-              }}>
+              <>
                 {(() => {
                   console.log("Phase 3: Rendering active content")
+                  
+                  // Check if completion feature is enabled
+                  if (!leaguesActiveFlag?.enabled) {
+                    return (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '40px 20px',
+                        color: '#666'
+                      }}>
+                        <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
+                        <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
+                      </div>
+                    )
+                  }
+                  
+                  // Filter for joined leagues
+                  const joinedLeagues = currentLeagues.filter(
+                    league => league.userMembership?.isActive === true
+                  )
+                  
+                  // Show placeholder if no joined leagues
+                  if (joinedLeagues.length === 0) {
+                    return (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '40px 20px',
+                        color: '#666'
+                      }}>
+                        <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
+                        <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
+                      </div>
+                    )
+                  }
+                  
+                  // Render joined leagues with completion mode
                   return (
-                    <>
-                      <h3 style={{ margin: '0 0 10px 0' }}>Active Leagues</h3>
-                      <p style={{ margin: '0' }}>Your joined leagues will appear here</p>
-                    </>
+                    <div 
+                      role="list"
+                      style={{
+                        display: 'grid',
+                        gap: '20px',
+                        gridTemplateColumns: gridConfig.columns,
+                        maxWidth: gridConfig.maxWidth,
+                        margin: '0 auto'
+                      }}
+                    >
+                      {joinedLeagues.map((league) => (
+                        <LeagueCard
+                          key={league.id}
+                          id={league.id}
+                          image_url={league.image_url}
+                          tag={league.tag}
+                          title={league.title}
+                          description={league.description}
+                          users={league.users}
+                          memberCount={league.memberCount}
+                          trending={league.trending}
+                          userMembership={league.userMembership}
+                          completionMode={true}
+                        />
+                      ))}
+                    </div>
                   )
                 })()}
-              </div>
+              </>
             )}
             
             {activeTab === 'clubs' && (

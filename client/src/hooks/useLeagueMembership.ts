@@ -7,6 +7,7 @@ export interface MembershipResponse {
     joinedAt: string
     leftAt: string | null
     isActive: boolean
+    completedAt: string | null
   } | null
 }
 
@@ -61,6 +62,22 @@ export function useLeaveLeague() {
       // Invalidate and refetch membership status
       queryClient.invalidateQueries({ queryKey: ['league-membership', leagueId] })
       // Invalidate leagues list to update member counts
+      queryClient.invalidateQueries({ queryKey: ['leagues'] })
+    },
+  })
+}
+
+// Hook for completing a league
+export function useCompleteLeague() {
+  const queryClient = useQueryClient()
+  
+  return useMutation<MembershipMutationResponse, Error, number>({
+    mutationFn: (leagueId: number) => 
+      apiClient.completeLeague(leagueId) as Promise<MembershipMutationResponse>,
+    onSuccess: (_, leagueId) => {
+      // Invalidate and refetch membership status
+      queryClient.invalidateQueries({ queryKey: ['league-membership', leagueId] })
+      // Invalidate leagues list to update completion status
       queryClient.invalidateQueries({ queryKey: ['leagues'] })
     },
   })

@@ -1,10 +1,11 @@
 import { Users, LineChart } from 'lucide-react'
-import { useJoinLeague, useLeaveLeague } from '../hooks/useLeagueMembership'
+import { useJoinLeague, useLeaveLeague, useCompleteLeague } from '../hooks/useLeagueMembership'
 
 interface UserMembership {
   joinedAt: string
   leftAt: string | null
   isActive: boolean
+  completedAt: string | null
 }
 
 interface LeagueCardProps {
@@ -17,27 +18,38 @@ interface LeagueCardProps {
   memberCount?: number
   trending: boolean
   userMembership?: UserMembership | null
+  completionMode?: boolean
 }
 
-export function LeagueCard({ id, image_url, tag, title, description, users, memberCount, trending, userMembership }: LeagueCardProps) {
+export function LeagueCard({ id, image_url, tag, title, description, users, memberCount, trending, userMembership, completionMode = false }: LeagueCardProps) {
   console.log("Image fix applied: LeagueCard now rendering image_url")
   console.log("LeagueCard CTA rendered")
   
   // React Query hooks for membership mutations
   const joinMutation = useJoinLeague()
   const leaveMutation = useLeaveLeague()
+  const completeMutation = useCompleteLeague()
   
   // Determine CTA button state
   const isJoined = userMembership?.isActive === true
-  const isPending = joinMutation.isPending || leaveMutation.isPending
+  const isCompleted = userMembership?.completedAt !== null && userMembership?.completedAt !== undefined
+  const isPending = joinMutation.isPending || leaveMutation.isPending || completeMutation.isPending
   
   const handleCTAClick = () => {
     if (isPending) return
     
-    if (isJoined) {
-      leaveMutation.mutate(id)
+    if (completionMode) {
+      // In completion mode, clicking marks the league as completed
+      if (!isCompleted) {
+        completeMutation.mutate(id)
+      }
     } else {
-      joinMutation.mutate(id)
+      // In normal mode, toggle join/leave
+      if (isJoined) {
+        leaveMutation.mutate(id)
+      } else {
+        joinMutation.mutate(id)
+      }
     }
   }
   return (
@@ -139,26 +151,32 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
         )}
       </div>
 
-      {/* CTA Button - Strava-style Join/Joined */}
+      {/* CTA Button - Strava-style Join/Joined or Mark Completed/Completed */}
       <button
         onClick={handleCTAClick}
-        disabled={isPending}
+        disabled={isPending || (completionMode && isCompleted)}
         role="button"
         tabIndex={0}
-        aria-label={isJoined ? `Leave ${title} league` : `Join ${title} league`}
+        aria-label={
+          completionMode
+            ? (isCompleted ? `${title} league completed` : `Mark ${title} league as completed`)
+            : (isJoined ? `Leave ${title} league` : `Join ${title} league`)
+        }
         data-testid={`cta-button-${id}`}
         style={{
           width: '100%',
           height: '44px',
           marginTop: '16px',
-          backgroundColor: isJoined ? '#28A745' : '#FF5A1F',
+          backgroundColor: completionMode
+            ? (isCompleted ? '#28A745' : '#FF5A1F')
+            : (isJoined ? '#28A745' : '#FF5A1F'),
           color: 'white',
           border: 'none',
           borderRadius: '8px',
           fontSize: '16px',
           fontWeight: 'bold',
-          cursor: isPending ? 'not-allowed' : 'pointer',
-          opacity: isPending ? 0.7 : 1,
+          cursor: (isPending || (completionMode && isCompleted)) ? 'not-allowed' : 'pointer',
+          opacity: (isPending || (completionMode && isCompleted)) ? 0.7 : 1,
           transition: 'background-color 0.2s ease, opacity 0.2s ease',
           display: 'flex',
           alignItems: 'center',
@@ -172,7 +190,10 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
           }
         }}
       >
-        {isPending ? (isJoined ? 'Leaving...' : 'Joining...') : (isJoined ? 'Joined' : 'Join')}
+        {completionMode
+          ? (isPending ? 'Completing...' : (isCompleted ? 'Completed ✓' : 'Mark Completed'))
+          : (isPending ? (isJoined ? 'Leaving...' : 'Joining...') : (isJoined ? 'Joined' : 'Join'))
+        }
       </button>
     </div>
   )

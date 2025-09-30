@@ -302,15 +302,55 @@ app.get('/api/leagues', async (req, res) => {
     // Call the CSV parser function
     const leagues = parseLeaguesCSV();
     
-    // Success response
-    const response = {
-      leagues: leagues,
-      count: leagues.length,
-      source: 'csv'
-    };
-    
-    console.log(`API /api/leagues served ${leagues.length} leagues`);
-    res.json(response);
+    // If user is authenticated, enrich with membership and member counts
+    if (req.session?.userId) {
+      const enrichedLeagues = await Promise.all(
+        leagues.map(async (league: any) => {
+          try {
+            // Get user's membership for this league
+            const userMembership = await leagueMembershipService.getUserMembership(
+              req.session.userId!,
+              league.id
+            );
+            
+            // Get total member count for this league
+            const memberCount = await leagueMembershipService.getMemberCount(league.id);
+            
+            return {
+              ...league,
+              userMembership,
+              memberCount
+            };
+          } catch (err) {
+            console.error(`Error enriching league ${league.id}:`, err);
+            return {
+              ...league,
+              userMembership: null,
+              memberCount: league.users
+            };
+          }
+        })
+      );
+      
+      const response = {
+        leagues: enrichedLeagues,
+        count: enrichedLeagues.length,
+        source: 'csv'
+      };
+      
+      console.log(`API /api/leagues served ${enrichedLeagues.length} leagues (authenticated)`);
+      res.json(response);
+    } else {
+      // Unauthenticated - return leagues without membership data
+      const response = {
+        leagues: leagues,
+        count: leagues.length,
+        source: 'csv'
+      };
+      
+      console.log(`API /api/leagues served ${leagues.length} leagues (unauthenticated)`);
+      res.json(response);
+    }
     
   } catch (error) {
     console.error('API /api/leagues failed:', error instanceof Error ? error.message : 'Unknown error');
