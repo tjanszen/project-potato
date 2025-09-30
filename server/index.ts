@@ -13,6 +13,7 @@ import { parse } from 'csv-parse/sync';
 import { featureFlagService } from './feature-flags.js';
 import { storage } from './storage.js';
 import { insertUserSchema } from '../shared/schema.js';
+import * as leagueMembershipService from './league-membership.js';
 
 // CSV Parser function for leagues data
 interface LeagueCSVRow {
@@ -321,6 +322,98 @@ app.get('/api/leagues', async (req, res) => {
       count: 0,
       source: 'error'
     });
+  }
+});
+
+// POST /api/leagues/:id/memberships - Join or complete a league
+app.post('/api/leagues/:id/memberships', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    const { action = 'join' } = req.body;
+    
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ error: 'Invalid league ID' });
+    }
+    
+    if (action !== 'join' && action !== 'complete') {
+      return res.status(400).json({ 
+        error: 'Invalid action',
+        message: 'Action must be "join" or "complete"'
+      });
+    }
+    
+    if (action === 'join') {
+      const membership = await leagueMembershipService.joinLeague(req.session.userId!, leagueId);
+      return res.json(membership);
+    } else {
+      // action === 'complete'
+      const membership = await leagueMembershipService.markCompleted(req.session.userId!, leagueId);
+      
+      if (!membership) {
+        return res.status(404).json({ 
+          error: 'Active membership not found',
+          message: 'You must have an active membership to complete this league'
+        });
+      }
+      
+      return res.json(membership);
+    }
+    
+  } catch (error) {
+    console.error('League membership action error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/leagues/:id/memberships - Leave a league
+app.delete('/api/leagues/:id/memberships', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ error: 'Invalid league ID' });
+    }
+    
+    const membership = await leagueMembershipService.leaveLeague(req.session.userId!, leagueId);
+    
+    if (!membership) {
+      return res.status(404).json({ 
+        error: 'Active membership not found',
+        message: 'No active membership found to leave'
+      });
+    }
+    
+    res.json(membership);
+    
+  } catch (error) {
+    console.error('League leave error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/leagues/:id/membership - Get user's membership status for a league
+app.get('/api/leagues/:id/membership', requireAuthentication, async (req, res) => {
+  try {
+    const leagueId = parseInt(req.params.id);
+    
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ error: 'Invalid league ID' });
+    }
+    
+    const membership = await leagueMembershipService.getUserMembership(req.session.userId!, leagueId);
+    
+    if (!membership) {
+      return res.status(404).json({ 
+        error: 'Membership not found',
+        message: 'No membership found for this league'
+      });
+    }
+    
+    res.json(membership);
+    
+  } catch (error) {
+    console.error('Get membership error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

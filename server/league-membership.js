@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runProofTests = exports.countActiveMembers = exports.getUserMembership = exports.leaveLeague = exports.joinLeague = void 0;
+exports.runProofTests = exports.countActiveMembers = exports.getUserMembership = exports.markCompleted = exports.leaveLeague = exports.joinLeague = void 0;
 
 const { drizzle } = require("drizzle-orm/node-postgres");
 const { Pool } = require("pg");
@@ -20,6 +20,7 @@ const leagueMemberships = pgTable('league_memberships', {
   isActive: boolean('is_active').notNull().default(true),
   joinedAt: timestamp('joined_at').notNull().defaultNow(),
   leftAt: timestamp('left_at'),
+  completedAt: timestamp('completed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
@@ -157,6 +158,57 @@ async function leaveLeague(userId, leagueId) {
 exports.leaveLeague = leaveLeague;
 
 /**
+ * Mark league as completed - Set completed_at timestamp (idempotent)
+ * @param {string} userId - UUID of the user
+ * @param {number} leagueId - ID of the league to mark complete
+ * @returns {Promise<Object|null>} The updated membership record or null if not found/not active
+ */
+async function markCompleted(userId, leagueId) {
+  try {
+    // Check for existing active membership
+    const existingMembership = await db
+      .select()
+      .from(leagueMemberships)
+      .where(
+        and(
+          eq(leagueMemberships.userId, userId),
+          eq(leagueMemberships.leagueId, leagueId),
+          eq(leagueMemberships.isActive, true)
+        )
+      )
+      .limit(1);
+
+    if (existingMembership.length === 0) {
+      console.log(`No active membership found for user ${userId} in league ${leagueId}`);
+      return null;
+    }
+
+    // If already completed, return existing record (idempotent)
+    if (existingMembership[0].completedAt) {
+      console.log(`League ${leagueId} already completed for user ${userId}`);
+      return existingMembership[0];
+    }
+
+    // Mark as completed
+    const updatedMembership = await db
+      .update(leagueMemberships)
+      .set({
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(leagueMemberships.id, existingMembership[0].id))
+      .returning();
+
+    console.log(`Completion marked for user ${userId}, league ${leagueId}`);
+    return updatedMembership[0];
+  } catch (error) {
+    console.error(`Error marking league complete: ${error.message}`);
+    throw error;
+  }
+}
+exports.markCompleted = markCompleted;
+
+/**
  * Get user's membership status for a specific league
  * @param {string} userId - UUID of the user
  * @param {number} leagueId - ID of the league
@@ -171,6 +223,7 @@ async function getUserMembership(userId, leagueId) {
         joinedAt: leagueMemberships.joinedAt,
         leftAt: leagueMemberships.leftAt,
         isActive: leagueMemberships.isActive,
+        completedAt: leagueMemberships.completedAt,
       })
       .from(leagueMemberships)
       .where(
