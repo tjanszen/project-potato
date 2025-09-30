@@ -1,0 +1,70 @@
+Goal: Review current League implementation and propose a phased implementation plan to add manual “completion” state
+
+Requirements:
+- Each League has hardcoded challenge rules (not enforced in code yet).
+- Current state:
+  - Users can “join” a league → frontend CTA changes from Orange to Green.
+  - League data is ingested via CSV and identified by league_id.
+  - User-to-league links are tracked in the `league_memberships` table.
+- New feature requirements:
+  - Users can view all joined leagues in an “Active” tab within Leagues.
+  - Leagues remain in “Active” indefinitely (no start/end dates yet).
+  - Each league in the Active tab has a one-click CTA to “Mark Completed.”
+  - When clicked:
+    - The CTA flips to a “Completed” badge/green state.
+    - League remains visible in the Active tab.
+    - User cannot unmark once completed.
+  - Completion should be stored in the same `league_memberships` table by adding a `completed_at` column.
+  - Completion is per user per league, one-time action.
+  - Completion should be idempotent (safe to call multiple times, always results in the same completed state).
+  - Extend existing `/api/leagues/:id/memberships` endpoint to support marking completion.
+  - Gate rollout with feature flag `ff.potato.leagues.active`.
+
+Do:
+- Review how leagues are currently structured:
+  - CSV ingestion and league_id mapping
+  - `league_memberships` schema
+  - Join/leave logic in backend
+  - Frontend CTA state management
+- Propose a phased implementation plan that covers:
+  - DB schema change
+  - Backend API change
+  - Frontend update
+  - Feature flag integration
+  - Testing plan (logs, SQL, API, frontend proof)
+
+Proof:
+- Logs: must show "Completion marked for user <id>, league <id>"
+- SQL:
+
+    SELECT user_id, league_id, is_active, completed_at
+    FROM league_memberships
+    WHERE completed_at IS NOT NULL;
+
+  → returns rows only for completed leagues
+- API: 
+  - POST /api/leagues/:id/memberships (with completion) → returns completed_at timestamp
+  - GET /api/leagues/:id/membership → shows completed_at if completed
+- Frontend:
+  - Active tab lists joined leagues
+  - CTA flips to “Completed” badge once clicked
+  - Badge remains indefinitely, CTA disabled
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For end-to-end validation:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If schema migration errors, API contract mismatches, or frontend rendering crashes occur:
+  → STOP immediately
+  → Summarize findings + recommend next step
+  → WAIT for operator approval before resuming
+
+Scope Control (Deviation Protocol):
+- If investigation suggests need for a new table (`league_completions`) or complex challenge logic:
+  → STOP immediately
+  → Summarize deviation vs. requirements above
+  → Provide pros/cons of addressing now vs. deferring
+  → WAIT for explicit operator approval before resuming

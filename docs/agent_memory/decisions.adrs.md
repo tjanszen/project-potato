@@ -168,3 +168,10 @@ Accepted — 2025-09-12
 **Status:** Accepted & Implemented  
 **Consequences:** Flag=false shows full UI (header+container+explanatory text), flag=true shows minimal UI (only 3 stat boxes)  
 **Links:** client/src/components/TotalsPanel.tsx, server/feature-flags.js, docs/agent_memory/imp_plans/progress_header_v2.md
+
+## ADR-2025-09-30 League Membership Rejoin Behavior Control
+**Context:** When users leave and rejoin leagues, system must choose between creating new membership rows (audit trail) or reactivating existing rows (cleaner data model). Different use cases favor different approaches.  
+**Decision:** Implement FF_POTATO_LEAGUES_MEMBERSHIP_UPDATE_MODE feature flag controlling rejoin behavior: OFF (default) = INSERT new row on rejoin, ON = UPDATE existing inactive row to reactivate membership  
+**Status:** Accepted & Implemented  
+**Consequences:** Flag OFF preserves complete audit trail with multiple rows per user-league over time; Flag ON maintains single row per user-league with cleaner data but overwrites join/leave timestamps on reactivation  
+**Links:** server/feature-flags.js, server/league-membership.js (lines 67-100), league_memberships table
