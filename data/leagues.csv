@@ -3,7 +3,7 @@ league_id,image_url,tag,header,subtext,users_count,trending_flag
 2,/assets/league_id_2.png,Beginner,Sober(ish) October,0 drinks for 29 of 31 days ,68,TRUE
 3,/assets/league_id_3.png,Intermediate,Oct Week 1,0 drinks 10/1 to 10/7,77,FALSE
 4,/assets/league_id_4.png,Intermediate,Oct Week 2,0 drinks 10/8 to 10/14,123,TRUE
-5,/assets/league_id_5.png,Intermediate,Oct Week 3,0 drinks 10/15 to 10/21,331,FALSE
-6,/assets/league_id_6.png,Advance,Oct Week 4,0 drinks 10/22 to 10/29,45,TRUE
-7,/assets/league_id_7.png,Pro,No Halloween Scaries,0 drinks on 10/31,9,FALSE
-8,/assets/league_id_8.png,Pro,October Kickstart,0 drinks 10/1 to 10/10,24,TRUE
+5,/assets/league_placeholder.png,Intermediate,Oct Week 3,0 drinks 10/15 to 10/21,331,FALSE
+6,/assets/league_placeholder.png,Advance,Oct Week 4,0 drinks 10/22 to 10/29,45,TRUE
+7,/assets/league_placeholder.png,Pro,No Halloween Scaries,0 drinks on 10/31,9,FALSE
+8,/assets/league_placeholder.png,Pro,October Kickstart,0 drinks 10/1 to 10/10,24,TRUE
