@@ -1,0 +1,53 @@
+Goal: Investigate why the “Mark Completed” CTA does not persist as completed when FF_POTATO_LEAGUES_ACTIVE is enabled.
+
+⚠️ Important: Do NOT make any code changes during this investigation. Evidence only.
+
+Context:
+- I have already restored the environment variable `FF_POTATO_LEAGUES_ACTIVE=true`.
+- With this flag enabled, I can now see my joined leagues on the Active tab again.
+- The current issue: when I click “Mark Completed” → it shows “Completing…” briefly but then reverts to “Mark Completed” instead of persisting as completed.
+
+Do:
+1. Confirm Flag State
+   - Log the state of `ff.potato.leagues.active` at runtime in both backend and frontend.
+   - Verify it reads as enabled from the environment.
+
+2. Trace Completion Flow (with leagues visible in Active tab)
+   - Click “Mark Completed” on a league.
+   - Collect:
+     - API request payload to POST /api/leagues/:id/memberships
+     - API response body (does it include `completed_at`?)
+     - Database row for that membership (`SELECT user_id, league_id, completed_at`)
+     - React Query cache state for `['leagues']` after mutation
+     - LeagueCard props after cache update
+
+3. Identify Break Point
+   - If API response includes `completed_at` but DB row is NULL → problem is backend persistence.
+   - If DB updates correctly but API response omits `completed_at` → problem is API serialization.
+   - If API correct but cache misses update → problem is React Query.
+   - If cache has `completed_at` but LeagueCard props don’t → problem is prop mapping.
+   - If props correct but UI doesn’t render → problem is LeagueCard conditional logic.
+
+Proof:
+- Logs: must show POST payload `{ action: "complete" }` and response with `completed_at`.
+- SQL: must show updated `completed_at` for the test user’s league membership.
+- Logs: must show React Query cache entry with `completed_at` populated.
+- Logs: must show LeagueCard props include `completed_at`.
+- Frontend: if everything flows correctly, CTA should change to “Completed ✓” (green, disabled).
+
+Workflows to Use:
+- Always run:
+    restart_workflow("Full Clean Restart")
+- For production-like testing:
+    restart_workflow("Clean Production Deploy")
+
+Error Handling (Mid-Phase Protocol):
+- If API returns no `completed_at` → STOP, summarize backend issue.
+- If DB updates but API response omits `completed_at` → STOP, summarize API serialization issue.
+- If API correct but cache/props not updated → STOP, summarize frontend state issue.
+- WAIT for operator approval before making any fixes.
+
+Scope Control (Deviation Protocol):
+- Do not modify feature flag config again.
+- Do not implement fixes.
+- Investigation only: collect evidence to identify exactly where the flow breaks.
