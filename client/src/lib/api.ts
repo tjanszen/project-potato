@@ -161,10 +161,13 @@ export class ApiClient {
   }
 
   async completeLeague(leagueId: number) {
-    return this.request(`/api/leagues/${leagueId}/memberships`, {
+    console.log('[API] Complete league request:', { leagueId, action: 'complete' })
+    const response = await this.request(`/api/leagues/${leagueId}/memberships`, {
       method: 'POST',
       body: JSON.stringify({ action: 'complete' }),
     })
+    console.log('[API] Complete league response:', response)
+    return response
   }
 
   // Health check

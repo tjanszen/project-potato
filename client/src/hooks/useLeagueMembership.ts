@@ -72,13 +72,23 @@ export function useCompleteLeague() {
   const queryClient = useQueryClient()
   
   return useMutation<MembershipMutationResponse, Error, number>({
-    mutationFn: (leagueId: number) => 
-      apiClient.completeLeague(leagueId) as Promise<MembershipMutationResponse>,
-    onSuccess: (_, leagueId) => {
+    mutationFn: (leagueId: number) => {
+      console.log('[COMPLETION] Starting completion for league:', leagueId)
+      return apiClient.completeLeague(leagueId) as Promise<MembershipMutationResponse>
+    },
+    onSuccess: (data, leagueId) => {
+      console.log('[COMPLETION] Success response:', data)
+      console.log('[COMPLETION] Invalidating queries for league:', leagueId)
+      
       // Invalidate and refetch membership status
       queryClient.invalidateQueries({ queryKey: ['league-membership', leagueId] })
       // Invalidate leagues list to update completion status
       queryClient.invalidateQueries({ queryKey: ['leagues'] })
+      
+      console.log('[COMPLETION] Cache invalidation complete')
+    },
+    onError: (error, leagueId) => {
+      console.error('[COMPLETION] Error for league', leagueId, ':', error)
     },
   })
 }

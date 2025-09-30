@@ -35,6 +35,17 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
   const isCompleted = userMembership?.completedAt !== null && userMembership?.completedAt !== undefined
   const isPending = joinMutation.isPending || leaveMutation.isPending || completeMutation.isPending
   
+  // Debug logging for completion mode
+  if (completionMode) {
+    console.log('[LEAGUE_CARD] Rendering in completion mode:', {
+      id,
+      title,
+      userMembership,
+      isCompleted,
+      completedAt: userMembership?.completedAt
+    })
+  }
+  
   const handleCTAClick = () => {
     if (isPending) return
     

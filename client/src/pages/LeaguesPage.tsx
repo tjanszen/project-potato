@@ -49,7 +49,17 @@ export function LeaguesPage() {
     isError: leaguesError 
   } = useQuery<LeaguesResponse>({
     queryKey: ['leagues'],
-    queryFn: () => apiClient.getLeagues() as Promise<LeaguesResponse>,
+    queryFn: async () => {
+      console.log('[LEAGUES_QUERY] Fetching leagues data...')
+      const result = await apiClient.getLeagues()
+      const data = result as unknown as LeaguesResponse
+      console.log('[LEAGUES_QUERY] Received data:', {
+        count: data.leagues?.length,
+        firstLeague: data.leagues?.[0],
+        hasUserMembership: !!data.leagues?.[0]?.userMembership
+      })
+      return data
+    },
     enabled: leaguesCsvFlag?.enabled === true,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
