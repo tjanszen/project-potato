@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'wouter'
 import { apiClient, type LeaguesResponse } from '../lib/api'
+import { useCompleteLeague } from '../hooks/useLeagueMembership'
 
 interface FeatureFlag {
   name: string
@@ -20,6 +21,8 @@ interface LeagueMembersResponse {
 export function LeagueDetailsPage() {
   const params = useParams()
   const leagueId = parseInt(params.id || '0')
+
+  const completeMutation = useCompleteLeague()
 
   const { data: detailsFlag } = useQuery<FeatureFlag>({
     queryKey: ['feature-flag', 'ff.potato.leagues.details'],
@@ -58,8 +61,17 @@ export function LeagueDetailsPage() {
   }
 
   const league = leaguesData?.leagues?.find(l => l.id === leagueId)
+  const userMembership = league?.userMembership
+  const isCompleted = userMembership?.completedAt !== null && userMembership?.completedAt !== undefined
+  const isPending = completeMutation.isPending
 
   console.log(`LeagueDetailsPage loaded for league: ${leagueId}`)
+
+  const handleMarkCompleted = () => {
+    if (isPending || isCompleted) return
+    console.log(`League marked as completed: ${leagueId}`)
+    completeMutation.mutate(leagueId)
+  }
 
   const isLoading = leaguesLoading || membersLoading
 
@@ -145,10 +157,35 @@ export function LeagueDetailsPage() {
                     {league.tag}
                   </span>
                 )}
+
+                {/* Mark Completed CTA Button */}
+                {userMembership?.isActive && (
+                  <button
+                    onClick={handleMarkCompleted}
+                    disabled={isPending || isCompleted}
+                    data-testid={isCompleted ? `button-completed-${leagueId}` : `button-mark-completed-${leagueId}`}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      marginTop: '24px',
+                      backgroundColor: isCompleted ? '#28A745' : '#FF5A1F',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      cursor: (isPending || isCompleted) ? 'not-allowed' : 'pointer',
+                      opacity: (isPending || isCompleted) ? 0.7 : 1,
+                      transition: 'background-color 0.2s ease, opacity 0.2s ease'
+                    }}
+                  >
+                    {isPending ? 'Completing...' : (isCompleted ? 'Completed ✓' : 'Mark Completed')}
+                  </button>
+                )}
               </div>
             )}
 
-            <div>
+            <div style={{ marginTop: '32px' }}>
               <h2 style={{
                 fontSize: '20px',
                 fontWeight: 'bold',

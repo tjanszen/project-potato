@@ -1,0 +1,46 @@
+Goal: Implement Phase 4 of the League Details Page plan (see docs/agent_memory/imp_plans/leagues_details_page.md). This phase adds the "Mark Completed" CTA to the League Details page.
+
+Context:
+- Phase 1 created backend `/api/leagues/:id/members`.
+- Phase 2 created the LeagueDetailsPage and routing.
+- Phase 3 made Active tab LeagueCards clickable, navigating to `/leagues/:id`.
+- Now, the details page must allow users to mark a league as completed, reusing the existing CTA logic.
+
+Do:
+- Update `client/src/pages/LeagueDetailsPage.tsx`:
+    - Import and use `useCompleteLeague` hook (already exists).
+    - If `userMembership.completedAt === null`, show active CTA: "Mark Completed".
+    - If `userMembership.completedAt !== null`, show disabled button: "Completed ✓".
+    - On click of "Mark Completed", call `completeMutation.mutate(leagueId)`.
+    - Ensure React Query invalidates `['leagues']` after completion so the Active tab updates automatically.
+- Ensure CTA button behavior matches the Active tab (disabled once completed).
+- Add test ID attributes:
+    - `data-testid="button-mark-completed-${leagueId}"`
+    - `data-testid="button-completed-${leagueId}"`
+
+Proof:
+- Logs: 
+  - Server → `"Membership action=complete for user=<uuid>, league=<id>"`
+  - Browser console → `"League marked as completed: <id>"`
+- SQL:
+  ```
+  SELECT completed_at FROM league_memberships 
+  WHERE user_id = (SELECT id FROM users WHERE email='tommyjanszen@gmail.com') 
+  AND league_id = <id> AND is_active = true;
+  ```
+  → `completed_at` should be a timestamp after marking complete.
+- Frontend Flow:
+  - Open `/leagues/:id` for an active league → button shows "Mark Completed".
+  - Click button → transitions to disabled "Completed ✓".
+  - Navigate back to Active tab → LeagueCard shows "Completed ✓".
+  - Reload `/leagues/:id` → persists as "Completed ✓".
+- Idempotency:
+  - Clicking "Completed ✓" again does nothing.
+
+Workflows to Use:
+- restart_workflow("Full Clean Restart")
+
+Scope Control:
+- Do not add new backend endpoints or schema changes.
+- Reuse existing `POST /api/leagues/:id/memberships { action: "complete" }`.
+- STOP if additional backend changes appear necessary (not expected).
