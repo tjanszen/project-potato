@@ -1,4 +1,5 @@
 import { Users, LineChart } from 'lucide-react'
+import { useLocation } from 'wouter'
 import { useJoinLeague, useLeaveLeague, useCompleteLeague } from '../hooks/useLeagueMembership'
 
 interface UserMembership {
@@ -25,6 +26,8 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
   console.log("Image fix applied: LeagueCard now rendering image_url")
   console.log("LeagueCard CTA rendered")
   
+  const [, setLocation] = useLocation()
+  
   // React Query hooks for membership mutations
   const joinMutation = useJoinLeague()
   const leaveMutation = useLeaveLeague()
@@ -46,7 +49,18 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
     })
   }
   
-  const handleCTAClick = () => {
+  const handleCardClick = () => {
+    if (completionMode) {
+      console.log(`Navigating to league details: ${id}`)
+      setLocation(`/leagues/${id}`)
+    }
+  }
+  
+  const handleCTAClick = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
     if (isPending) return
     
     if (completionMode) {
@@ -66,12 +80,13 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
   return (
     <div
       role="listitem"
+      onClick={handleCardClick}
       style={{
         backgroundColor: 'white',
         borderRadius: '12px',
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
         padding: '16px',
-        cursor: 'default',
+        cursor: completionMode ? 'pointer' : 'default',
         position: 'relative'
       }}
       data-testid={`league-card-${id}`}
@@ -196,8 +211,7 @@ export function LeagueCard({ id, image_url, tag, title, description, users, memb
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            handleCTAClick()
+            handleCTAClick(e)
           }
         }}
       >
