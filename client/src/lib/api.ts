@@ -170,6 +170,10 @@ export class ApiClient {
     return response
   }
 
+  async getLeagueMembers(leagueId: number) {
+    return this.request(`/api/leagues/${leagueId}/members`)
+  }
+
   // Health check
   async health() {
     return this.request('/health')

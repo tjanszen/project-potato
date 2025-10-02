@@ -4,6 +4,7 @@ import { AuthPage } from './pages/AuthPage'
 import { DevTestingPage } from './pages/DevTestingPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { LeaguesPage } from './pages/LeaguesPage'
+import { LeagueDetailsPage } from './pages/LeagueDetailsPage'
 import { LeagueMembershipTest } from './pages/LeagueMembershipTest'
 
 export function AppRoutes() {
@@ -28,6 +29,12 @@ export function AppRoutes() {
       <Route path="/leagues">
         <AuthGuard>
           <LeaguesPage />
+        </AuthGuard>
+      </Route>
+      
+      <Route path="/leagues/:id">
+        <AuthGuard>
+          <LeagueDetailsPage />
         </AuthGuard>
       </Route>
       
