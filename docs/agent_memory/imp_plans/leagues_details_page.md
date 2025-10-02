@@ -180,7 +180,36 @@ No code has been written yet — this is a **planning deliverable only**.
 
 ---
 
-### Phase 7: Frontend – Back Navigation
+### Phase 7: Frontend – Navigation from List Tab to Details Page
+**Goal:** Allow users to click LeagueCards in the **List tab** to open the League Details page.  
+
+**Scope:**  
+- Update `LeagueCard.tsx` to support navigation when rendered in the List tab:  
+  - Add `onClick` handler for List tab cards (similar to Phase 3 implementation for Active tab).  
+  - Use `useLocation` (wouter) to navigate to `/leagues/${id}`.  
+  - Apply `cursor: pointer` styling when in List tab context.  
+- Ensure CTA buttons (Join/Joined) still work independently — `stopPropagation()` must prevent triggering navigation when clicking CTAs.  
+- Navigation behavior should be consistent with Active tab: clicking anywhere on the card (except the CTA) navigates to details.  
+
+**Verification:**  
+- Logs:  
+  - Browser console → `"Navigating to league details (list tab): <id>"` when clicking a List tab card.  
+- Frontend:  
+  - From List tab, click a LeagueCard → navigates to `/leagues/:id`.  
+  - Details page loads with league info, member list, and correct CTA (Join or Mark Completed).  
+  - From Active tab, navigation continues to work as before (Phase 3).  
+- CTA Isolation:  
+  - Clicking “Join” or “Joined” button on List tab cards triggers membership action but does **not** navigate to details.  
+- Feature flag: With `FF_POTATO_LEAGUES_DETAILS=false`, navigation still happens but page renders null.  
+
+**Rollback:**  
+- Disable `FF_POTATO_LEAGUES_DETAILS` → League Details page hidden.  
+- No schema or backend changes needed.  
+
+---
+
+
+### Phase 8: Frontend – Back Navigation
 **Goal:** Add a back arrow on League Details page to return to the previous tab (Active or List).  
 
 **Scope:**  
@@ -201,7 +230,7 @@ No code has been written yet — this is a **planning deliverable only**.
 
 ---
 
-### Phase 8: End-to-End Validation (Extended)
+### Phase 9: End-to-End Validation (Extended)
 **Goal:** Validate full details page flow for both members and non-members.  
 
 **Tests:**  
@@ -236,6 +265,7 @@ No code has been written yet — this is a **planning deliverable only**.
 - Feature flag toggle hides feature instantly.  
 
 ---
+
 
 
 ## Key Risk Mitigations
