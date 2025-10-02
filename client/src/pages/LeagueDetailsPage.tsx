@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'wouter'
 import { apiClient, type LeaguesResponse } from '../lib/api'
-import { useCompleteLeague } from '../hooks/useLeagueMembership'
+import { useCompleteLeague, useJoinLeague } from '../hooks/useLeagueMembership'
 
 interface FeatureFlag {
   name: string
@@ -22,6 +22,7 @@ export function LeagueDetailsPage() {
   const params = useParams()
   const leagueId = parseInt(params.id || '0')
 
+  const joinMutation = useJoinLeague()
   const completeMutation = useCompleteLeague()
 
   const { data: detailsFlag } = useQuery<FeatureFlag>({
@@ -62,10 +63,17 @@ export function LeagueDetailsPage() {
 
   const league = leaguesData?.leagues?.find(l => l.id === leagueId)
   const userMembership = league?.userMembership
+  const isMember = userMembership?.isActive === true
   const isCompleted = userMembership?.completedAt !== null && userMembership?.completedAt !== undefined
-  const isPending = completeMutation.isPending
+  const isPending = joinMutation.isPending || completeMutation.isPending
 
   console.log(`LeagueDetailsPage loaded for league: ${leagueId}`)
+
+  const handleJoin = () => {
+    if (isPending) return
+    console.log(`Join league requested: ${leagueId}`)
+    joinMutation.mutate(leagueId)
+  }
 
   const handleMarkCompleted = () => {
     if (isPending || isCompleted) return
@@ -158,30 +166,37 @@ export function LeagueDetailsPage() {
                   </span>
                 )}
 
-                {/* Mark Completed CTA Button */}
-                {userMembership?.isActive && (
-                  <button
-                    onClick={handleMarkCompleted}
-                    disabled={isPending || isCompleted}
-                    data-testid={isCompleted ? `button-completed-${leagueId}` : `button-mark-completed-${leagueId}`}
-                    style={{
-                      width: '100%',
-                      height: '48px',
-                      marginTop: '24px',
-                      backgroundColor: isCompleted ? '#28A745' : '#FF5A1F',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: (isPending || isCompleted) ? 'not-allowed' : 'pointer',
-                      opacity: (isPending || isCompleted) ? 0.7 : 1,
-                      transition: 'background-color 0.2s ease, opacity 0.2s ease'
-                    }}
-                  >
-                    {isPending ? 'Completing...' : (isCompleted ? 'Completed ✓' : 'Mark Completed')}
-                  </button>
-                )}
+                {/* CTA Button - Join / Mark Completed / Completed */}
+                <button
+                  onClick={!isMember ? handleJoin : handleMarkCompleted}
+                  disabled={isPending || (isMember && isCompleted)}
+                  data-testid={
+                    !isMember 
+                      ? `button-join-${leagueId}` 
+                      : isCompleted 
+                        ? `button-completed-${leagueId}` 
+                        : `button-mark-completed-${leagueId}`
+                  }
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    marginTop: '24px',
+                    backgroundColor: (isMember && isCompleted) ? '#28A745' : '#FF5A1F',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: (isPending || (isMember && isCompleted)) ? 'not-allowed' : 'pointer',
+                    opacity: (isPending || (isMember && isCompleted)) ? 0.7 : 1,
+                    transition: 'background-color 0.2s ease, opacity 0.2s ease'
+                  }}
+                >
+                  {!isMember 
+                    ? (joinMutation.isPending ? 'Joining...' : 'Join')
+                    : (completeMutation.isPending ? 'Completing...' : (isCompleted ? 'Completed ✓' : 'Mark Completed'))
+                  }
+                </button>
               </div>
             )}
 

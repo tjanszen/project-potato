@@ -1,0 +1,47 @@
+Goal: Implement Phase 6 of the League Details Page plan (see docs/agent_memory/imp_plans/leagues_details_page.md). This phase adds a **Join CTA** for non-members on the League Details page.
+
+Context:
+- Current state (Phases 1–5): 
+  - LeagueDetailsPage exists and shows league info + member list. 
+  - For members, a “Mark Completed” CTA is available.
+  - Non-members currently see no CTA.
+- Requirement: 
+  - Non-members should be able to view league details.
+  - Instead of “Mark Completed” / “Completed”, they should see a **Join CTA**.
+  - Once joined, the CTA should switch to “Mark Completed” (Phase 4 behavior).
+  - League details (header, description, members list) must always be visible regardless of membership.
+
+Do:
+- Update `LeagueDetailsPage.tsx`:
+  - Detect if user has an active membership (`userMembership?.isActive`).
+  - If no membership, render a **Join CTA** button.
+  - On click, call `POST /api/leagues/:id/memberships` (existing join logic).
+  - After success:
+    - Invalidate React Query cache for `['leagues']` and league details.
+    - Switch CTA to “Mark Completed” (existing logic).
+- Ensure non-members still see league info and members list, even before joining.
+
+Proof:
+- Logs:
+  - Browser console → `"Join league requested: <id>"`
+  - Server logs → `"Membership created for user=<uuid>, league=<id>"`
+- SQL:
+  ```sql
+  SELECT is_active FROM league_memberships
+  WHERE user_id = (SELECT id FROM users WHERE email='tommyjanszen@gmail.com')
+  AND league_id = <id>;
+  ```
+  → `is_active = true` after joining.
+- Frontend:
+  - Visit `/leagues/:id` as non-member → see Join CTA.
+  - Click Join → page refreshes → CTA becomes “Mark Completed”.
+  - Active tab now shows league as joined.
+- Feature flag: With `FF_POTATO_LEAGUES_DETAILS=false`, League Details page should remain hidden.
+
+Workflows to Use:
+- restart_workflow("Full Clean Restart")
+
+Scope Control:
+- Do not add new backend endpoints or schema changes.
+- Reuse existing join API.
+- STOP if additional backend changes are required (not expected).
