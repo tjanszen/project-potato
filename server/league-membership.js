@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runProofTests = exports.countActiveMembers = exports.getUserMembership = exports.markCompleted = exports.leaveLeague = exports.joinLeague = void 0;
+exports.runProofTests = exports.getActiveMembers = exports.countActiveMembers = exports.getUserMembership = exports.markCompleted = exports.leaveLeague = exports.joinLeague = void 0;
 
 const { drizzle } = require("drizzle-orm/node-postgres");
 const { Pool } = require("pg");
@@ -290,6 +290,35 @@ async function countActiveMembers(leagueId) {
   }
 }
 exports.countActiveMembers = countActiveMembers;
+
+/**
+ * Get all active members of a league
+ * @param {number} leagueId - ID of the league
+ * @returns {Promise<Array>} Array of active members with email
+ */
+async function getActiveMembers(leagueId) {
+  try {
+    const members = await db
+      .select({
+        email: users.email,
+      })
+      .from(leagueMemberships)
+      .innerJoin(users, eq(leagueMemberships.userId, users.id))
+      .where(
+        and(
+          eq(leagueMemberships.leagueId, leagueId),
+          eq(leagueMemberships.isActive, true)
+        )
+      );
+
+    console.log(`League ${leagueId} has ${members.length} active members`);
+    return members;
+  } catch (error) {
+    console.error(`Error getting active members: ${error.message}`);
+    throw error;
+  }
+}
+exports.getActiveMembers = getActiveMembers;
 
 // Test functions for proof requirements
 async function runProofTests() {

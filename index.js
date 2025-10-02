@@ -1140,6 +1140,47 @@ app.get('/api/leagues/:id/membership', requireAuthentication, async (req, res) =
   }
 });
 
+// GET /api/leagues/:id/members - Get all active members of a league
+app.get('/api/leagues/:id/members', requireAuthentication, async (req, res) => {
+  // Check feature flag
+  if (!featureFlagService.isEnabled('ff.potato.leagues.details')) {
+    return res.status(403).json({ 
+      error: 'Feature not available',
+      flag: 'ff.potato.leagues.details',
+      enabled: false
+    });
+  }
+
+  try {
+    const leagueId = parseInt(req.params.id);
+    
+    // Validate league ID
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ 
+        error: 'Invalid league ID',
+        leagueId: req.params.id 
+      });
+    }
+    
+    // Get all active members
+    const members = await leagueMembershipService.getActiveMembers(leagueId);
+    
+    console.log(`GET /api/leagues/${leagueId}/members 200`);
+    
+    res.json({
+      members,
+      count: members.length
+    });
+    
+  } catch (error) {
+    console.error('League members retrieval error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get league members',
+      message: error.message 
+    });
+  }
+});
+
 // V2 API Endpoints - Runs and Totals (gated behind ff.potato.runs_v2)
 app.get('/api/v2/runs', requireFeatureFlag('ff.potato.runs_v2'), requireAuthentication, async (req, res) => {
   try {
