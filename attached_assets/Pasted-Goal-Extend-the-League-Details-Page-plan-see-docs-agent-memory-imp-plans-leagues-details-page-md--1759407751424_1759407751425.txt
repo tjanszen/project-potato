@@ -1,0 +1,41 @@
+Goal: Extend the League Details Page plan (see docs/agent_memory/imp_plans/leagues_details_page.md) with additional phases. This is **planning only** — no code should be written yet.
+
+Context:
+- The current plan covered Phases 1–5:
+  - Phase 1: Backend members API
+  - Phase 2: LeagueDetailsPage component + route
+  - Phase 3: Navigation from Active tab cards
+  - Phase 4: Completion CTA on details page
+  - Phase 5: End-to-end validation (✅ completed)
+- Now we need to add new functionality for users who are not yet members, and improve navigation with a back arrow.
+
+New Requirements:
+1. **Non-member access to details page**
+   - Users who are not members should still be able to open a league’s details page.
+   - They should see all the same information: league header, description, and member list.
+   - Instead of “Mark Completed” / “Completed” CTA, they should see a **“Join” CTA**.
+   - Once they join, the CTA should switch to “Mark Completed” (existing logic applies).
+2. **Back arrow navigation**
+   - A back arrow should appear in the top-left corner of the League Details page.
+   - If the user entered from the Active tab → pressing back should return to Active tab.
+   - If the user entered from the List tab → pressing back should return to List tab.
+   - For MVP, simple back navigation is sufficient (no deep-linking/sharing required).
+
+Do:
+- Extend the implementation plan with new **Phase 6 and beyond** to address these requirements.
+- For each new phase, provide:
+  - Goal
+  - Scope of changes (frontend/backend/flag handling as needed)
+  - Verification steps (logs, SQL, API, frontend proof)
+  - Rollback strategy (via feature flag)
+- Follow the same structured style used for Phases 1–5.
+- Deliver output as a markdown outline with only the new phases.
+
+Proof:
+- Addendum must clearly list **Phase 6+ only** (do not rewrite Phases 1–5).
+- Each phase must include clear verification steps.
+- Confirm that no code has been written — planning deliverable only.
+
+Scope Control:
+- STOP if new requirements would force schema changes or new backend endpoints (not expected).
+- WAIT for operator approval before suggesting backend extensions.

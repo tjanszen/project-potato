@@ -147,6 +147,96 @@ No code has been written yet — this is a **planning deliverable only**.
 - Feature flag toggle hides entire flow instantly  
 
 ---
+### Phase 6: Frontend – Join CTA for Non-Members
+**Goal:** Allow non-members to view the League Details page and join a league from there.  
+
+**Scope:**  
+- Update `LeagueDetailsPage.tsx`:
+  - Detect whether the current user has a membership record for this league.
+  - If no active membership:
+    - Show a **“Join” CTA** instead of “Mark Completed”.
+    - On click, call `POST /api/leagues/:id/memberships` (existing join logic).
+  - Once joined:
+    - React Query invalidates `['leagues']` and details query.
+    - CTA switches to “Mark Completed” (Phase 4 behavior).  
+- Display all league details (header, description, members list) regardless of membership.  
+
+**Verification:**  
+- Logs:
+  - Browser console → `"Join league requested: <id>"`
+  - Server logs → `"Membership created for user=<uuid>, league=<id>"`  
+- SQL:
+  ```sql
+  SELECT is_active FROM league_memberships 
+  WHERE user_id = (SELECT id FROM users WHERE email='tommyjanszen@gmail.com') 
+  AND league_id = <id>;
+  ```
+  → `is_active = true` after joining.  
+- Frontend:
+  - Non-member visiting `/leagues/:id` sees Join CTA.
+  - Click Join → page refreshes → CTA becomes “Mark Completed”.
+  - Active tab now shows league joined.  
+- Rollback: Toggle `FF_POTATO_LEAGUES_DETAILS=false`.  
+
+---
+
+### Phase 7: Frontend – Back Navigation
+**Goal:** Add a back arrow on League Details page to return to the previous tab (Active or List).  
+
+**Scope:**  
+- Update `LeagueDetailsPage.tsx`:  
+  - Add a back arrow button in the header (top-left).  
+  - On click:
+    - If navigated from Active tab → return to `/leagues?tab=active`.  
+    - If navigated from List tab → return to `/leagues?tab=list`.  
+  - For MVP, track “origin tab” via React Router state or fallback to `/leagues` if unknown.  
+
+**Verification:**  
+- Logs:
+  - Browser console → `"Back navigation triggered: returning to active tab"`  
+- Frontend:
+  - From Active tab: click card → details page → back → returns to Active tab.  
+  - From List tab: click card → details page → back → returns to List tab.  
+- Rollback: Disable feature flag → back arrow hidden.  
+
+---
+
+### Phase 8: End-to-End Validation (Extended)
+**Goal:** Validate full details page flow for both members and non-members.  
+
+**Tests:**  
+1. **Non-member flow:**
+   - Visit `/leagues/:id` (not joined).  
+   - See league details + members list.  
+   - Join league via CTA.  
+   - CTA switches to “Mark Completed”.  
+   - Active tab updates.  
+2. **Member flow:**
+   - Already joined user visits `/leagues/:id`.  
+   - CTA shows “Mark Completed” (if not completed).  
+   - Clicking completes league (Phase 4 behavior).  
+   - CTA switches to “Completed ✓”.  
+3. **Back navigation:**
+   - From Active tab → details → back → Active tab.  
+   - From List tab → details → back → List tab.  
+4. **Edge cases:**
+   - Empty league (0 members) → “No active members yet”.  
+   - Completed league → disabled CTA.  
+   - Flag disabled → details page hidden.  
+
+**Verification:**  
+- SQL:
+  ```sql
+  SELECT league_id, is_active, completed_at 
+  FROM league_memberships 
+  WHERE user_id = (SELECT id FROM users WHERE email='tommyjanszen@gmail.com');
+  ```
+  → reflects join/complete states correctly.  
+- UI: CTAs transition correctly for join → complete.  
+- Feature flag toggle hides feature instantly.  
+
+---
+
 
 ## Key Risk Mitigations
 - **Feature flag**: `ff.potato.leagues.details` gates the entire feature  
